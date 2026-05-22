@@ -7,6 +7,8 @@ I write this playbook to establish all my continues learning about coding in my 
 
 The main and final goal of this playbook is to provide the building blocks that will allow any engineer working in high level, general purpose languages like C# and Java, to produce code that is as simple as possible, as honest as possible and as robust as possible.
 
+I do this by cherry picking the concepts that I think are worth it, without marying to the whole paradigm, language, framework, design, architecture, etc.
+
 ## Scope
 
 The target is the kind of code that makes up ordinary business software: line-of-business systems, web and desktop applications, internal services, integration code.
