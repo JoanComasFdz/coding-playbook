@@ -14,3 +14,10 @@ The target is the kind of code that makes up ordinary business software: line-of
 It is **not** aimed at real-time, low-latency, or high-throughput workloads. Those obey different constraints (cache locality, memory layout, lock-free structures) and the building blocks here will not always be the right tool for them.
 
 For now it will be a collection of markdown files with principles, examples, justifications and decisions.
+
+## Code examples
+
+Examples in this playbook use the current LTS versions of each target language:
+
+- **C# 14** on **.NET 10 LTS** (released November 2025)
+- **Java 25 LTS** (released September 2025)
