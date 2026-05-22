@@ -90,16 +90,9 @@ belongs to it no longer sit physically together), and **more named entities** to
 
 ## When NOT to
 
-Bundling state with behaviour earns its keep in one main case: when you must enforce an invariant
-**atomically across mutations** — a genuine entity with identity and a lifecycle, a DDD aggregate
-guarding a consistency rule that several fields must satisfy together[6]. Even there, the modern
-move is to keep the *inside* of that boundary as plain immutable data transformed by pure
-functions, and reserve the object boundary purely for the consistency seam — not as a general
-excuse to fuse.
-
-**Naming guard.** Do not confuse this with Mike Acton's **Data-Oriented *Design***[7], which
-uses the same slogan for a *performance* argument (cache locality, memory layout) — a different
-problem from the one Axiom 1 addresses, and out of scope for this playbook (see the
+This axiom does not address Mike Acton's **Data-Oriented *Design***[6], which uses the same
+slogan for a *performance* argument (cache locality, memory layout) — a different problem from
+the one Axiom 1 addresses, and out of scope for this playbook (see the
 [playbook scope](../../README.md#scope)).
 
 ---
@@ -137,12 +130,7 @@ data (no access control by language, weaker cohesion, more named entities) are s
 the chapters on Principle #1 (Separate code from data) and summarised in Appendix A.
 <https://www.manning.com/books/data-oriented-programming>
 
-[6] **Eric Evans**, *Domain-Driven Design: Tackling Complexity in the Heart of Software*,
-Addison-Wesley, 2003 — Chapter 6 introduces the **Aggregate** as a consistency boundary: a
-cluster of associated objects treated as a unit for the purpose of data changes, with one
-entity chosen as the root through which the boundary's invariants are enforced.
-
-[7] **Mike Acton**, *Data-Oriented Design and C++*, keynote at CppCon 2014:
+[6] **Mike Acton**, *Data-Oriented Design and C++*, keynote at CppCon 2014:
 <https://www.youtube.com/watch?v=rX0ItVEVjHc>. Argues for designing code around the data, its
 transformations, and the hardware that runs them (cache locality, structure-of-arrays). Same
 slogan as Sharvit's DOP, different argument: this branch is about *performance*, not complexity.
