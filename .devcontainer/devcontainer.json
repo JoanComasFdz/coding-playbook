@@ -1,0 +1,6 @@
+{
+  "name": "coding-playbook",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "remoteUser": "node",
+  "postCreateCommand": "bash .devcontainer/postCreateCommand.sh"
+}
