@@ -1,11 +1,11 @@
-# Axiom 3 — Maybe
+# Axiom 9 — Maybe
 
 **A function whose result might be absent must say so in its return type.**
 
 - Wrap absence in a value — `Optional<T>` in Java, `T?` in C# with nullable reference types — so the caller has to handle it.
 - Never use `null`, a tombstone, or an exception to mean "no value."
 
-[Axiom 1](axiom-01-data-vs-behaviour.md) says data is a value; [Axiom 2](axiom-02-immutability.md) says values do not change. This axiom adds a third honest thing data does: when there is no value, the type still says so.
+[Axiom 0](axiom-00-data-vs-behaviour.md) says data is a value; [Axiom 1](axiom-01-immutability.md) says values do not change. This axiom adds a third honest thing data does: when there is no value, the type still says so.
 
 
 > **A note on the C# examples below.** This axiom uses C# nullable reference types (`T?`) because they are the language's built-in answer. Their enforcement is *compile-time-only and advisory* — the build passes on a warning — which makes them a structurally weaker implementation of this axiom than Java's `Optional<T>`. See [Maybe in C# beyond `T?`](#maybe-in-c-beyond-t) for the .NET ecosystem's structural alternatives.
@@ -384,7 +384,7 @@ The default tool the industry reaches for — a return type `T` whose value may 
 - The cost of forgetting to handle null is a `NullPointerException` / `NullReferenceException` at runtime, often far from the function that returned the null. The stack trace points at the consumer, not the producer.
 - Throwing on absence (the other common default) turns "no match found" into a control-flow event with stack traces and worse performance — and it conflates a normal answer with a system error.
 
-The competing force pulling the other way is **brevity** and **ergonomics**. `user.getName()` is shorter than `user.map(User::getName).orElse("")`. C# `user.Name` is shorter than `user?.Name ?? ""`. The axiom does not deny this force; it pays the verbosity cost in exchange for moving the absence check from the runtime into the type system, where the compiler does it for you. As with Axiom 2, the win is that a class of bugs disappears at compile time instead of being something to find at code review.
+The competing force pulling the other way is **brevity** and **ergonomics**. `user.getName()` is shorter than `user.map(User::getName).orElse("")`. C# `user.Name` is shorter than `user?.Name ?? ""`. The axiom does not deny this force; it pays the verbosity cost in exchange for moving the absence check from the runtime into the type system, where the compiler does it for you. As with Axiom 1, the win is that a class of bugs disappears at compile time instead of being something to find at code review.
 
 ---
 
@@ -397,7 +397,7 @@ A function signature is the cheapest documentation in software, and it is the on
 Hoare himself, at QCon 2009, identified the introduction of `null` references in ALGOL W in 1965 as his single most expensive design choice: "I call it my billion-dollar mistake. … This has led to innumerable errors, vulnerabilities, and system crashes, which have probably caused a billion dollars of pain and damage in the last forty years."[3] The Maybe type is the standard mitigation — older than the diagnosis, dating back to Standard ML's `option` and Haskell's `Maybe`[4]. The C# language team's nullable-reference-types feature is a different implementation of the same mitigation, recognising the same problem 53 years later[5].
 
 **3. Absence is a value; treat it like one.**
-[Axiom 1](axiom-01-data-vs-behaviour.md) says data should be a *value*; absence is one of the facts you sometimes want to represent. Modelling it as `null` makes absence a property of the *reference* (a place where the value isn't); modelling it as `None` / `Optional.empty()` makes it a value alongside the others, with the same compositional properties. You can store it, return it, pass it, map over it, and test it the same way you test a present value. Hickey's argument that values are place-independent and the same everywhere applies cleanly here[6]: an empty `Optional` is the same value forever, the same way the integer `0` is.
+[Axiom 0](axiom-00-data-vs-behaviour.md) says data should be a *value*; absence is one of the facts you sometimes want to represent. Modelling it as `null` makes absence a property of the *reference* (a place where the value isn't); modelling it as `None` / `Optional.empty()` makes it a value alongside the others, with the same compositional properties. You can store it, return it, pass it, map over it, and test it the same way you test a present value. Hickey's argument that values are place-independent and the same everywhere applies cleanly here[6]: an empty `Optional` is the same value forever, the same way the integer `0` is.
 
 **4. The compiler becomes your reviewer — to differing degrees.**
 You stop having to remember to write the null check; the toolchain reminds you. *How loudly* it reminds you varies. Java's `Optional<T>` is **structural**: `findById(id).name()` is a compile *error*, because `name()` does not exist on `Optional<User>`. C# `T?` with NRT on is **advisory**: the compiler emits `CS8602: dereference of a possibly null reference`, but the build still passes unless you have opted into `TreatWarningsAsErrors`. F#'s `Option` and Haskell's `Maybe` go further still: pattern matches must be exhaustive, and the compiler errors on a missing branch under the warning flags typically used in production. Same axiom; three points on an enforcement gradient — and the cheapest point that still beats raw null is the one your project's tooling can hold the line on.
@@ -478,7 +478,7 @@ Picking one is an ADR-level call, not a principle-level one — it depends on th
 <https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references>. The C# language team adopted a different implementation of the same axiom: rather than introduce `Option<T>` to the standard library, the language extends the type system so that `T` and `T?` are distinct, with flow analysis enforcing null checks at compile time. Same axiom; different implementation; no allocation cost.
 
 [6] **Rich Hickey**, *The Value of Values*, keynote at JaxConf 2012 (also delivered at GOTO Copenhagen 2012). Recording on InfoQ, 14 August 2012:
-<https://www.infoq.com/presentations/Value-Values/>. Cited in [Axiom 1](axiom-01-data-vs-behaviour.md) as [4] and [Axiom 2](axiom-02-immutability.md) as [2]; cross-listed here because the argument that *values* are place-independent and identical-everywhere is what justifies treating absence as a value rather than as a property of a reference.
+<https://www.infoq.com/presentations/Value-Values/>. Cited in [Axiom 0](axiom-00-data-vs-behaviour.md) as [4] and [Axiom 1](axiom-01-immutability.md) as [2]; cross-listed here because the argument that *values* are place-independent and identical-everywhere is what justifies treating absence as a value rather than as a property of a reference.
 
 [7] **Yaron Minsky**, *Effective ML*, MLOC 2011 (notes refreshed in Jane Street's blog series). Source of the slogan "make illegal states unrepresentable," which is the broader design principle the Maybe type is one instance of: if a value cannot legally be absent, do not give it a type that admits absence; if it can, give it a type that admits exactly that and nothing else.
 <https://blog.janestreet.com/effective-ml-revisited/>
