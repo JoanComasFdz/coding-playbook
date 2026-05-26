@@ -211,7 +211,7 @@ A function returning `Result<T, E>` promises every outcome lives in the return t
 
 **When the steps don't share a failure type and shouldn't.** A pipeline that mixes "parse failed (a string)" and "permission denied (a typed enum)" without a deliberate translation is a sign the chain is wanting to be two chains, or a chain plus a `MapError` seam in the middle. Don't widen `E` to a union of unrelated things just to keep one fluent chain.
 
-**At the impure shell.** The shell pattern-matches on the final Result to decide what to do — write a row, log a warning, return a 200 or a 400. The combinators belong to the pure middle, where the decision is being *built*; the shell, where the decision is being *executed*, uses pattern matching directly ([Axiom 8](axiom-08-pattern-matching.md)).
+**For chaining impure steps.** The combinators are for transforming a `Result` built from *pure* fallible functions. The moment a step reads the clock, hits the database, or sends a request — even when it dutifully returns `Result<…, string>` — the chain stops being pure: the order of effects is now hidden inside `Bind`'s body, and the expression reads like a value but acts like a script. Keep effects on the arms of the final pattern match, after the chain has produced its final value ([Axiom 9](axiom-09-impureheim.md)). The chain stays a pure expression even when it is built inside an impure shell; what makes it pure is that every step is pure, not where the code lives on the page.
 
 ---
 
