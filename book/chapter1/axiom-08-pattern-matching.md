@@ -4,6 +4,7 @@
 
 - Each branch is a *pair*: a shape on the left, an expression on the right. The shape selects the branch; the binding makes the value's parts available without a separate cast.
 - When the set of possible shapes is *closed* — a sealed type hierarchy, an enum, a finite set of literals — the compiler can verify at compile time that every shape has a branch.
+- Two surfaces for the same operation: a `switch` expression in the consumer, or a `Match` method on the type — same lesson, same totality, different owner.
 
 [Axiom 0](axiom-00-data-vs-behaviour.md) drew the line: data is a passive description of what something is; behaviour is a separate operation defined over it. When the data can take one of several shapes, the natural way to define a behaviour over it is *case analysis* — one clause per shape, each clause naming the result for that shape. Pattern matching is the syntax for that clausal definition: the shape on the left, the result on the right, the value's parts bound in the same step.
 
@@ -21,6 +22,8 @@ The patterns come in several kinds, all available in modern C# and Java:
 - **Guarded patterns.** `case Square s when s.Side > 5` — refines a structural match with a runtime predicate. Shape *and* condition in one arm.
 
 A match expression is *exhaustive* when its arms cover every value the input type can hold. For a sealed hierarchy or an enum, that is a property the compiler can check; a match missing a case is a compile error in modern Java and in C# `switch` expressions.
+
+Case analysis is *whose* job. The consumer's, when written as `switch` at the call site; the type's, when exposed as a `Match` method on the value itself. The arms, the totality property, and the exhaustiveness guarantee are unchanged across the two surfaces — only the *location* of the case list moves.
 
 ---
 
@@ -116,6 +119,118 @@ Both forms are *exhaustive*: there is no `default` arm, and the compiler verifie
 
 ---
 
+## The method form
+
+The same case analysis takes a second surface: a method on the type itself, taking one handler per shape and returning whatever the handlers return. The lesson and the totality property are the same — the change is *who owns the dispatch*.
+
+The method on `Shape`, declared once next to the type:
+
+<table>
+<tr><th>C#</th><th>Java</th></tr>
+<tr>
+<td>
+
+```csharp
+public abstract record Shape
+{
+    public R Match<R>(
+        Func<Circle, R>    circle,
+        Func<Rectangle, R> rectangle,
+        Func<Square, R>    square) => this switch
+    {
+        Circle c    => circle(c),
+        Rectangle r => rectangle(r),
+        Square q    => square(q),
+        _           => throw new InvalidOperationException()
+    };
+}
+```
+
+</td>
+<td>
+
+```java
+sealed interface Shape permits Circle, Rectangle, Square {
+    default <R> R match(
+            Function<Circle, R>    circle,
+            Function<Rectangle, R> rectangle,
+            Function<Square, R>    square) {
+        return switch (this) {
+            case Circle c    -> circle.apply(c);
+            case Rectangle r -> rectangle.apply(r);
+            case Square q    -> square.apply(q);
+        };
+    }
+}
+```
+
+</td>
+</tr>
+</table>
+
+The body is the same `switch` from the previous section — `Match` does not introduce new machinery, it wraps the existing one as a method on the type. The Java form is exhaustive at compile time, so it needs no fallthrough. The C# form needs a `throw` in the unreachable position because the C# 14 compiler cannot yet *prove* the sealed hierarchy closed: CS8509 emits a warning, not a hard error.
+
+The same `Area` function, written first as a `switch` expression and then as a `Match` call:
+
+<table>
+<tr><th>C#</th><th>Java</th></tr>
+<tr>
+<td>
+
+```csharp
+// switch — case analysis at the call site
+public static double Area(Shape shape) => shape switch
+{
+    Circle c    => Math.PI * c.Radius * c.Radius,
+    Rectangle r => r.L * r.W,
+    Square s    => s.Side * s.Side
+};
+
+// Match — case analysis on the type
+public static double Area(Shape shape) => shape.Match(
+    circle:    c => Math.PI * c.Radius * c.Radius,
+    rectangle: r => r.L * r.W,
+    square:    s => s.Side * s.Side);
+```
+
+</td>
+<td>
+
+```java
+// switch — case analysis at the call site
+public static double area(Shape shape) {
+    return switch (shape) {
+        case Circle c    -> Math.PI * c.radius() * c.radius();
+        case Rectangle r -> r.length() * r.width();
+        case Square s    -> s.side() * s.side();
+    };
+}
+
+// match — case analysis on the type
+public static double area(Shape shape) {
+    return shape.match(
+        c -> Math.PI * c.radius() * c.radius(),
+        r -> r.length() * r.width(),
+        s -> s.side() * s.side());
+}
+```
+
+</td>
+</tr>
+</table>
+
+The two arms read at the same length. The difference is *where the case name lives*. In the `switch` form the case is named on the left of `=>` as a type pattern (`Circle c =>`); the consumer spells the type on every arm. In the `Match` form the case is named on the left of `=>` as a *parameter label* (`circle: c =>`); the consumer passes a lambda whose parameter type is *inferred* from the method's signature.
+
+**Case analysis can live where the consumer is, or where the type is.** A `switch` expression carries the case list at the call site: every consumer of `Shape` writes its own arms with `Circle c => …`, `Rectangle r => …`, `Square s => …`. A `Match` method moves that list onto the type: the type declares the handler shape once, and every consumer fills in the bodies. The lesson — case analysis on shape, exhaustive over the closed set — is the same. The *location* of the case list is the choice.
+
+The ergonomic consequence is real. **Each `switch` arm spells out the case type at the call site.** With `Shape`, that's `Circle c =>` — short and clear. With a type whose generic arguments are themselves compound — a sum type parameterised by a tuple of named types, a record-of-records, a sealed hierarchy with multiple type parameters — every arm at every call site repeats the full type. The consumer carries the transcription burden every time the type is consumed, and the burden scales with how often that is. The `Match` method removes the type from the call site entirely: the case is named by parameter, and the consumer passes a lambda whose parameter type is inferred.
+
+Two costs return the other way. **The method's signature grows with the variant count**: a `Match` over a 7-arm hierarchy declares seven `Func` parameters in one place, and the call site reads as a labelled table while the *declaration* reads as a wall of generics. And **each arm is a lambda allocation** where the consumer would otherwise inline the arm body in `switch`. For most line-of-business code both costs are dust. For hot paths or large variant sets, consumer-owned `switch` is the right reach.
+
+The choice between the two surfaces is local: pick the one that reads better at the call sites you have. Both are pattern matching.
+
+---
+
 ## Problem / forces
 
 Case analysis on a value's shape is a fundamental operation: every program that decides what to do based on which kind of thing it holds is doing case analysis in some form. The question is only what syntax expresses the decision. Several options sit on the same trade-off curve, each appropriate in its own setting:
@@ -127,6 +242,8 @@ Case analysis on a value's shape is a fundamental operation: every program that 
 - **Pattern matching.** Selects on shape *and* narrows *and* binds parts, in one arm; the compiler verifies exhaustiveness over a closed set of cases.
 
 Where the operation belongs to the consumer (not to the data) and the set of cases is closed, pattern matching is the most direct of the five. The other four remain the right fit when their conditions hold — and the trade-offs section names where pattern matching itself gives way.
+
+Both surfaces of pattern matching shown earlier — `switch` and `Match` — share this position on the curve. The choice between them is a local readability decision (verbose case types at the call site versus a method signature growing with the variant count), not a new option among the five.
 
 ---
 
@@ -144,6 +261,9 @@ For a closed type — a sealed interface in Java, an abstract record hierarchy i
 **4. The dispatch lives where the decision lives.**
 The consumer that needs to branch on a shape contains the branching logic; the data type stays a passive description of *what it is*. A second consumer with a different question writes its own match; the data type is touched by neither. This is the practical payoff of [Axiom 0](axiom-00-data-vs-behaviour.md) — data is data, and the operations over it live with the consumers that need them.
 
+**5. The dispatch can also live on the type, when that reads better.**
+A `Match` method moves the case list from the call site onto the type's surface. The case analysis is the same and the totality requirement is the same — only the *location* of the case list moves. Consumer-owned dispatch (the `switch` form, the previous bullet) lets every call site shape its own match with guards, nested patterns, or partial matches falling through to a default. Type-owned dispatch (the `Match` form) gives every consumer a single uniform call shape and lifts the case-type transcription off every arm. Pattern matching keeps both options on the table; the chapter does not pick one for you.
+
 ---
 
 ## Trade-offs
@@ -154,6 +274,8 @@ The second cost is **the temptation to grow the match indefinitely**. A match ex
 
 The third cost is that **the compile-time guarantee depends on closure**. Sealed types and exhaustive matches require the set of cases to live in one place. A pattern match on a non-sealed type still compiles, but the compiler can no longer ensure every case is covered; a `default` arm becomes load-bearing. This is acceptable for `Object`-typed dispatch or for inherited hierarchies the codebase does not own, but it loses the strongest reason to use pattern matching in the first place. Where the cases are under the codebase's control, seal them.
 
+The fourth cost is **a local choice the chapter does not make for you: `switch` versus `Match`**. The two surfaces carry different costs at different scales. A `switch` expression spells the case type on every arm — short and clear with names like `Circle`, onerous when the type is generic and every arm repeats the same compound. A `Match` method moves that cost off the consumer onto the declaration: a 7-arm `Match` has seven `Func` parameters in its signature, plus one lambda allocation per call. For most line-of-business code both costs are dust. Pick the surface that reads better at the call sites you have, and accept that the answer can be different for different types in the same codebase.
+
 ---
 
 ## When NOT to
@@ -162,6 +284,7 @@ Two cases where another option on the trade-off curve fits better:
 
 - **The behaviour is intrinsic to the type.** `Shape.Area()`, `Money.Plus(other)`, `Document.IsValid()` — operations whose meaning is part of what the type *is*. A virtual method (or in C# / modern Java, a method on each record / sealed implementor) keeps that operation next to its data. A pattern match in a consumer would force every caller to know how each shape computes its area; the abstraction is the point.
 - **The set of cases is open by design.** Plugin hosts, extension points, codebases where the set of subtypes is expected to grow outside the module. Pattern matching's compile-time guarantee depends on the compiler seeing the full set of cases. For an open set, the polymorphic dispatch a virtual method provides is the right shape.
+- **The type's variant list is unstable, or its consumer count is small.** A `Match` method couples every consumer to the variant signature: a variant added, removed, or renamed is a method-signature change visible to every call site. While the variant list is in flux — or while only one or two consumers exist — `switch` at the call site is cheaper to live with. Promote to `Match` once the variant list has stabilised and consumer count makes the per-arm transcription tax visible.
 
 ---
 
@@ -173,3 +296,6 @@ Two cases where another option on the trade-off curve fits better:
 
 [3] **OpenJDK**, *JEP 441: Pattern Matching for switch*, finalised in Java 21 (2023). The canonical reference for Java's pattern-matching syntax, exhaustiveness rules, and interaction with sealed types.
 <https://openjdk.org/jeps/441>
+
+[4] **Scott Wlaschin**, *Designing with Types* series, fsharpforfunandprofit.com. F#'s `Option.fold`, `Result.fold`, and the per-DU `match` keyword are the canonical functional treatment of "case analysis owned by the type" — the lineage of the `Match` method form. The C# / Java shape used in this axiom is the direct translation of that idiom into languages where pattern matching is a built-in language construct rather than a per-type member.
+<https://fsharpforfunandprofit.com/series/designing-with-types/>
