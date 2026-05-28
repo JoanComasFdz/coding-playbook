@@ -4,7 +4,9 @@ This chapter introduces all foundational principles that will shape the rest of 
 
 The principles are sequenced so each one rests only on principles already introduced. Read top to bottom, since the list forms a narrative spine.
 
----
+The code examples they provide are for educational purposes and are not final, production-ready, comprehensive implementations.
+
+## Index
 
 **0. Data vs Behaviour** — data is a fact; behaviour is an operation. We keep the two separate.
 
@@ -87,7 +89,5 @@ The principles are sequenced so each one rests only on principles already introd
 *↳ Generalize "decide an action" into "decide the next state."*
 
 **20. State machines** — centralized state, transitions as DUs, decisions as pure functions returning actions. Everything composes.
-
----
 
 *Note: most bridges are strict dependencies — the next chapter literally needs the previous one. Two (9 and 19) are intentionally motivational rather than strict: Impureheim is introduced early as a "north star" to give the tool-building that follows a clear purpose, and it pays off at 19.*
