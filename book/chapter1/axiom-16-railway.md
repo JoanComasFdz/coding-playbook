@@ -187,11 +187,15 @@ public HttpResponse VerifyEndpoint(string rawToken)
         .Bind(p => LookupUser(users, p.UserId))
         .Map(u => new VerifiedUser(u, now));
 
-    return result switch                                             // pure: pattern matching
-    {
-        Success<VerifiedUser, string> s => new HttpResponse(200, $"verified {s.Value.User.Name}"),
-        Failure<VerifiedUser, string> f => new HttpResponse(401, f.Error)
-    };
+    // Using Match (Axiom 8) — the switch equivalent repeats <VerifiedUser, string> per arm:
+    //   result switch
+    //   {
+    //       Success<VerifiedUser, string> s => new HttpResponse(200, $"verified {s.Value.User.Name}"),
+    //       Failure<VerifiedUser, string> f => new HttpResponse(401, f.Error)
+    //   }
+    return result.Match(                                             // pure: pattern matching
+        success: v => new HttpResponse(200, $"verified {v.User.Name}"),
+        failure: e => new HttpResponse(401, e));
 }
 ```
 
@@ -211,10 +215,14 @@ public HttpResponse verifyEndpoint(String rawToken) {
         .flatMap(p -> lookupUser(users, p.userId()))
         .map(u -> new VerifiedUser(u, now));
 
-    return switch (result) {                         // pure: pattern matching
-        case Success<VerifiedUser, String>(var v) -> new HttpResponse(200, "verified " + v.user().name());
-        case Failure<VerifiedUser, String>(var e) -> new HttpResponse(401, e);
-    };
+    // Using match (Axiom 8) — the switch equivalent repeats <VerifiedUser, String> per arm:
+    //   switch (result) {
+    //       case Success<VerifiedUser, String>(var v) -> new HttpResponse(200, "verified " + v.user().name());
+    //       case Failure<VerifiedUser, String>(var e) -> new HttpResponse(401, e);
+    //   }
+    return result.match(                             // pure: pattern matching
+        v -> new HttpResponse(200, "verified " + v.user().name()),
+        e -> new HttpResponse(401, e));
 }
 ```
 
@@ -229,7 +237,7 @@ Read the picture from top to bottom and every prior axiom is visible at its post
 - **The decision is pure** ([Axiom 4](axiom-04-pure-functions.md)). The railway expression that builds `result` is a function of `rawToken`, `now`, and `users` only. Same triple in, same `Result` out. No clock read inside the chain, no I/O — the shell *hands* the chain every value it needs.
 - **The signature is honest and total** ([Axiom 5](axiom-05-honest-total-signatures.md)). The chain's type is `Result<VerifiedUser, string>`. Every outcome lives in the return type as a value: the verified user, or the first reason a step refused.
 - **Functions are values; functions over functions are the glue** ([Axiom 6](axiom-06-first-class-functions.md), [Axiom 7](axiom-07-higher-order-functions.md)). Each `.Bind(...)` and `.Map(...)` is a higher-order operation whose second argument is the next step written as a function. `Payload::decode` is the step itself, passed as a value.
-- **Pattern matching consumes the final shape** ([Axiom 8](axiom-08-pattern-matching.md)). The shell matches on `Result<VerifiedUser, string>` once, with both arms present. The compiler refuses to compile the shell until every case is acknowledged.
+- **Pattern matching consumes the final shape** ([Axiom 8](axiom-08-pattern-matching.md)). The shell uses `Match` on `Result<VerifiedUser, string>` rather than `switch` — same operation, the method form when the generic types would otherwise repeat on every arm. Both arms are present; the compiler refuses to compile the shell until every case is acknowledged.
 - **The whole function is an Impureheim sandwich** ([Axiom 9](axiom-09-impureheim.md)). I/O on the way in, pure decision in the middle, the response value on the way out. The pure middle is where the rules live; nothing else is.
 - **Absence reaches the core as a value, not as `null`** ([Axiom 10](axiom-10-maybe.md)). The user lookup inside `LookupUser` is the same shape: a missing user becomes a `Failure` carrying the reason, not a `null` the core has to guess at.
 - **Result is Either with names** ([Axiom 11](axiom-11-either.md), [Axiom 13](axiom-13-result.md)). The two cases live in the same return slot; `Success` and `Failure` carry the convention that one side is the answer the caller wanted and the other is the reason it didn't get it.

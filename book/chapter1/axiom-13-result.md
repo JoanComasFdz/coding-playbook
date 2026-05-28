@@ -51,11 +51,16 @@ Result<Token, string> Authenticate(string username, string password)
 }
 
 var result = Authenticate("joan", "entrecote");
-Console.WriteLine(result switch
-{
-    Success<Token, string> s => $"Welcome, token={s.Value.Value}",
-    Failure<Token, string> f => $"Login failed: {f.Error}"
-});
+
+// Using Match (Axiom 8) — the switch equivalent repeats <Token, string> on every arm:
+//   result switch
+//   {
+//       Success<Token, string> s => $"Welcome, token={s.Value.Value}",
+//       Failure<Token, string> f => $"Login failed: {f.Error}"
+//   }
+Console.WriteLine(result.Match(
+    success: t => $"Welcome, token={t.Value}",
+    failure: e => $"Login failed: {e}"));
 ```
 
 </td>
@@ -79,10 +84,15 @@ Result<Token, String> authenticate(String username, String password) {
 
 void main(String[] args) {
     var result = authenticate("joan", "entrecote");
-    switch (result) {
-        case Success<Token, String> s -> System.out.println("Welcome, token=" + s.value().value());
-        case Failure<Token, String> f -> System.out.println("Login failed: " + f.error());
-    }
+
+    // Using match (Axiom 8) — the switch equivalent repeats <Token, String> per arm:
+    //   switch (result) {
+    //       case Success<Token, String> s -> System.out.println("Welcome, token=" + s.value().value());
+    //       case Failure<Token, String> f -> System.out.println("Login failed: " + f.error());
+    //   }
+    System.out.println(result.match(
+        t -> "Welcome, token=" + t.value(),
+        e -> "Login failed: " + e));
 }
 ```
 
@@ -131,11 +141,15 @@ Unit Login(Credentials creds)
 
     var decision = Decide(lookup, creds.Password, now);  // pure: tells us what to do
 
-    return decision switch                               // impure: pattern matching to execute the decision
-    {
-        Success<Token, string> s => sessions.Store(s.Value),
-        Failure<Token, string> f => log.Warn(f.Error)
-    };
+    // Using Match (Axiom 8) — the switch equivalent repeats <Token, string> per arm:
+    //   decision switch
+    //   {
+    //       Success<Token, string> s => sessions.Store(s.Value),
+    //       Failure<Token, string> f => log.Warn(f.Error)
+    //   }
+    return decision.Match(                               // impure: pattern matching to execute the decision
+        success: t => sessions.Store(t),
+        failure: e => log.Warn(e));
 }
 ```
 
@@ -167,10 +181,14 @@ Unit login(Credentials creds) {
 
     var decision = decide(lookup, creds.password(), now);  // pure: tells us what to do
 
-    return switch (decision) {                             // impure: pattern matching to execute the decision
-        case Success<Token, String>(var t) -> sessions.store(t);
-        case Failure<Token, String>(var e) -> log.warn(e);
-    };
+    // Using match (Axiom 8) — the switch equivalent repeats <Token, String> per arm:
+    //   switch (decision) {
+    //       case Success<Token, String>(var t) -> sessions.store(t);
+    //       case Failure<Token, String>(var e) -> log.warn(e);
+    //   }
+    return decision.match(                                 // impure: pattern matching to execute the decision
+        t -> sessions.store(t),
+        e -> log.warn(e));
 }
 ```
 
@@ -185,7 +203,7 @@ Read the picture from top to bottom and every prior axiom is in plain sight:
 - **The decision is pure** ([Axiom 4](axiom-04-pure-functions.md)). `Decide(lookup, submitted, now)` is a function of its inputs and nothing else. Same triple in, same `Result` out. No clock read inside; the clock value is *passed in*. That single discipline is what makes `Decide` trivially testable — no mocks, no clock fakes, just call it.
 - **The signature is honest and total** ([Axiom 5](axiom-05-honest-total-signatures.md)). `Decide` returns `Result<Token, string>` — the success carries a `Token`, the failure carries a reason. Every outcome the function can produce lives in the return type as a value. There is no thrown exception, no nullable success, no side channel.
 - **Higher-order machinery glues the impure boundary to the pure core** ([Axiom 6](axiom-06-first-class-functions.md), [Axiom 7](axiom-07-higher-order-functions.md)). The Java version reaches for `Optional.map` and `orElseGet` to lift the present-case handler into the absent-case world; both arguments are functions passed as values. The C# version inlines the same shape in the switch expression.
-- **Pattern matching consumes the shapes** ([Axiom 8](axiom-08-pattern-matching.md)). The pure core matches on `User?` / `Optional<User>` to inspect the lookup; the impure shell matches on `Result<Token, string>` to dispatch on the decision. Both matches are exhaustive — the compiler refuses to compile until both arms are present.
+- **Pattern matching consumes the shapes** ([Axiom 8](axiom-08-pattern-matching.md)). The pure core uses `switch` on `User?` / `Optional<User>` to inspect the lookup; the impure shell uses `Match` on the `Result` to dispatch the decision. Same operation, two surfaces — `switch` when the case type is short, `Match` when the generic types would otherwise repeat on every arm. Both are exhaustive: the compiler refuses to compile until both arms are present.
 - **The whole function is an Impureheim sandwich** ([Axiom 9](axiom-09-impureheim.md)). I/O on the way in, pure decision in the middle, I/O on the way out. The pure middle is the only part of this code that has any business logic.
 - **Maybe carries absence at the boundary** ([Axiom 10](axiom-10-maybe.md)). The lookup may or may not find a user; that absence reaches the core as a value, not as a `null` that the core has to guess at.
 - **Result is Either with names** ([Axiom 11](axiom-11-either.md)). The two cases live in the same return slot; the names `Success` and `Failure` are exactly the convention `Left`/`Right` lacks — and the reason string the failure carries is exactly the information a thrown `AuthenticationException` would have buried in a stack trace.
