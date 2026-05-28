@@ -120,7 +120,7 @@ public Failed Run(SubscriberContext ctx)
             onBackingOff:  b => Sleep(BackoffDelay(b.NextAttempt), ctx.Cancellation)
         );
         var connState = Transition(currentRunningState, ev);                       // pure call
-        switch (connState)                                                          // match on the result
+        switch (connState)                                                         // match on the result
         {
             case Running r: currentRunningState = r.RunningState; break;
             case Failed  f: return f;
@@ -202,6 +202,41 @@ public Failed run(SubscriberContext ctx) {
 </table>
 
 `Transition` never sees the connection, the clock, the cancellation token, or the message counter — it is pure ([Axiom 4](axiom-04-pure-functions.md)) and tested as a table of `(state, event, expected)` rows. The loop's `running switch` is the dispatch: each `RunningState` variant names one natural side effect the shell performs and awaits, and the dispatch is *exhaustive over `RunningState`* — there is no `Failed` arm because the local variable's type cannot be `Failed`. That is [Axiom 5](axiom-05-honest-total-signatures.md) / [Axiom 15](axiom-15-value-objects.md)'s *illegal states unrepresentable*, applied at the FSM-state level: the type system, not a runtime guard, keeps the terminal out of the dispatch. `Transition`'s return type carries the "are we done?" decision — `Running` to continue, `Failed` to exit — which the loop pattern-matches once per tick. `ConsumeUntilDropped` is itself a tight inner loop that reads messages, increments `ctx.ProcessedCount`, and returns `Disconnected` when the connection drops — message processing lives inside the Connected dispatch, not as FSM events, because the FSM here models only the connection lifecycle. The whole tick is one Impureheim sandwich from [Axiom 9](axiom-09-impureheim.md) — impure dispatch, pure `Transition`, impure update — and the loop is that sandwich repeated.
+
+`ConsumeUntilDropped` is the one helper that touches the Session Context — every other dispatch helper (`TryConnect`, `Sleep`, `BackoffDelay`) just produces an event without mutating ctx. Its body, schematically:
+
+<table>
+<tr><th>C#</th><th>Java</th></tr>
+<tr>
+<td>
+
+```csharp
+// schematic — ConsumeUntilDropped
+while (!conn.IsDropped && !ctx.Cancellation.IsCancellationRequested)
+{
+    Process(conn.Read());
+    ctx.ProcessedCount++;     // session accumulator — only writer in the program
+}
+return new Disconnected();
+```
+
+</td>
+<td>
+
+```java
+// schematic — consumeUntilDropped
+while (!conn.isDropped() && !ctx.cancelled.get()) {
+    process(conn.read());
+    ctx.processedCount++;     // session accumulator — only writer in the program
+}
+return new Disconnected();
+```
+
+</td>
+</tr>
+</table>
+
+That `ctx.ProcessedCount++` is the entire reason `SubscriberContext` exists in this example. It demonstrates [Axiom 21](axiom-21-session-context.md)'s shape concretely: a per-session accumulator, owned by the shell, written by exactly one site, never seen by `Transition`. The cancellation check inside the inner loop is the other half of the contract — the shell honours the external signal not just at the outer `while` but everywhere a long-running effect could otherwise stall.
 
 Both versions of the dispatch are honestly exhaustive — no `default` arm, no throw, no defensive guard against an unreachable case. The C# version uses the **Match method form** from [Axiom 8](axiom-08-pattern-matching.md): `running.Match(onConnecting: ..., onConnected: ..., onBackingOff: ...)`. Match's parameter list enumerates every variant, so the C# compiler refuses any call site that omits one — no `switch` expression, no CS8509 over `abstract record` hierarchies, no `_ =>` arm to fill with `throw new UnreachableException()`. The Java version takes the other surface from [Axiom 8](axiom-08-pattern-matching.md) — a pattern-matching `switch` over a `sealed interface` (JEP 441) — which is also exhaustive at compile-time. Both surfaces deliver the same property: an unreachable defensive arm in the dispatch cannot exist by construction. The cost C# pays for Match is per-tick closure allocation for the three lambda arms; in a hot-path loop where allocation pressure matters, the `switch` expression form remains an option, with its `_ => throw new UnreachableException()` understood as a CS8509 tooling artifact (a known platform limitation, not a guard against a real case) — that trade-off is the one [Axiom 8](axiom-08-pattern-matching.md) already drew between the two surfaces.
 
