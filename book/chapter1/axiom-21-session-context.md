@@ -136,7 +136,7 @@ Import(rows, ctx);
 Report(ctx.ProcessedCount, ctx.Errors);   // outside the session
 ```
 
-`ValidateRow` is unchanged from [Axiom 13](axiom-13-result.md) — pure, takes a row, returns a `Result`. It does not know `BatchContext` exists. The mutation lives only in the shell: `ctx.Errors.Add(...)`, `ctx.ProcessedCount++`, `ctx.Progress(...)`. The `Progress` callback was captured at session start by the *caller*, not hard-coded into the shell — that's the point of putting it in the context rather than on the importer class.
+`ValidateRow` is unchanged from [Axiom 13](axiom-13-result.md) — pure, takes a row, returns a `Result`. It does not know `BatchContext` exists. The mutation lives only in the shell: `ctx.Errors.Add(...)`, `ctx.ProcessedCount++`, `ctx.Progress(...)`. The `Progress` callback was captured at session start by the *caller* — a closure in the sense of [Axiom 6](axiom-06-first-class-functions.md), built outside the importer and handed in — not hard-coded into the shell. That's the point of putting it in the context rather than on the importer class.
 
 ---
 

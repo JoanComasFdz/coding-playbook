@@ -118,7 +118,7 @@ var clean = lines.stream().map(normalize).toList();
 </tr>
 </table>
 
-`Compose` is higher-order by both definitions at once: it takes two functions and returns one. The resulting `normalize` is not a method, not an object; it is the function value that applies `trim` and then `toLower`, ready to be passed anywhere a `Func<string, string>` is expected. The caller never needs to spell out the chain again.
+`Compose` is higher-order by both definitions at once: it takes two functions and returns one. The resulting `normalize` is not a method, not an object; it is a **closure** in the sense of [Axiom 6](axiom-06-first-class-functions.md) — the function value that applies `trim` and then `toLower`, with both captured from the call that built it. Ready to be passed anywhere a `Func<string, string>` is expected; the caller never needs to spell out the chain again.
 
 The clearest sign that an HOF is wanting to be extracted is a piece of code where the *same shape* repeats with a different *step* in the middle: open and close a resource, walk and accumulate, retry on failure, time and report. Pull the step into a parameter; the shape goes from copy-pasted to written once.
 

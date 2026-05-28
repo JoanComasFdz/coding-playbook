@@ -11,13 +11,13 @@
 
 ## Definitions
 
-It says one structural thing: **a function is impure if any single side effect from [Axiom 2](axiom-02-side-effects.md) appears anywhere reachable from its body — directly, transitively, in a constructor, in a captured closure, or behind an injected interface whose runtime implementation performs one.** When that effect is a *read* — the clock, a random source, a mutable singleton, the file system — the function is also *non-deterministic*: two calls with the same arguments can produce different results. The hidden read is the *cause*; the non-determinism is the *symptom* by which tests, parallel runs, and replays notice the impurity.
+It says one structural thing: **a function is impure if any single side effect from [Axiom 2](axiom-02-side-effects.md) appears anywhere reachable from its body — directly, transitively, in a constructor, in a captured reference, or behind an injected interface whose runtime implementation performs one.** When that effect is a *read* — the clock, a random source, a mutable singleton, the file system — the function is also *non-deterministic*: two calls with the same arguments can produce different results. The hidden read is the *cause*; the non-determinism is the *symptom* by which tests, parallel runs, and replays notice the impurity.
 
 A function is impure when any of these is true:
 
 - **A line in its body matches a category from Axiom 2** — a clock read, a logger call, a `throw`, a parameter mutation, a database hit, a singleton lookup.
 - **A function it calls is impure** — impurity is deep. A function whose body is arithmetic plus a single `logger.info` is impure, and so is its caller, and so is the caller's caller.
-- **A field or closure it captures is impure** — capturing a `DbContext`, an `HttpClient`, or a `Random` taints the function as much as constructing one inline.
+- **A field or reference it captures is impure** — capturing a `DbContext`, an `HttpClient`, or a `Random` taints the function as much as constructing one inline.
 
 This axiom rejects the mainstream default: treating "function" as a single category. In Java and C# the type system does not separate them. `int add(int, int)` and `Order placeOrder(string, List<string>)` are called the same way, declared with the same syntax, and both compile to the same kind of binding. Without a label that lives outside the type system, the question "can I cache this? parallelise this? test this without a fixture?" has no shorthand answer.
 
