@@ -90,4 +90,16 @@ The code examples they provide are for educational purposes and are not final, p
 
 **20. State machines** — centralized state, transitions as DUs, decisions as pure functions returning actions. Everything composes.
 
+*↳ The shell was one-shot — load, decide, persist, return. Many programs aren't one-shot. Before we can describe what their longer-lived shells *do*, we need to name what they *hold*.*
+
+**21. Session Context** — per-session mutable state held by the shell: accumulators, signals, flags, callbacks. Distinct from FSM state and from globals.
+
+*↳ With a place to keep the session's working memory, the shell shape can grow beyond one-shot — into a loop that drives the FSM forward over the whole session.*
+
+**22. Interpreter Loop** — the long-running shell shape: read current state, dispatch the effect that state demands, await an environmental event, call `Transition`, repeat.
+
+*↳ Session-scoped state is one half of where state lives. The other half is the resources that outlive any single session — connections, pools, caches — and where in the program they sit.*
+
+**23. State management** — where long-lived stateful resources live (caches, connection pools, connections) and how the composition root hands them to the shell. Always in the impure shell, never the core.
+
 *Note: most bridges are strict dependencies — the next chapter literally needs the previous one. Two (9 and 19) are intentionally motivational rather than strict: Impureheim is introduced early as a "north star" to give the tool-building that follows a clear purpose, and it pays off at 19.*
