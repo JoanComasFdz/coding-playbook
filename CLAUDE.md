@@ -24,7 +24,7 @@ Most content should align to one model:
 
 That sentence is effectively a module's public-API contract. Two consequences to keep consistent across examples:
 
-- A pure function that decides *what should happen* returns a discriminated union of actions/events (e.g. `Add | Update | Remove`); the caller executes them. "Decide what to do" + "evolve state" is one building block — the **Decider** (`decide(command, state) -> actions`, `evolve(state, event) -> state`), both pure. Treat "return actions" and "pure state machine" as the same thing, not two.
+- A pure function that decides *what should happen* returns a discriminated union of actions/events (e.g. `Add | Update | Remove`); the caller executes them outside the pure core — the decision is pure, the execution is impure. State machines are just the first part with the entity's state added as input and threaded into each successful variant. Treat "return actions" and "pure state machine" as the same building block, not two.
 - Once functions return `Result`/`Option`, **compose** them with map/bind/traverse rather than nesting `if`s. Distinguish short-circuiting (monadic `Result`) from accumulating (applicative validation, for collecting multiple `ValidationError`s).
 
 ## Vocabulary
