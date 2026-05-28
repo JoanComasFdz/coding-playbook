@@ -231,6 +231,53 @@ The choice between the two surfaces is local: pick the one that reads better at 
 
 ---
 
+## Convention: match on a named value, never on an inline call
+
+Pattern matching — whether `switch` expression, `switch` statement, or `Match` method — always reads against a *named variable*, never against a call expression. Wherever the temptation is to write `switch (Compute(...)) { ... }`, split it into two statements:
+
+<table>
+<tr><th>Don't</th><th>Do</th></tr>
+<tr>
+<td>
+
+```csharp
+switch (Decide(state, command))
+{
+    case Approved a => Persist(a),
+    case Denied   d => Log(d)
+}
+```
+
+</td>
+<td>
+
+```csharp
+var decision = Decide(state, command);   // pure
+switch (decision)                         // impure dispatch
+{
+    case Approved a => Persist(a),
+    case Denied   d => Log(d)
+}
+```
+
+</td>
+</tr>
+</table>
+
+Same for the `Match` method form: `var result = x.Compute(...); result.Match(...)`, not `x.Compute(...).Match(...)`.
+
+The reason is **visual separation between pure and impure**. The pure call lives on one line; the impure dispatch lives on the next. A reviewer scanning vertically sees the two halves of the [Impureim sandwich](axiom-09-impureheim.md) at a glance — *compute*, then *act* — without parsing an expression. Inlining the call collapses the two halves into one expression and hides the boundary the playbook spends so much effort marking.
+
+Three downstream benefits follow from that visual cue:
+
+1. **The intermediate value gets a name.** A reviewer reading the dispatch knows what is being dispatched on by reading one identifier, not by mentally evaluating an expression.
+2. **A debugger can break between the two statements** and inspect the result before the dispatch fires — a real ergonomic win when the pure call is non-trivial.
+3. **The convention reads the same in every example.** `var x = Pure(...); switch (x) { ... }` becomes a shape the eye recognises without having to parse — same visual rhythm everywhere the playbook does case analysis.
+
+This applies to `switch` expressions, `switch` statements, and `Match` calls equally. A property access (`x.Status`) is fine to inline — the rule is about non-trivial *calls*, not about all member access.
+
+---
+
 ## Problem / forces
 
 Case analysis on a value's shape is a fundamental operation: every program that decides what to do based on which kind of thing it holds is doing case analysis in some form. The question is only what syntax expresses the decision. Several options sit on the same trade-off curve, each appropriate in its own setting:
