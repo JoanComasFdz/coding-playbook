@@ -96,7 +96,7 @@ The code examples they provide are for educational purposes and are not final, p
 
 *↳ With a place to keep the session's working memory, the shell shape can grow beyond one-shot — into a loop that drives the FSM forward over the whole session.*
 
-**22. Interpreter Loop** — the long-running shell shape: read current state, dispatch the effect that state demands, await an environmental event, call `Transition`, repeat.
+**22. Stateful Shell** — the long-running shell shape: read current state, dispatch the effect that state demands, await an environmental event, call `Transition`, repeat. *(Lineage: the language-runtime fetch-decode-execute *Interpreter Loop*.)*
 
 *↳ Session-scoped state is one half of where state lives. The other half is the resources that outlive any single session — connections, pools, caches — and where in the program they sit.*
 
