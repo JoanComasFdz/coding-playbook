@@ -1,4 +1,4 @@
-# Axiom 10 — Maybe
+# Axiom 11 — Maybe
 
 **A function whose result might be absent must say so in its return type.**
 

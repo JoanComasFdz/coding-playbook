@@ -1,11 +1,11 @@
-# Axiom 15 — Value objects
+# Axiom 16 — Value objects
 
 **A value object is an immutable type whose only constructor is a static factory returning `Result<T, string>` — invalid inputs become a `Failure` carrying the reason, valid inputs become a `Success` whose contents every downstream function may trust without rechecking.**
 
 - The factory does the validation once; the type itself is the proof that the contained value satisfies the domain rule.
 - **Invalid states are unrepresentable**: there is no path to a value of the type that bypasses the check.
 
-[Axiom 5](axiom-05-honest-total-signatures.md) named two ways to reach a total signature — widen the output, or *narrow the input*. The narrowing path needed a type whose values were guaranteed valid by construction; `NonZeroInt` was the placeholder. This axiom is the toolkit for building those types. A value object is a small immutable record ([Axiom 1](axiom-01-immutability.md)) whose construction *is* the parse step — raw input checked once on the way in, producing either a value the rest of the code can trust or a `Failure` ([Axiom 13](axiom-13-result.md)) explaining why it couldn't.
+[Axiom 5](axiom-05-honest-total-signatures.md) named two ways to reach a total signature — widen the output, or *narrow the input*. The narrowing path needed a type whose values were guaranteed valid by construction; `NonZeroInt` was the placeholder. This axiom is the toolkit for building those types. A value object is a small immutable record ([Axiom 1](axiom-01-immutability.md)) whose construction *is* the parse step — raw input checked once on the way in, producing either a value the rest of the code can trust or a `Failure` ([Axiom 14](axiom-14-result.md)) explaining why it couldn't.
 
 ---
 
@@ -24,7 +24,7 @@ The body of every function that takes a value object can treat the contained dat
 This axiom rejects three mainstream defaults:
 
 - **Primitive obsession.** `CustomerProfile(string Username, string Email)` accepts any pair of strings — the type system has no opinion on which is which, whether either is non-empty, or whether the second contains an `@`. Every function downstream pays the cost of re-checking; every domain rule is scattered across the call sites that happen to remember it.
-- **The throwing constructor.** A constructor that throws on bad input pushes the failure case outside the return type and into the call stack — exactly the dishonesty [Axiom 13](axiom-13-result.md) named for any other success-or-failure operation. Construction is not a special case; the failure mode belongs in the signature as a value.
+- **The throwing constructor.** A constructor that throws on bad input pushes the failure case outside the return type and into the call stack — exactly the dishonesty [Axiom 14](axiom-14-result.md) named for any other success-or-failure operation. Construction is not a special case; the failure mode belongs in the signature as a value.
 - **The detached validation step.** A `Validate(profile)` called separately from `new CustomerProfile(...)` lets the constructed object exist *before* validation runs — and lets validation be forgotten on the next call site. The only way to guarantee that validation happened is to make construction and validation the same operation.
 
 Note the chosen error type: `string`. A failure-reason as a human-readable string is the cheapest convention, reads well in logs, and is enough when the caller's only job is to surface or record the reason. Typed failure values become worth the cost when callers need to *branch* on different failure cases; that escalation is an ADR-level decision, not a principle-level one. This axiom uses strings throughout.
@@ -220,7 +220,7 @@ A function whose parameter is `Username` instead of `string` is honest in a way 
 
 **Mapping at the persistence boundary.** ORMs and serialisers expect public constructors or settable properties; value objects with private constructors do not fit by default. The discipline is to map *at the boundary* — a converter that reads a row into the primitive, calls `From`, and surfaces a `Failure` as a startup error if the database somehow holds a value the current type refuses. This is the same boundary work the impure shell does for every other primitive coming in; the value object simply joins the queue.
 
-**One Result per construction; composing many is the next concern.** A handler that builds three value objects from three raw strings has three `Result` values to handle. Manual early-return on each one works and is the right shape for a single value; with several it becomes mechanical. The combinators from [Axiom 14](axiom-14-result-combinators.md) apply directly — value-object factories are exactly the fallible step `Bind` was designed for — and a later axiom develops the pattern for composing many. For now the building block is the lone smart constructor.
+**One Result per construction; composing many is the next concern.** A handler that builds three value objects from three raw strings has three `Result` values to handle. Manual early-return on each one works and is the right shape for a single value; with several it becomes mechanical. The combinators from [Axiom 15](axiom-15-result-combinators.md) apply directly — value-object factories are exactly the fallible step `Bind` was designed for — and a later axiom develops the pattern for composing many. For now the building block is the lone smart constructor.
 
 ---
 
@@ -228,7 +228,7 @@ A function whose parameter is `Username` instead of `string` is honest in a way 
 
 **A primitive with no invariant.** A field that is "any string, even empty, even arbitrary length" gains nothing from being wrapped in a `SomeString` value object whose factory always returns `Success`. The boilerplate is pure cost. Use the primitive. The discipline earns its keep when there is a *rule* to enforce.
 
-**At the I/O boundary, where primitives are mandatory.** The function that reads a JSON body, the one that writes a database row, the one that constructs an outgoing HTTP request — these speak the wire format, which is primitives. The conversion is the boundary's job ([Axiom 9](axiom-09-impureheim.md)); the value object lives one layer in. Pushing value objects *into* the JSON deserialiser is not the point of this axiom.
+**At the I/O boundary, where primitives are mandatory.** The function that reads a JSON body, the one that writes a database row, the one that constructs an outgoing HTTP request — these speak the wire format, which is primitives. The conversion is the boundary's job ([Axiom 10](axiom-10-impureheim.md)); the value object lives one layer in. Pushing value objects *into* the JSON deserialiser is not the point of this axiom.
 
 **Entities with identity.** A `Customer` whose two instances are different even when their data is identical — because they refer to different rows, different aggregates, different things in the world — is not a value object. Two `EmailAddress("a@b.com")` are the same email; two `Customer` instances representing two customers who happen to share a name are not the same customer. Equality-by-value is the wrong relation for identity-bearing types; force-fitting it produces subtle bugs. Value objects are for the *attributes* of those entities, not the entities themselves.
 
@@ -247,5 +247,5 @@ A function whose parameter is `Username` instead of `string` is honest in a way 
 [3] **Eric Evans**, *Domain-Driven Design: Tackling Complexity in the Heart of Software*, Addison-Wesley, 2003. The original treatment of "Value Object" as a domain modelling pattern — immutable, equality-by-value, no identity — distinguished from "Entity." Evans does not specify the smart-constructor-returning-Result shape (DDD predates the mainstream FP-in-OO renaissance); the equality-and-immutability half of this axiom's definition is his.
 <https://www.domainlanguage.com/ddd/>
 
-[4] **Vladimir Khorikov**, *CSharpFunctionalExtensions* (v3.7.0, March 2026). Cross-listed from [Axiom 13](axiom-13-result.md) and [Axiom 14](axiom-14-result-combinators.md). The library's `ValueObject` base class and the recipes in Khorikov's writing on the smart-constructor pattern are the practical .NET reference the C# example here is shaped after.
+[4] **Vladimir Khorikov**, *CSharpFunctionalExtensions* (v3.7.0, March 2026). Cross-listed from [Axiom 14](axiom-14-result.md) and [Axiom 15](axiom-15-result-combinators.md). The library's `ValueObject` base class and the recipes in Khorikov's writing on the smart-constructor pattern are the practical .NET reference the C# example here is shaped after.
 <https://github.com/vkhorikov/CSharpFunctionalExtensions>

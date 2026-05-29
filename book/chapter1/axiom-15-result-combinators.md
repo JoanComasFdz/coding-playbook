@@ -1,11 +1,11 @@
-# Axiom 14 — Result combinators
+# Axiom 15 — Result combinators
 
 **Reshape a `Result` by passing the next step as a function — three small higher-order operations cover the day-to-day moves: `Map` transforms the success, `MapError` transforms the failure, `Bind` chains a fallible step.**
 
 - The *step* is written as a plain function (`T -> U`, `T -> Result<U, E>`, or `E -> F`); the combinator does the one-time unwrapping and rewrapping in its own body.
-- Each combinator is a higher-order function ([Axiom 7](axiom-07-higher-order-functions.md)) whose first argument is the `Result<T, E>` being reshaped and whose second argument is the step.
+- Each combinator is a higher-order function ([Axiom 8](axiom-08-higher-order-functions.md)) whose first argument is the `Result<T, E>` being reshaped and whose second argument is the step.
 
-[Axiom 7](axiom-07-higher-order-functions.md) named operations *over* function values; [Axiom 13](axiom-13-result.md) named the value being reshaped here. This axiom is the meeting point: the everyday verbs the playbook reaches for whenever a `Result` flows through more than one step. The caller writes the step; the combinator handles the bookkeeping.
+[Axiom 8](axiom-08-higher-order-functions.md) named operations *over* function values; [Axiom 14](axiom-14-result.md) named the value being reshaped here. This axiom is the meeting point: the everyday verbs the playbook reaches for whenever a `Result` flows through more than one step. The caller writes the step; the combinator handles the bookkeeping.
 
 ---
 
@@ -25,7 +25,7 @@ The defining property of all three: **the caller never sees inside the Result**.
 
 ### Disclaimer
 
-**`Map` and `Bind` are not unique to `Result`.** They have the same shape — and often the same name — on other wrappers the reader has already met: `Optional.map` and `Optional.flatMap` from [Axiom 10](axiom-10-maybe.md), `Stream.map` and `Stream.flatMap` in Java (or `Select` and `SelectMany` in C# LINQ), and the chaining primitives on `Task` / `CompletableFuture`. Anywhere a value sits inside a wrapper that decides whether and how the next step runs, `Map` and `Bind` are how the next step is handed in. `MapError` is the operation specific to `Result`: it transforms the *second* type parameter, and only a wrapper that *has* a typed second side — `Result`, or its structural parent [Either](axiom-11-either.md) — has that side to map. The rest of this axiom focuses on `Result`, since that is the slot in the sequence, but the muscle being built here is the broader one.
+**`Map` and `Bind` are not unique to `Result`.** They have the same shape — and often the same name — on other wrappers the reader has already met: `Optional.map` and `Optional.flatMap` from [Axiom 11](axiom-11-maybe.md), `Stream.map` and `Stream.flatMap` in Java (or `Select` and `SelectMany` in C# LINQ), and the chaining primitives on `Task` / `CompletableFuture`. Anywhere a value sits inside a wrapper that decides whether and how the next step runs, `Map` and `Bind` are how the next step is handed in. `MapError` is the operation specific to `Result`: it transforms the *second* type parameter, and only a wrapper that *has* a typed second side — `Result`, or its structural parent [Either](axiom-12-either.md) — has that side to map. The rest of this axiom focuses on `Result`, since that is the slot in the sequence, but the muscle being built here is the broader one.
 
 This axiom presents them as methods over Result to give the reader the full picture, without external dependencies, but in a real code base, Map and Bind would be generic.
 
@@ -164,11 +164,11 @@ Result<Integer, ParseError> process(String input) {
 
 ## Problem / forces
 
-Once `Result<T, E>` is in the codebase ([Axiom 13](axiom-13-result.md)), the question is how a sequence of Result-producing steps composes. The options on the trade-off curve:
+Once `Result<T, E>` is in the codebase ([Axiom 14](axiom-14-result.md)), the question is how a sequence of Result-producing steps composes. The options on the trade-off curve:
 
 - **Manual unwrap, check, rewrap at every step.** Pattern-match on the Result, return early on `Failure`, continue with the `Success` value. This is the right shape for a *single* step where the next action depends on the failure case in a non-uniform way — a different log, a fallback computation, a recovery. It becomes noise the moment three or four such steps run back-to-back, all doing the same "if `Failure`, propagate; if `Success`, continue" dance: every call site re-implements the dance, and the eye has to skim past the bookkeeping to find the step.
 
-- **Throw inside a Result-returning function to escape the chain.** Once two or three manual pattern matches feel verbose, the temptation is to give up the value form and throw an exception to "skip" the rest. This re-introduces every problem [Axiom 13](axiom-13-result.md) named: the signature lies, the error is no longer a value, and the surrounding code now has a hidden control flow.
+- **Throw inside a Result-returning function to escape the chain.** Once two or three manual pattern matches feel verbose, the temptation is to give up the value form and throw an exception to "skip" the rest. This re-introduces every problem [Axiom 14](axiom-14-result.md) named: the signature lies, the error is no longer a value, and the surrounding code now has a hidden control flow.
 
 - **Wrap the chain in a `try` block around already-Result-returning code.** A subtler variant of the previous: keep returning Results, but defensively `try`/`catch` around the chain in case one of them "really" fails. The catch is dead code if the chain is honest; it is a band-aid if the chain is dishonest. Either way it does not belong.
 
@@ -193,7 +193,7 @@ A function returning `Result<T, E>` promises every outcome lives in the return t
 
 ## Trade-offs
 
-**Stack traces and step-through.** A failure produced deep inside a long combinator chain shows the combinator and a lambda in the stack trace, not the step's source location. For a short chain this is fine; for a long one, the same remedy as [Axiom 7](axiom-07-higher-order-functions.md) applies — extract the step to a named static method or local function, and the symbol shows up in the trace.
+**Stack traces and step-through.** A failure produced deep inside a long combinator chain shows the combinator and a lambda in the stack trace, not the step's source location. For a short chain this is fine; for a long one, the same remedy as [Axiom 8](axiom-08-higher-order-functions.md) applies — extract the step to a named static method or local function, and the symbol shows up in the trace.
 
 **Type-inference friction.** A chain of `.Map(…).Bind(…).MapError(…)` sometimes needs an explicit type argument when the compiler cannot infer the new type parameters from the lambda — most commonly when the first step in the chain is a generic call without enough context. The fix is local: annotate the offending lambda or assign it to a typed local.
 
@@ -211,19 +211,19 @@ A function returning `Result<T, E>` promises every outcome lives in the return t
 
 **When the steps don't share a failure type and shouldn't.** A pipeline that mixes "parse failed (a string)" and "permission denied (a typed enum)" without a deliberate translation is a sign the chain is wanting to be two chains, or a chain plus a `MapError` seam in the middle. Don't widen `E` to a union of unrelated things just to keep one fluent chain.
 
-**For chaining impure steps.** The combinators are for transforming a `Result` built from *pure* fallible functions. The moment a step reads the clock, hits the database, or sends a request — even when it dutifully returns `Result<…, string>` — the chain stops being pure: the order of effects is now hidden inside `Bind`'s body, and the expression reads like a value but acts like a script. Keep effects on the arms of the final pattern match, after the chain has produced its final value ([Axiom 9](axiom-09-impureheim.md)). The chain stays a pure expression even when it is built inside an impure shell; what makes it pure is that every step is pure, not where the code lives on the page.
+**For chaining impure steps.** The combinators are for transforming a `Result` built from *pure* fallible functions. The moment a step reads the clock, hits the database, or sends a request — even when it dutifully returns `Result<…, string>` — the chain stops being pure: the order of effects is now hidden inside `Bind`'s body, and the expression reads like a value but acts like a script. Keep effects on the arms of the final pattern match, after the chain has produced its final value ([Axiom 10](axiom-10-impureheim.md)). The chain stays a pure expression even when it is built inside an impure shell; what makes it pure is that every step is pure, not where the code lives on the page.
 
 ---
 
 ## References
 
-[1] **John Hughes**, *Why Functional Programming Matters*, Research Topics in Functional Programming, Addison-Wesley, 1990. Cross-listed from [Axiom 7](axiom-07-higher-order-functions.md). The paper's central argument — that small higher-order operations are the *glue* that makes simple definitions compose into large programs — is the foundational case for combinators in general. The Result-shaped variants in this axiom are one specialisation of that glue.
+[1] **John Hughes**, *Why Functional Programming Matters*, Research Topics in Functional Programming, Addison-Wesley, 1990. Cross-listed from [Axiom 8](axiom-08-higher-order-functions.md). The paper's central argument — that small higher-order operations are the *glue* that makes simple definitions compose into large programs — is the foundational case for combinators in general. The Result-shaped variants in this axiom are one specialisation of that glue.
 <https://www.cs.kent.ac.uk/people/staff/dat/miranda/whyfp90.pdf>
 
-[2] **Scott Wlaschin**, *Domain Modeling Made Functional*, Pragmatic Bookshelf, 2018. Cross-listed from [Axiom 13](axiom-13-result.md). The chapters that build up `Result.map`, `Result.mapError`, and `Result.bind` are the canonical OO-friendly introduction; the operation names this axiom uses match the F# treatment there.
+[2] **Scott Wlaschin**, *Domain Modeling Made Functional*, Pragmatic Bookshelf, 2018. Cross-listed from [Axiom 14](axiom-14-result.md). The chapters that build up `Result.map`, `Result.mapError`, and `Result.bind` are the canonical OO-friendly introduction; the operation names this axiom uses match the F# treatment there.
 <https://pragprog.com/titles/swdddf/domain-modeling-made-functional/>
 
-[3] **Vladimir Khorikov**, *CSharpFunctionalExtensions* (v3.7.0, March 2026). Cross-listed from [Axiom 13](axiom-13-result.md). The library ships `Map`, `Bind`, and `MapError` on `Result<T, E>` as extension methods; the C# example above mirrors its conventions. Worth reading the source — the definitions are short, total, and consistent with the playbook's shape.
+[3] **Vladimir Khorikov**, *CSharpFunctionalExtensions* (v3.7.0, March 2026). Cross-listed from [Axiom 14](axiom-14-result.md). The library ships `Map`, `Bind`, and `MapError` on `Result<T, E>` as extension methods; the C# example above mirrors its conventions. Worth reading the source — the definitions are short, total, and consistent with the playbook's shape.
 <https://github.com/vkhorikov/CSharpFunctionalExtensions>
 
 [4] **Rust** `std::result::Result<T, E>` — `map`, `map_err`, `and_then`. The Rust standard library's three combinators are exactly the three this axiom names, with `and_then` standing in for `Bind`. A short, well-documented reference for the operations and their type signatures.

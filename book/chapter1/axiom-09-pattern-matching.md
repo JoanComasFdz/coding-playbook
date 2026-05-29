@@ -1,4 +1,4 @@
-# Axiom 8 — Pattern matching
+# Axiom 9 — Pattern matching
 
 **Pattern matching is a single expression that selects a branch by inspecting the shape of a value, narrows the value's type inside the chosen branch, and binds the parts of the value the branch needs.**
 
@@ -266,7 +266,7 @@ switch (decision)                         // impure dispatch
 
 Same for the `Match` method form: `var result = x.Compute(...); result.Match(...)`, not `x.Compute(...).Match(...)`.
 
-The reason is **visual separation between pure and impure**. The pure call lives on one line; the impure dispatch lives on the next. A reviewer scanning vertically sees the two halves of the [Impureim sandwich](axiom-09-impureheim.md) at a glance — *compute*, then *act* — without parsing an expression. Inlining the call collapses the two halves into one expression and hides the boundary the playbook spends so much effort marking.
+The reason is **visual separation between pure and impure**. The pure call lives on one line; the impure dispatch lives on the next. A reviewer scanning vertically sees the two halves of the [Impureim sandwich](axiom-10-impureheim.md) at a glance — *compute*, then *act* — without parsing an expression. Inlining the call collapses the two halves into one expression and hides the boundary the playbook spends so much effort marking.
 
 Three downstream benefits follow from that visual cue:
 
@@ -339,7 +339,7 @@ Two cases where another option on the trade-off curve fits better:
 
 [1] **Philip Wadler**, *Views: A Way for Pattern Matching to Cohabit with Data Abstraction*, POPL 1987. The foundational paper showing that pattern matching can coexist with information hiding — the matched value's internal representation can stay private while the match still reads its meaningful shape. Modern record and deconstruction patterns in C# and Java are direct descendants of this idea.
 
-[2] **Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides**, *Design Patterns: Elements of Reusable Object-Oriented Software*, Addison-Wesley, 1994. Cross-listed from [Axiom 6](axiom-06-first-class-functions.md) and [Axiom 7](axiom-07-higher-order-functions.md); the *Visitor* chapter remains the canonical reference for case analysis over a closed type hierarchy in an OO language without native pattern matching.
+[2] **Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides**, *Design Patterns: Elements of Reusable Object-Oriented Software*, Addison-Wesley, 1994. Cross-listed from [Axiom 7](axiom-07-first-class-functions.md) and [Axiom 8](axiom-08-higher-order-functions.md); the *Visitor* chapter remains the canonical reference for case analysis over a closed type hierarchy in an OO language without native pattern matching.
 
 [3] **OpenJDK**, *JEP 441: Pattern Matching for switch*, finalised in Java 21 (2023). The canonical reference for Java's pattern-matching syntax, exhaustiveness rules, and interaction with sealed types.
 <https://openjdk.org/jeps/441>

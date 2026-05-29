@@ -1,13 +1,13 @@
-# Axiom 19 — Make illegal states unrepresentable
+# Axiom 20 — Make illegal states unrepresentable
 
-**A thing that is in exactly one of several states should be a *sum* of per-state records, not a *product* of optional fields. Each field lives only on the state where it is meaningful; the states collect under a sealed DU ([Axiom 18](axiom-18-discriminated-unions.md)). A record with *k* nullable flags admits 2ᵏ field combinations and most of them are illegal; the sum admits exactly the legal ones, and the compiler refuses to construct any other. This is [Axiom 15](axiom-15-value-objects.md)'s "make illegal *values* unrepresentable" raised from a single value to the *shape* of a whole record.**
+**A thing that is in exactly one of several states should be a *sum* of per-state records, not a *product* of optional fields. Each field lives only on the state where it is meaningful; the states collect under a sealed DU ([Axiom 19](axiom-19-discriminated-unions.md)). A record with *k* nullable flags admits 2ᵏ field combinations and most of them are illegal; the sum admits exactly the legal ones, and the compiler refuses to construct any other. This is [Axiom 16](axiom-16-value-objects.md)'s "make illegal *values* unrepresentable" raised from a single value to the *shape* of a whole record.**
 
-- Model each state as its own immutable record ([Axiom 1](axiom-01-immutability.md)); gather the records under one sealed parent ([Axiom 18](axiom-18-discriminated-unions.md)).
+- Model each state as its own immutable record ([Axiom 1](axiom-01-immutability.md)); gather the records under one sealed parent ([Axiom 19](axiom-19-discriminated-unions.md)).
 - A field appears only in the variants where it is always present — never as a nullable "set once we reach state X." If it is non-null in `Paid`, it is *absent* from `Pending`, not nullable on a shared record.
-- Consumers branch with exhaustive pattern matching ([Axiom 8](axiom-08-pattern-matching.md)); adding a state breaks every match until it is handled — a compile-time event, not a runtime surprise.
+- Consumers branch with exhaustive pattern matching ([Axiom 9](axiom-09-pattern-matching.md)); adding a state breaks every match until it is handled — a compile-time event, not a runtime surprise.
 - This axiom is **data only** — it shapes how state is *represented*, not how it changes. The behaviour that moves between states comes later in the chapter; getting the representation honest first is what makes that behaviour cheap to add.
 
-[Axiom 15](axiom-15-value-objects.md) made a *single value* honest — `Username.From("")` cannot exist. This axiom makes a *combination* of values honest: a `Paid` bill cannot exist without its payment reference, and a `Pending` bill cannot carry one. [Axiom 18](axiom-18-discriminated-unions.md) gave the mechanism — a sealed type whose variants each carry their own payload — with computation *outcomes* as the motivating example (approved / declined / step-up). This axiom points that same mechanism at the *persistent shape of a domain thing across its lifecycle*. It is the gentlest member of the family and the one reached for most: long before an engineer needs anything heavier, they need to stop modelling a five-state entity as one record with nine nullable fields.
+[Axiom 16](axiom-16-value-objects.md) made a *single value* honest — `Username.From("")` cannot exist. This axiom makes a *combination* of values honest: a `Paid` bill cannot exist without its payment reference, and a `Pending` bill cannot carry one. [Axiom 19](axiom-19-discriminated-unions.md) gave the mechanism — a sealed type whose variants each carry their own payload — with computation *outcomes* as the motivating example (approved / declined / step-up). This axiom points that same mechanism at the *persistent shape of a domain thing across its lifecycle*. It is the gentlest member of the family and the one reached for most: long before an engineer needs anything heavier, they need to stop modelling a five-state entity as one record with nine nullable fields.
 
 The slogan is older than typed FP's adoption of it: a *product* type (a record) represents "A **and** B **and** C — all present at once"; a *sum* type (a DU) represents "A **or** B **or** C — exactly one at a time." A lifecycle is an *or*. Modelling it as a product and then nulling out the fields that do not apply to the current case is using the wrong half of the algebra, and every `if (x != null)` downstream is the interest paid on that mistake.
 
@@ -185,17 +185,17 @@ When a thing occupies one of several states over its lifetime, three shapes recu
 
 3. **A sum of per-state records.** Each state is its own type carrying exactly its fields. The representable set equals the legal set; the discriminator is the variant; the nullable fields are gone. The cost is more named types and repetition of the fields shared across states.
 
-Options 1 and 2 share one disease: the record can hold field combinations the domain forbids, and nothing but discipline keeps them out. Option 3 makes the forbidden combinations unconstructable. The trade is the same one [Axiom 15](axiom-15-value-objects.md) drew for single values — a little more ceremony at the type level, paid back in every consumer that no longer re-validates.
+Options 1 and 2 share one disease: the record can hold field combinations the domain forbids, and nothing but discipline keeps them out. Option 3 makes the forbidden combinations unconstructable. The trade is the same one [Axiom 16](axiom-16-value-objects.md) drew for single values — a little more ceremony at the type level, paid back in every consumer that no longer re-validates.
 
 ---
 
 ## Why
 
-**1. Illegal combinations cannot be constructed.** The 2ᵏ-shape matrix of a *k*-nullable record collapses to the handful of variants the domain actually allows. The bug class "object in an impossible state" stops being expressible, the way [Axiom 15](axiom-15-value-objects.md) made "value that breaks its rule" unconstructable.
+**1. Illegal combinations cannot be constructed.** The 2ᵏ-shape matrix of a *k*-nullable record collapses to the handful of variants the domain actually allows. The bug class "object in an impossible state" stops being expressible, the way [Axiom 16](axiom-16-value-objects.md) made "value that breaks its rule" unconstructable.
 
 **2. Every field is non-null where it appears.** A reader of `Paid` knows `PaymentRef` is present without a guard; a reader of `Pending` knows it is absent without a comment. The `if (x != null)` that defends a conditionally-valid field disappears along with the field's nullability.
 
-**3. New states are a compile-time event.** Because consumers match exhaustively ([Axiom 8](axiom-08-pattern-matching.md)), adding a variant breaks every `switch` that does not yet handle it. The compiler hands you the to-do list; a status enum hands you a silent default branch.
+**3. New states are a compile-time event.** Because consumers match exhaustively ([Axiom 9](axiom-09-pattern-matching.md)), adding a variant breaks every `switch` that does not yet handle it. The compiler hands you the to-do list; a status enum hands you a silent default branch.
 
 **4. It is the groundwork behaviour is built on.** A thing that is provably in exactly one well-formed state is what any later rule for *changing* state gets to assume. Such rules stay cheap precisely because the states are already honest and exhaustive; a bag of nullable fields forces every rule to first re-establish which field combination is even valid before it can act.
 
@@ -205,7 +205,7 @@ Options 1 and 2 share one disease: the record can hold field combinations the do
 
 **Shared fields repeat across variants.** `Id` and `Amount` appear on all six records. The mitigation is to factor the invariant core into its own value — a `BillCore(Id, Amount)` carried by each variant, or an abstract record holding the common fields — at the cost of one more indirection. For two or three shared fields the repetition usually reads more clearly than the extraction; past that, extract.
 
-**Persistence requires materialisation discipline** (the same boundary [Axiom 15](axiom-15-value-objects.md) names for value objects). A row from the database arrives as columns, not as a typed `Paid` or `Pending`. The repository reads a discriminator — a status column, or which columns are non-null — and constructs the right variant; the reverse maps each variant back to a row. Without that step the database punches values into the program as the wrong shape and the guarantee is gone. EF Core models this as a discriminator column on a TPH mapping; jOOQ reads the row and the mapping code switches on the discriminator.
+**Persistence requires materialisation discipline** (the same boundary [Axiom 16](axiom-16-value-objects.md) names for value objects). A row from the database arrives as columns, not as a typed `Paid` or `Pending`. The repository reads a discriminator — a status column, or which columns are non-null — and constructs the right variant; the reverse maps each variant back to a row. Without that step the database punches values into the program as the wrong shape and the guarantee is gone. EF Core models this as a discriminator column on a TPH mapping; jOOQ reads the row and the mapping code switches on the discriminator.
 
 **The number of types grows with the number of states.** Five states is five records plus the parent. The investment is real and proportional to the lifecycle; it pays back in every consumer that stops re-checking the status. When a thing has exactly one state, this is pure overhead — see *When NOT to*.
 
@@ -219,7 +219,7 @@ Options 1 and 2 share one disease: the record can hold field combinations the do
 
 **There is only one state.** A thing with no lifecycle is one record. Splitting it into a single-variant sum is ceremony with no payoff.
 
-**Two states differing by one optional field, no invariant.** When the only difference between states is whether a single field is set, and a null carries no risk — a `nickname` that may or may not be present — an `Option`/`Maybe` ([Axiom 10](axiom-10-maybe.md)) on one record is lighter than two variants. Promote to a sum when *more than one* field co-varies with the state, or when the wrong combination is harmful.
+**Two states differing by one optional field, no invariant.** When the only difference between states is whether a single field is set, and a null carries no risk — a `nickname` that may or may not be present — an `Option`/`Maybe` ([Axiom 11](axiom-11-maybe.md)) on one record is lighter than two variants. Promote to a sum when *more than one* field co-varies with the state, or when the wrong combination is harmful.
 
 **What you actually need is behaviour, not shape.** If the pain is "the rules for moving between states are scattered and untestable," then reshaping the data is only half the job; the other half is the *behaviour* that drives the moves, which a later axiom covers (and which starts from exactly this shape). Reach for this axiom when the problem is representation; when it is behaviour, this is the necessary first step, not the whole answer.
 
@@ -230,7 +230,7 @@ Options 1 and 2 share one disease: the record can hold field combinations the do
 [1] **Scott Wlaschin**, *Designing with Types: Making Illegal States Unrepresentable*, fsharpforfunandprofit.com, 2013. The canonical modern treatment in a typed-FP idiom that ports directly to C# records and Java sealed interfaces — replacing a contact record's nullable email/address fields with a sum of the combinations the domain actually allows.
 <https://fsharpforfunandprofit.com/posts/designing-with-types-making-illegal-states-unrepresentable/>
 
-[2] **Yaron Minsky**, *Effective ML*, Jane Street, 2010. The "make illegal states unrepresentable" slogan. Cross-listed with [Axiom 5](axiom-05-honest-total-signatures.md), [Axiom 15](axiom-15-value-objects.md), and [Axiom 18](axiom-18-discriminated-unions.md): the principle applied to a single value is [Axiom 15](axiom-15-value-objects.md), to a record's *shape* is this axiom, and to a computation's outcomes is [Axiom 18](axiom-18-discriminated-unions.md); it recurs again later in the chapter for other facets.
+[2] **Yaron Minsky**, *Effective ML*, Jane Street, 2010. The "make illegal states unrepresentable" slogan. Cross-listed with [Axiom 5](axiom-05-honest-total-signatures.md), [Axiom 16](axiom-16-value-objects.md), and [Axiom 19](axiom-19-discriminated-unions.md): the principle applied to a single value is [Axiom 16](axiom-16-value-objects.md), to a record's *shape* is this axiom, and to a computation's outcomes is [Axiom 19](axiom-19-discriminated-unions.md); it recurs again later in the chapter for other facets.
 
 [3] **Alexis King**, *Parse, Don't Validate*, lexi-lambda.github.io, 2019. The adjacent discipline: push validity into the type at the boundary so the interior never re-checks it. A sum of per-state records is "parse, don't validate" applied to a thing's *state* — parse the row into the variant once, and every consumer downstream trusts the shape.
 <https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/>
