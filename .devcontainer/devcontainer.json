@@ -1,6 +1,9 @@
 {
   "name": "coding-playbook",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24",
   "remoteUser": "node",
+  "mounts": [
+    "source=claude-code-config-${devcontainerId},target=/home/node/.claude,type=volume"
+  ],
   "postCreateCommand": "bash .devcontainer/postCreateCommand.sh"
 }
