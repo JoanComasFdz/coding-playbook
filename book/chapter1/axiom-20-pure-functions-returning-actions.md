@@ -1,4 +1,4 @@
-# Axiom 19 — Pure functions returning actions
+# Axiom 20 — Pure functions returning actions
 
 **A pure function decides *what should happen* and returns a discriminated union of actions; the impure shell pattern-matches on the returned action and executes the side effect it names — the sandwich from [Axiom 9](axiom-09-impureheim.md) delivered in full.**
 

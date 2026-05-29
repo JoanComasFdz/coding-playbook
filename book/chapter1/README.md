@@ -82,24 +82,28 @@ The code examples they provide are for educational purposes and are not final, p
 
 **18. Discriminated unions** *(3+ outcomes)* — consumed via the pattern matching from 8; the reveal that Either and Result were DUs all along.
 
-*↳ Now the pure core can return a rich set of outcomes — model them as actions.*
+*↳ The same sum-type machinery models not just a computation's outcomes but the persistent shape of a thing across its lifecycle.*
 
-**19. Pure functions returning actions** — the pure core decides, the impure shell executes (delivering the sandwich from 9).
+**19. Make illegal states unrepresentable** — model a thing that is in one of several states as a sum of per-state records, not a product of nullable fields; each field lives only on the state where it is valid. The data-shape sibling of value objects (15) and the base the state machine (21) and typestate (24) escalate from.
+
+*↳ That was data at rest; when the pure core decides what should *happen*, model its output the same way — as a DU of actions.*
+
+**20. Pure functions returning actions** — the pure core decides, the impure shell executes (delivering the sandwich from 9).
 
 *↳ Generalize "decide an action" into "decide the next state."*
 
-**20. State machines** — centralized state, transitions as DUs, decisions as pure functions returning actions. Everything composes.
+**21. State machines** — centralized state, transitions as DUs, decisions as pure functions returning actions. Everything composes.
 
 *↳ The shell was one-shot — load, decide, persist, return. Many programs aren't one-shot. Before we can describe what their longer-lived shells *do*, we need to name what they *hold*.*
 
-**21. Session Context** — per-session mutable state held by the shell: accumulators, signals, flags, callbacks. Distinct from FSM state and from globals.
+**22. Session Context** — per-session mutable state held by the shell: accumulators, signals, flags, callbacks. Distinct from FSM state and from globals.
 
 *↳ With a place to keep the session's working memory, the shell shape can grow beyond one-shot — into a loop that drives the FSM forward over the whole session.*
 
-**22. Stateful Shell** — the long-running shell shape: read current state, dispatch the effect that state demands, await an environmental event, call `Transition`, repeat. *(Lineage: the language-runtime fetch-decode-execute *Interpreter Loop*.)*
+**23. Stateful Shell** — the long-running shell shape: read current state, dispatch the effect that state demands, await an environmental event, call `Transition`, repeat. *(Lineage: the language-runtime fetch-decode-execute *Interpreter Loop*.)*
 
-*↳ Twenty-two axioms in, the structural toolkit is complete — entities, decisions, shells, the session-scoped state they hold, and the long-lived resources the shell carries between calls. One niche escalation closes the chapter: when the legal *order* of calls is itself part of the contract, lift each state into its own type so the wrong-order call cannot be written.*
+*↳ Twenty-three axioms in, the structural toolkit is complete — entities, decisions, shells, the session-scoped state they hold, and the long-lived resources the shell carries between calls. One niche escalation closes the chapter: when the legal *order* of calls is itself part of the contract, lift each state into its own type so the wrong-order call cannot be written.*
 
-**23. Typestate** — encode call order in the type system; each state is its own type, transitions return the next type, and operations valid only in one state live only on that state's type. The narrow-use type-level counterpart to the value-level state machines from 20.
+**24. Typestate** — encode call order in the type system; each state is its own type, transitions return the next type, and operations valid only in one state live only on that state's type. The narrow-use type-level counterpart to the value-level state machines from 21.
 
-*Note: most bridges are strict dependencies — the next chapter literally needs the previous one. Two (9 and 19) are intentionally motivational rather than strict: Impureheim is introduced early as a "north star" to give the tool-building that follows a clear purpose, and it pays off at 19. Axiom 23 is the chapter's one out-of-arc item — a niche tool placed at the end so it does not interrupt the constantly-used material that precedes it.*
+*Note: most bridges are strict dependencies — the next chapter literally needs the previous one. Two (9 and 20) are intentionally motivational rather than strict: Impureheim is introduced early as a "north star" to give the tool-building that follows a clear purpose, and it pays off at 20. Axiom 24 is the chapter's one out-of-arc item — a niche tool placed at the end so it does not interrupt the constantly-used material that precedes it.*
