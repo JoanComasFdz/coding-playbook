@@ -398,9 +398,24 @@ Mostly a decomposition criterion at architectural altitude, hence out of scope. 
 
 ## Monoid / Semigroup — [SKIP — vocabulary only]
 
-An associative `combine` (plus an identity element for a monoid). `Aggregate`/`reduce` *is* a monoid fold; associativity is what licenses parallel reduction.
+**What:** a type + an associative binary `combine` is a **semigroup**; give it an **identity** (empty/seed) element and it's a **monoid**. Both laws just name things you already use:
 
-Worth at most one paragraph of vocabulary near any aggregation/fold material — not a chapter; beyond that it's category-theory tourism.
+| type | `combine` | identity |
+|---|---|---|
+| `int` | `+` | `0` |
+| `string` | concat | `""` |
+| `List<T>` | append | `[]` |
+| `bool` | `&&` | `true` |
+
+- **Associativity** lets a fold reassociate — re-group, chunk, or parallelise the work.
+- The **identity** is the seed of `Aggregate(seed, …)` and the honest answer for an empty input — a *seedless* `Aggregate` throws on empty, the partial version.
+
+**Verdict:** declined as vocabulary. The substance is already taught, un-named, in two axioms, and naming it buys nothing in C#/Java (no `Monoid` typeclass to dispatch on); beyond one paragraph it's category-theory tourism.
+
+- [Axiom 9 — Higher-order functions](chapter1/axiom-09-higher-order-functions.md) — `Aggregate`/`reduce` (Hughes' `foldr`) *is* the monoid fold.
+- [Axiom 19 — Validation](chapter1/axiom-19-validation.md) — merging `ValidationError` lists *is* the list-concatenation monoid; that associativity is the un-named reason `Combine` is order-free and arity-scales.
+
+Worth at most one paragraph of vocabulary, as an aside near that fold/aggregation material — not a chapter.
 
 ---
 
