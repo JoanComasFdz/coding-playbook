@@ -8,149 +8,151 @@ Joan Comas, Senior Software Architect — since June 2024
 
 ---
 
-## Immutability
+## Immutability — [✅ AXIOMATIZED]
 
-✅ **Axiomatized** → [Axiom 1 — Immutability](chapter1/axiom-01-immutability.md)
-
----
-
-## Maybe
-
-✅ **Axiomatized** → [Axiom 12 — Maybe](chapter1/axiom-12-maybe.md)
+- [Axiom 1 — Immutability](chapter1/axiom-01-immutability.md)
 
 ---
 
-## Either
+## Maybe — [✅ AXIOMATIZED]
 
-✅ **Axiomatized** → [Axiom 13 — Either](chapter1/axiom-13-either.md)
-
----
-
-## Result pattern
-
-✅ **Axiomatized** → [Axiom 15 — Result](chapter1/axiom-15-result.md)
+- [Axiom 12 — Maybe](chapter1/axiom-12-maybe.md)
 
 ---
 
-## Discriminated unions
+## Either — [✅ AXIOMATIZED]
 
-✅ **Axiomatized** → [Axiom 20 — Discriminated unions](chapter1/axiom-20-discriminated-unions.md)
-
----
-
-## Pattern matching
-
-✅ **Axiomatized** → [Axiom 10 — Pattern matching](chapter1/axiom-10-pattern-matching.md)
+- [Axiom 13 — Either](chapter1/axiom-13-either.md)
 
 ---
 
-## Side effects
+## Result pattern — [✅ AXIOMATIZED]
 
-✅ **Axiomatized** → [Axiom 2 — Side effects](chapter1/axiom-02-side-effects.md)
-
----
-
-## Impure functions
-
-✅ **Axiomatized** → [Axiom 3 — Impure functions](chapter1/axiom-03-impure-functions.md)
+- [Axiom 15 — Result](chapter1/axiom-15-result.md)
 
 ---
 
-## Pure functions
+## Discriminated unions — [✅ AXIOMATIZED]
 
-✅ **Axiomatized** → [Axiom 4 — Pure functions](chapter1/axiom-04-pure-functions.md)
-
----
-
-## First-class functions
-
-✅ **Axiomatized** → [Axiom 8 — First-class functions](chapter1/axiom-08-first-class-functions.md)
+- [Axiom 20 — Discriminated unions](chapter1/axiom-20-discriminated-unions.md)
 
 ---
 
-## Higher-order functions
+## Pattern matching — [✅ AXIOMATIZED]
 
-✅ **Axiomatized** → [Axiom 9 — Higher-order functions](chapter1/axiom-09-higher-order-functions.md)
-
----
-
-## Impureheim: the impure–pure–impure sandwich
-
-✅ **Axiomatized** → [Axiom 11 — Impureheim](chapter1/axiom-11-impureheim.md)
+- [Axiom 10 — Pattern matching](chapter1/axiom-10-pattern-matching.md)
 
 ---
 
-## Value Objects
+## Side effects — [✅ AXIOMATIZED]
 
-✅ **Axiomatized** → [Axiom 17 — Value objects](chapter1/axiom-17-value-objects.md)
-
----
-
-## State Machines
-
-✅ **Axiomatized** → [Axiom 23 — State machines](chapter1/axiom-23-state-machines.md)
+- [Axiom 2 — Side effects](chapter1/axiom-02-side-effects.md)
 
 ---
 
-## Pure functions return actions
+## Impure functions — [✅ AXIOMATIZED]
 
-✅ **Axiomatized** → [Axiom 22 — Pure functions returning actions](chapter1/axiom-22-pure-functions-returning-actions.md)
-
----
-
-## Session Context
-
-✅ **Axiomatized** → [Axiom 24 — Session Context](chapter1/axiom-24-session-context.md)
+- [Axiom 3 — Impure functions](chapter1/axiom-03-impure-functions.md)
 
 ---
 
-## Stateful Shell
+## Pure functions — [✅ AXIOMATIZED]
 
-✅ **Axiomatized** → [Axiom 25 — Stateful Shell](chapter1/axiom-25-stateful-shell.md)
-
----
-
-## Encode ordering in types (temporal coupling)
-
-✅ **Axiomatized** → [Axiom 26 — Typestate](chapter1/axiom-26-typestate.md)
+- [Axiom 4 — Pure functions](chapter1/axiom-04-pure-functions.md)
 
 ---
 
-## Connascence
+## First-class functions — [✅ AXIOMATIZED]
 
-✅ **Axiomatized** → [Axiom 7 — Connascence](chapter1/axiom-07-connascence.md)
-
-The chapter's second evaluative lens, set beside Cohesion. This resolves the top-pick open candidate in the research sweep below: connascence landed as an inline lens-axiom at position 7, not a separate framing chapter. Its taxonomy keeps Page-Jones's static/dynamic split, but the cut the playbook optimises against is *compiler-enforced vs. convention-carried*; the contested Position-vs-Algorithm strength ordering is flagged rather than asserted.
+- [Axiom 8 — First-class functions](chapter1/axiom-08-first-class-functions.md)
 
 ---
 
-## Closures
+## Higher-order functions — [✅ AXIOMATIZED]
 
-🔁 **Folded** → [Axiom 8 — First-class functions](chapter1/axiom-08-first-class-functions.md) (Why #3, "Closures carry state along with the function").
-
----
-
-## Code reusability
-
-🔁 **Folded** → [Axiom 6 — Cohesion](chapter1/axiom-06-cohesion.md)
+- [Axiom 9 — Higher-order functions](chapter1/axiom-09-higher-order-functions.md)
 
 ---
 
-## Code locality
+## Impureheim: the impure–pure–impure sandwich — [✅ AXIOMATIZED]
 
-🔁 **Folded** → [Axiom 6 — Cohesion](chapter1/axiom-06-cohesion.md)
-
----
-
-## No flag arguments
-
-🔁 **Folded** → [Axiom 6 — Cohesion](chapter1/axiom-06-cohesion.md)
+- [Axiom 11 — Impureheim](chapter1/axiom-11-impureheim.md)
 
 ---
 
-## Caches
+## Value Objects — [✅ AXIOMATIZED]
 
-❌ **Discarded** — too niche to be an axiom. (If ever revisited: explore the FP take + the correctness of the decorator pattern, especially in OOP.)
+- [Axiom 17 — Value objects](chapter1/axiom-17-value-objects.md)
+
+---
+
+## State Machines — [✅ AXIOMATIZED]
+
+- [Axiom 23 — State machines](chapter1/axiom-23-state-machines.md)
+
+---
+
+## Pure functions return actions — [✅ AXIOMATIZED]
+
+- [Axiom 22 — Pure functions returning actions](chapter1/axiom-22-pure-functions-returning-actions.md)
+
+---
+
+## Session Context — [✅ AXIOMATIZED]
+
+- [Axiom 24 — Session Context](chapter1/axiom-24-session-context.md)
+
+---
+
+## Stateful Shell — [✅ AXIOMATIZED]
+
+- [Axiom 25 — Stateful Shell](chapter1/axiom-25-stateful-shell.md)
+
+---
+
+## Encode ordering in types (temporal coupling) — [✅ AXIOMATIZED]
+
+- [Axiom 26 — Typestate](chapter1/axiom-26-typestate.md) — ordering encoded in the type, so an out-of-sequence call won't compile.
+
+---
+
+## Connascence — [✅ AXIOMATIZED]
+
+A coupling taxonomy; the chapter's second evaluative lens, set beside [Cohesion](chapter1/axiom-06-cohesion.md).
+
+- [Axiom 7 — Connascence](chapter1/axiom-07-connascence.md) — keeps Page-Jones's static/dynamic split, but the cut the playbook optimises against is *compiler-enforced vs. convention-carried*; the contested Position-vs-Algorithm strength ordering is flagged, not asserted.
+
+---
+
+## Closures — [🔁 FOLDED]
+
+- [Axiom 8 — First-class functions](chapter1/axiom-08-first-class-functions.md) — Why #3: "Closures carry state along with the function."
+
+---
+
+## Code reusability — [🔁 FOLDED]
+
+- [Axiom 6 — Cohesion](chapter1/axiom-06-cohesion.md) — code is shared only when it is genuinely one concept with one reason to change (e.g. money formatting), never on surface similarity; the rule of three holds the line.
+
+---
+
+## Code locality — [🔁 FOLDED]
+
+- [Axiom 6 — Cohesion](chapter1/axiom-06-cohesion.md) — the *When NOT to* locality bullet: cohesion read at reading-distance — keep statements that read as one thought together rather than shredding them into one-line helpers.
+
+---
+
+## No flag arguments — [🔁 FOLDED]
+
+- [Axiom 6 — Cohesion](chapter1/axiom-06-cohesion.md) — a `bool`/enum that switches a function's body is the tell for two reasons to change living in one place.
+
+---
+
+## Caches — [❌ DISCARDED]
+
+Memoising results behind a stateful store. Too niche to be an axiom.
+
+If ever revisited: explore the FP take plus the correctness of the decorator pattern, especially in OOP.
 
 ---
 
@@ -219,15 +221,19 @@ Should this be an axiom? an early one? a later one?
 
 ## Research sweep — 2026-05-29: external concepts not yet covered
 
-🔍 Everything in this section is **Open**. A web + literature sweep against the current axioms surfaced the candidates below; the `[TAG]` after each title is the *recommended* disposition, not a decision yet — dig deeper, then axiomatize / fold / discard.
+A web + literature sweep against the current axioms surfaced the candidates below. Many have since been resolved — ✅ **axiomatized** or 🔁 **folded** — or set aside (skipped); the rest still carry a `[TAG]` recommending a disposition not yet decided.
 
 **Verdict tags:** **[AXIOM?]** possible standalone axiom · **[FOLD]** fold into an existing axiom as a named hook / "why" · **[CONTRAST]** trade-off / non-dogmatism material · **[SKIP]** too niche, or already covered under another name.
 
-Headline: most famous "principles" I hadn't named (SOLID, CUPID, CQS, Tell-Don't-Ask, Demeter, coupling/cohesion) are *already yours under better names* or are contrast pieces. The genuinely new territory is narrow: **connascence** (a meta-lens) and **"define errors out of existence"** (a missing rung below `Result`).
+Headline: most famous "principles" I hadn't named (SOLID, CUPID, CQS, Tell-Don't-Ask, Demeter, coupling/cohesion) are *already mine under better names* or are contrast pieces. The genuinely new territory is narrow: **connascence** (a meta-lens, now Axiom 7) and **"define errors out of existence"** (a still-open rung below `Result`).
 
 ---
 
-### Connascence (Meilir Page-Jones) — [✅ AXIOMATIZED → [Axiom 7](chapter1/axiom-07-connascence.md)]
+### Connascence (Meilir Page-Jones) — [✅ AXIOMATIZED]
+
+The sweep's top pick; full entry under **Connascence** earlier in this registry.
+
+- [Axiom 7 — Connascence](chapter1/axiom-07-connascence.md) — the chapter's second evaluative lens.
 
 ---
 
@@ -253,41 +259,69 @@ Headline: most famous "principles" I hadn't named (SOLID, CUPID, CQS, Tell-Don't
 
 ---
 
-### Boolean blindness (Licata / Harper; De Goes) — [🔁 FOLDED → coined in [Axiom 5](chapter1/axiom-05-honest-total-signatures.md); named across 6, 17, 20]
+### Boolean blindness (Licata / Harper; De Goes) — [🔁 FOLDED]
+
+A raw `bool` (or untyped flag) throws away the meaning of *what* is true — at the call site, `true` of what?
+
+- [Axiom 5 — Honest/total signatures](chapter1/axiom-05-honest-total-signatures.md) — coined here: an honest signature replaces the blind boolean with a type that names the outcome.
+- [Axiom 6 — Cohesion](chapter1/axiom-06-cohesion.md) — named: a `bool` that switches a body is the boolean-blind call site *and* the two-reasons-to-change tell.
+- [Axiom 17 — Value objects](chapter1/axiom-17-value-objects.md) — named: a meaningful type stands in place of a bare flag.
+- [Axiom 20 — Discriminated unions](chapter1/axiom-20-discriminated-unions.md) — named: a DU names each case instead of encoding it as a boolean.
 
 ---
 
-### Algebraic Data Types — the umbrella + state-counting — [🔁 FOLDED → [Axiom 21](chapter1/axiom-21-illegal-states.md); named in [1](chapter1/axiom-01-immutability.md) & [20](chapter1/axiom-20-discriminated-unions.md)]
+### Algebraic Data Types — the umbrella + state-counting — [🔁 FOLDED]
+
+Sum types (one-of) and product types (all-of); a type's reachable states = the cases summed, the fields multiplied. Counting them is the tool for making illegal states unrepresentable.
+
+- [Axiom 21 — Make illegal states unrepresentable](chapter1/axiom-21-illegal-states.md) — the home: state-counting drives the modelling.
+- [Axiom 1 — Immutability](chapter1/axiom-01-immutability.md) — named: records are product types.
+- [Axiom 20 — Discriminated unions](chapter1/axiom-20-discriminated-unions.md) — named: DUs are sum types.
 
 ---
 
-### Design by Contract (Meyer) — [🔁 FOLDED → [Axiom 17](chapter1/axiom-17-value-objects.md); postconditions via [5](chapter1/axiom-05-honest-total-signatures.md), preconditions-as-sequence via [26](chapter1/axiom-26-typestate.md)]
+### Design by Contract (Meyer) — [🔁 FOLDED]
+
+Operations carry preconditions, postconditions, and invariants as part of their contract.
+
+- [Axiom 17 — Value objects](chapter1/axiom-17-value-objects.md) — the home: a smart constructor enforces the type's invariant once, at construction.
+- [Axiom 5 — Honest/total signatures](chapter1/axiom-05-honest-total-signatures.md) — postconditions: an honest, total signature *is* the postcondition, checkable by the compiler.
+- [Axiom 26 — Typestate](chapter1/axiom-26-typestate.md) — preconditions-as-sequence: ordering preconditions encoded in the type.
 
 ---
 
-### Fail-fast on bugs vs. return-values for expected failures — [🔁 FOLDED → [Axiom 15](chapter1/axiom-15-result.md)]
+### Fail-fast on bugs vs. return-values for expected failures — [🔁 FOLDED]
 
-The distinction was already explicit in Axiom 15 (the "what counts as an error?" heuristics and the When-NOT-to exception bullets); this fold only added the *fail-fast* name and the offensive-programming lineage.
+Crash immediately on a programmer error (a bug); return a value for an *expected* failure.
 
-**`assert` half deferred — not for now.** The dev-time `assert` / `Debug.Assert` mechanism for catching contract violations at their source was deliberately left out: in practice I've never reached for it or seen it used. Revisit only if it earns its keep.
+- [Axiom 15 — Result](chapter1/axiom-15-result.md) — the "what counts as an error?" heuristics and the *When NOT to* exception bullets draw the line; it carries the *fail-fast* name and the offensive-programming lineage.
+
+**Not carried:** the dev-time `assert` / `Debug.Assert` mechanism for catching contract violations at their source — left out because in practice I've never reached for it. Revisit only if it earns its keep.
 
 **Source:** James Shore, *Fail Fast* (IEEE Software, 2004); offensive programming (lore).
 
 ---
 
-### DRY — the real (knowledge) definition — [🔁 FOLDED → [Axiom 6](chapter1/axiom-06-cohesion.md)]
+### DRY — the real (knowledge) definition — [🔁 FOLDED]
 
-Axiom 6 already corrected the *misreading* (dedupe-on-sight) via reason-to-change; this fold added the missing half — naming DRY's original *knowledge, not code text* definition (Hunt & Thomas) and connecting it to reason-to-change as that rule made operational.
+Don't Repeat Yourself governs *knowledge*, not code text: one authoritative home per piece of knowledge.
+
+- [Axiom 6 — Cohesion](chapter1/axiom-06-cohesion.md) — reason-to-change *is* DRY made operational; it names Hunt & Thomas's original knowledge definition (ref [5] there) and corrects the dedupe-on-sight misreading.
+
+**Source:** Andrew Hunt & David Thomas, *The Pragmatic Programmer* (1999).
 
 ---
 
-### SLAP — single level of abstraction per function — [🔁 FOLDED → [Axiom 6](chapter1/axiom-06-cohesion.md)]
+### SLAP — single level of abstraction per function — [🔁 FOLDED]
 
-SLAP bundles two claims the chapter already states more sharply, plus one residue it declines. Its "each function does one job" half *is* [Cohesion](chapter1/axiom-06-cohesion.md) — and the principle's own canonical reference (Principles Wiki) falls back on cohesion to explain when SLAP goes wrong. Its "read the body as a paragraph of same-level steps" half is a *byproduct* of [Impureheim](chapter1/axiom-11-impureheim.md)'s gather→decide→act step-down, not a separate law. The only standalone residue — "match every statement to one altitude" — rests on a "level of abstraction" that is **nowhere defined**, not even by the principle's own references; it is precisely the undefined vibe-metric the playbook replaces with checkable ones (reason-to-change, honest signatures). Applied mechanically it produces *extract-till-you-drop*: a swarm of one-line helpers the reader must mentally re-inline — the "mental inlining" failure already guarded by [Axiom 6](chapter1/axiom-06-cohesion.md)'s locality bullet, and the deep-vs-shallow-modules tension logged above in this sweep.
+Single Level of Abstraction Per function. Both useful halves already live elsewhere; the only standalone residue rests on an undefined "level of abstraction" the playbook declines.
 
-This fold added a one-line reading-smell kernel to Axiom 6's *When NOT to*: a body that forces mental inlining wants a named extraction — extract when the detail is a concept with its own reason to change, not to hit an altitude quota.
+- [Axiom 6 — Cohesion](chapter1/axiom-06-cohesion.md) — the "each function does one job" half *is* cohesion; its *When NOT to* carries the reading-smell kernel: a body that forces mental inlining wants a *named* extraction — extract when the detail is a concept with its own reason to change, not to hit an altitude quota.
+- [Axiom 11 — Impureheim](chapter1/axiom-11-impureheim.md) — the "read the body as a paragraph of same-level steps" half is a byproduct of the gather→decide→act step-down, not a separate law.
 
-**Lineage:** Kent Beck's *Composed Method* (*Smalltalk Best Practice Patterns*, 1997) is the root; the acronym SLAP is credited to Glenn Vanderburg and popularized by Neal Ford, *The Productive Programmer* (2008, ch. 13 "Composed Method and SLAP"); Robert C. Martin restated it as the *Stepdown Rule* in *Clean Code* (2009). Over-application critiqued by John Ousterhout, *A Philosophy of Software Design* (2018, deep vs. shallow modules), and the Christin Gorman vs. Robert C. Martin "extract till you drop" debate.
+**Why no axiom of its own** — the residue ("match every statement to one altitude") rests on a "level of abstraction" that nothing — not even SLAP's own references — defines; applied mechanically it yields *extract-till-you-drop*, the mental-inlining smell [Axiom 6](chapter1/axiom-06-cohesion.md) already guards (and the deep-vs-shallow-modules tension logged above in this sweep).
+
+**Source:** Kent Beck, *Composed Method* (*Smalltalk Best Practice Patterns*, 1997); acronym credited to Glenn Vanderburg, popularized by Neal Ford, *The Productive Programmer* (2008); restated as the *Stepdown Rule* by Robert C. Martin, *Clean Code* (2009); over-application critiqued by John Ousterhout, *A Philosophy of Software Design* (2018), and the Christin Gorman vs. Robert C. Martin "extract till you drop" debate.
 
 ---
 
@@ -301,21 +335,27 @@ This fold added a one-line reading-smell kernel to Axiom 6's *When NOT to*: a bo
 
 ---
 
-### Postel's Law vs. parse-don't-validate (the tension) — [🔁 FOLDED → [Axiom 17](chapter1/axiom-17-value-objects.md), "Postel's Law, reconciled" aside in the *Why*]
+### Postel's Law vs. parse-don't-validate — [🔁 FOLDED]
 
-The two only *look* opposed. Postel's *Robustness Principle* — *"be conservative in what you do, be liberal in what you accept"* (RFC 760, 1980) — governs **surface form**; parse-don't-validate governs **meaning** crossing the boundary. The synthesis is *lenient lexer, strict parser*: a smart constructor may be generous about the forms it accepts but must emit exactly one canonical value or a `Failure`, with the leniency confined to that step. Far from a rival, the smart constructor is the **cure** for Postel's harmful form — the IETF itself has since recanted the principle (Thomson & Schinazi, *Maintaining Robust Protocols*, RFC 9413, 2023), because liberal acceptance *without* normalisation is exactly the spec-drift / ossification a boundary parse prevents.
+The Robustness Principle — *"be conservative in what you do, be liberal in what you accept."* Only *looks* opposed to parse-don't-validate: Postel governs surface *form*, parse-don't-validate governs *meaning* crossing the boundary.
+
+- [Axiom 17 — Value objects](chapter1/axiom-17-value-objects.md) — the "Postel's Law, reconciled" aside in the *Why*: the synthesis is *lenient lexer, strict parser* — a smart constructor may accept generous forms but must emit exactly one canonical value or a `Failure`, the leniency confined to that step. The smart constructor is the *cure* for Postel's harmful form, not its rival.
+
+**Note:** the IETF has since recanted the principle (RFC 9413) — liberal acceptance *without* normalisation is exactly the spec-drift a boundary parse prevents.
 
 **Source:** RFC 760 / RFC 793 (Postel); RFC 9413 (Thomson & Schinazi, 2023); Alexis King, *Parse, Don't Validate* (2019).
 
 ---
 
-### Command–Query Separation (CQS) — [🔁 FOLDED → [Axiom 11](chapter1/axiom-11-impureheim.md); query half named in [Axiom 4](chapter1/axiom-04-pure-functions.md), command half in [Axiom 22](chapter1/axiom-22-pure-functions-returning-actions.md)]
+### Command–Query Separation (CQS) — [🔁 FOLDED]
 
-**What:** a method returns a value (query) *xor* changes state (command), never both. The OO ancestor of the pure/impure split; purity is strictly stronger (a CQS "query" may still read mutable globals).
+A method returns a value (query) *xor* changes state (command), never both — the OO ancestor of the pure/impure split. Purity is strictly stronger: a CQS "query" may still read mutable globals.
 
-**What the fold added.** CQS was covered but unnamed — out of step with how the other famous-but-covered principles landed (DRY, SLAP, Design by Contract all got named at their landing spot). This fold names it in three places, each at a distinct angle: [Axiom 11](chapter1/axiom-11-impureheim.md) is the primary home — Impureheim *is* CQS promoted from the method to the unit of work (gather = query, act = command, the seam a layer boundary rather than a naming convention), with Meyer added as reference [3] there. [Axiom 4](chapter1/axiom-04-pure-functions.md) carries the query half: purity outruns it, forbidding the *read* of mutable state that a CQS query still permits. [Axiom 22](chapter1/axiom-22-pure-functions-returning-actions.md) carries the command half: the would-be command splits into a pure `Decide` (returns a value) and an impure execute (returns nothing).
+- [Axiom 11 — Impureheim](chapter1/axiom-11-impureheim.md) — the primary home: Impureheim *is* CQS promoted from the method to the unit of work (gather = query, act = command), the seam a layer boundary rather than a naming convention. Meyer is ref [3].
+- [Axiom 4 — Pure functions](chapter1/axiom-04-pure-functions.md) — the query half: purity outruns it, forbidding even the *read* of mutable state a CQS query still permits.
+- [Axiom 22 — Pure functions returning actions](chapter1/axiom-22-pure-functions-returning-actions.md) — the command half: the would-be command splits into a pure `Decide` (returns a value) and an impure execute (returns nothing).
 
-**CQRS stays out of the axioms.** Only the registry records the CQS (code) vs CQRS (architecture, out of scope) distinction — see the [CQRS](#cqrs) section. No axiom mentions CQRS.
+**Boundary:** CQRS is system topology and stays out of the axioms; only the registry records the CQS (code) vs. CQRS (architecture) line — see [CQRS](#cqrs-architecture---out-of-scope).
 
 **Source:** Bertrand Meyer, *Object-Oriented Software Construction* (2nd ed., 1997).
 
@@ -339,19 +379,19 @@ The OO maxim: don't pull an object's data out to decide for it — push the deci
 
 ### Law of Demeter — [SKIP — narrow]
 
-**What:** "one dot" / don't navigate object graphs. Largely *designed away* by value-passing pure cores (a core that receives plain values has no strangers to talk to).
+"One dot" — don't navigate object graphs. Largely *designed away* by value-passing pure cores: a core that receives plain values has no strangers to talk to.
 
-**Verdict:** mention as a coupling heuristic at most; subsumed by connascence (a train-wreck = bad-locality connascence). Lowest priority.
+- [Axiom 7 — Connascence](chapter1/axiom-07-connascence.md) — subsumes it; a train-wreck is bad-locality connascence. Worth a mention as a coupling heuristic at most.
 
-**Source:** Ian Holland, Demeter Project, 1987.
+**Source:** Ian Holland, Demeter Project (1987).
 
 ---
 
-### Coupling & Cohesion (Constantine / Yourdon) — [SKIP / historical root]
+### Coupling & Cohesion (Constantine / Yourdon) — [SKIP — historical root]
 
-**What:** the original "low coupling, high cohesion". Coupling ladder (content/common/external/control/stamp/data); cohesion ladder (coincidental→functional). Control coupling = flag args; common coupling = shared mutable state.
+The original "low coupling, high cohesion": a coupling ladder (content/common/external/control/stamp/data) and a cohesion ladder (coincidental→functional). Control coupling = flag args; common coupling = shared mutable state.
 
-**Verdict:** historical bedrock, subsumed by connascence's finer grain. Cited in [Axiom 7 — Connascence](chapter1/axiom-07-connascence.md) (Structured Design = ref [5]).
+- [Axiom 7 — Connascence](chapter1/axiom-07-connascence.md) — the historical bedrock connascence builds on, subsumed by its finer grain; *Structured Design* is ref [5] there.
 
 **Source:** Stevens, Myers & Constantine, "Structured Design" (IBM Systems Journal, 1974).
 
@@ -359,9 +399,9 @@ The OO maxim: don't pull an object's data out to decide for it — push the deci
 
 ### Information Hiding (Parnas) — [SKIP — mostly architecture]
 
-**What:** a module hides a *secret* = a design decision likely to change. Root of encapsulation and of Ousterhout's deep modules.
+A module hides a *secret* — a design decision likely to change. The root of encapsulation and of Ousterhout's deep modules.
 
-**Verdict:** mostly out of scope (it's a decomposition criterion = architectural altitude). Cite once as the root of "the impure shell hides the stateful secret."
+Mostly a decomposition criterion at architectural altitude, hence out of scope. The one in-scope echo: the impure shell hides the stateful *secret* — see [Axiom 25 — Stateful Shell](chapter1/axiom-25-stateful-shell.md).
 
 **Source:** D.L. Parnas, "On the Criteria To Be Used in Decomposing Systems into Modules" (CACM, 1972).
 
@@ -369,54 +409,58 @@ The OO maxim: don't pull an object's data out to decide for it — push the deci
 
 ### Monoid / Semigroup — [SKIP — vocabulary only]
 
-**What:** associative `combine` (+ identity element). `Aggregate`/`reduce` *is* a monoid fold; associativity is what licenses parallel reduction.
+An associative `combine` (plus an identity element for a monoid). `Aggregate`/`reduce` *is* a monoid fold; associativity is what licenses parallel reduction.
 
-**Verdict:** one paragraph of vocabulary near any aggregation/fold material, at most. Not a chapter — beyond that it's category-theory tourism.
+Worth at most one paragraph of vocabulary near any aggregation/fold material — not a chapter; beyond that it's category-theory tourism.
 
 ---
 
 ### Catamorphism / fold — [SKIP — jargon]
 
-**What:** the exhaustive `Match` on a DU *is* that DU's catamorphism (the total consumer of a sum type).
+The exhaustive `Match` on a DU *is* that DU's catamorphism — the total consumer of a sum type.
 
-**Verdict:** too jargon-heavy to name; the totality point is already carried by pattern-matching + honest-signatures. One-line aside for the curious at most.
+Too jargon-heavy to name; the totality point is already carried by [Axiom 10 — Pattern matching](chapter1/axiom-10-pattern-matching.md) and [Axiom 5 — Honest/total signatures](chapter1/axiom-05-honest-total-signatures.md). A one-line aside for the curious at most.
 
 ---
 
 ### Persistent data structures / structural sharing — [SKIP — sidebar]
 
-**What:** the "isn't immutability slow?" rebuttal — structural sharing makes "copies" cheap (only the changed path is rebuilt); reach for the standard immutable collections (`System.Collections.Immutable`, Vavr) rather than rolling your own.
+The "isn't immutability slow?" rebuttal: structural sharing makes "copies" cheap (only the changed path is rebuilt); reach for the standard immutable collections (`System.Collections.Immutable`, Vavr) rather than rolling your own.
 
-**Verdict:** one reassurance sidebar inside Immutability. Okasaki-level theory is academic for this audience.
-
----
-
-### Referential transparency / determinism — [SKIP — already in Pure functions]
-
-Already named in the Pure functions axiom. Only thing worth surfacing there: the **testability payoff** — RT code needs no mocks; you test it by substituting values.
+Worth one reassurance sidebar inside [Axiom 1 — Immutability](chapter1/axiom-01-immutability.md); Okasaki-level theory is academic for this audience.
 
 ---
 
-### Idempotence — [SKIP — already in State machines; payoff out of scope]
+### Referential transparency / determinism — [SKIP — already covered]
 
-Already in the State machines axiom. Its main payoff (retry-safety) is operational → out of scope. Keep only the code-level half: "prefer set-shaped over delta-shaped actions — they survive replay," where actions live.
+Same call always returns the same value, and is substitutable for that value.
+
+- [Axiom 4 — Pure functions](chapter1/axiom-04-pure-functions.md) — already named here; the one thing worth surfacing is the testability payoff: RT code needs no mocks — you test it by substituting values.
+
+---
+
+### Idempotence — [SKIP — already covered]
+
+Applying an action twice lands in the same state as applying it once.
+
+- [Axiom 23 — State machines](chapter1/axiom-23-state-machines.md) — already here; the code-level half is "prefer set-shaped over delta-shaped actions — they survive replay." Its retry-safety payoff is operational, hence out of scope.
 
 ---
 
 ### Zero-One-Infinity rule — [SKIP — one-liner]
 
-No arbitrary fixed limits in your types — allow 0, exactly 1, or many. Memorable but narrow; a one-line aside in domain-modelling at most.
+No arbitrary fixed limits in your types — allow 0, exactly 1, or many, never "up to 3."
+
+Memorable but narrow; a one-line aside in domain-modelling at most.
 
 **Source:** van der Poel / MacLennan.
 
 ---
 
-### Composition over inheritance — [SKIP / off-register]
+### Composition over inheritance — [SKIP — off-register]
 
-**What:** reuse by holding collaborators (delegation) rather than extending base classes.
+Reuse by holding collaborators (delegation) rather than extending base classes.
 
-**Verdict:** foundational but OO-classical and against this book's FP-leaning register. If used at all, recast in this book's idiom (functions/values + explicit delegation) and present inheritance as a trade-off point — never an attack (per CLAUDE.md).
+Foundational but OO-classical, against this book's FP-leaning register. If used at all, recast in the book's idiom (functions/values + explicit delegation) and present inheritance as a trade-off point — never an attack (per CLAUDE.md).
 
 **Source:** Gang of Four, *Design Patterns* (1994).
-
----
