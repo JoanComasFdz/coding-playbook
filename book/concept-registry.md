@@ -275,13 +275,9 @@ The distinction was already explicit in Axiom 15 (the "what counts as an error?"
 
 ---
 
-### DRY — the real (knowledge) definition — [FOLD → Cohesion]
+### DRY — the real (knowledge) definition — [🔁 FOLDED → [Axiom 6](chapter1/axiom-06-cohesion.md)]
 
-**What:** "one authoritative representation of *knowledge*, not deduplicated *code text*." Worth stating *because the common misreading (dedupe code) fights simplicity-first* — incidental duplication is fine; divergent representations of one piece of knowledge is the sin. This is exactly the boundary↔domain↔persistence mapping tension.
-
-**Verdict:** fold into [Cohesion](chapter1/axiom-06-cohesion.md) (already holds rule-of-three / duplication-vs-wrong-abstraction) — add the knowledge-vs-text inoculation.
-
-**Source:** Hunt & Thomas, *The Pragmatic Programmer*.
+Axiom 6 already corrected the *misreading* (dedupe-on-sight) via reason-to-change; this fold added the missing half — naming DRY's original *knowledge, not code text* definition (Hunt & Thomas) and connecting it to reason-to-change as that rule made operational.
 
 ---
 
