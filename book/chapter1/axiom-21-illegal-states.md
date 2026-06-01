@@ -17,9 +17,13 @@ The slogan is older than typed FP's adoption of it: a *product* type (a record) 
 
 ## Definitions
 
+Records and DUs are the two constructors of an *algebraic data type* (ADT): a record is a **product type**, a sealed DU ([Axiom 20](axiom-20-discriminated-unions.md)) a **sum type**. The names are literal arithmetic, and that arithmetic — worked below — is the whole argument of this axiom.
+
 - **Product type.** A record whose value is *all* of its fields at once — `Bill(Id, Amount, Status, ProcessedAt, SentAt, PaymentRef, FailureReason)`. Its set of representable values is the Cartesian product of its fields' value sets; making fields nullable multiplies that set, and the legal subset is a small island in a large sea of nonsense (`Pending` with a `PaymentRef`, `Paid` with a null one).
 
 - **Sum type.** A sealed family whose value is *exactly one* of its variants — `Bill = Pending | Processing | Processed | Sent | Paid | Failed`. Its set of representable values is the *sum* of the variants' value sets. When each variant carries only the fields valid in that state, the representable set and the legal set coincide: there is no illegal value to construct.
+
+- **Counting the states.** The arithmetic is a smell detector. A record of two booleans is a product — 2 × 2 = **4** representable values. If the concept it models has only **3** legal combinations, one of the four is nonsense the compiler still lets you construct; that gap — *representable minus legal* — is the bug surface every downstream `if` pays for. A sum of three single-case variants is 1 + 1 + 1 = **3**: representable equals legal, the gap is zero. The move is mechanical — count what the type can represent, count what the domain allows, and when the product can say more than the domain permits, a sum collapses it to exactly the legal count.
 
 - **The refactor.** Take the discriminator (a `Status` enum, or "which fields are non-null") and the fields gated behind it, and promote each discriminator case to its own record carrying exactly its fields. The enum disappears into the variant *type*; the nullable fields disappear into the variants that own them.
 

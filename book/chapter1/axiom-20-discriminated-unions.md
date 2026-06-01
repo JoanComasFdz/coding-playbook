@@ -23,6 +23,8 @@ A *discriminated union* (DU, also called a *sum type* or *tagged union*) is:
 
 The 2-case versions are already named: `Either<L, R>` and `Result<T, E>`. This axiom is the general form at any arity. The reveal is that the sealed-interface-plus-records pattern reused from [Axiom 10](axiom-10-pattern-matching.md) onward *is* the DU; the earlier axioms specialized it to the two-case shape because that case is common enough to deserve a name.
 
+A DU is the *sum* half of an *algebraic data type*; the record ([Axiom 1](axiom-01-immutability.md)) is the *product* half — all of its fields at once, versus exactly one of its variants.
+
 The compile-time guarantee is fully enforced on the Java side (a missing arm is a compile error). On the C# side it is partial — C# 14 cannot prove the hierarchy closed, so an exhaustive switch over a `sealed`-leaved hierarchy emits CS8509 if a case is missed rather than a hard error. The honesty gradient is the same one [Axiom 13](axiom-13-either.md) documented for `Either`.
 
 ---

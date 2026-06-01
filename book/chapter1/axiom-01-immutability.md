@@ -29,6 +29,8 @@ This axiom rejects the mainstream default: a "data class" whose `final` keyword 
 
 The discipline is contract-level, not byte-level. Reflection, `Unsafe`, and JNI can break any of the rules above; that does not make the type mutable, only that the language permits trespass[1]. The contract holds for code that does not cheat.
 
+A record built this way is a *product type* — its value is all of its fields at once.
+
 ---
 
 ## Recognizing immutability

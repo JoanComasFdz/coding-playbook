@@ -257,13 +257,7 @@ Headline: most famous "principles" I hadn't named (SOLID, CUPID, CQS, Tell-Don't
 
 ---
 
-### Algebraic Data Types — the umbrella + state-counting — [FOLD → records / DUs / illegal-states]
-
-**What:** name the umbrella over what's already split across axioms — **products** (records) multiply states, **sums** (DUs) add them. The cardinality arithmetic is a *mechanical* justification for make-illegal-states: count reachable states; a `bool×bool` (4) modelling a concept with 3 valid combos is a smell a sum collapses to exactly 3.
-
-**Verdict:** near-zero new mechanics, high pedagogical payoff. Fold as a unifying frame tying Immutability(records), DUs(sums), and make-illegal-states together.
-
-**Source:** ML/Haskell lineage; jrsinclair, "ADTs I wish someone had explained".
+### Algebraic Data Types — the umbrella + state-counting — [🔁 FOLDED → [Axiom 21](chapter1/axiom-21-illegal-states.md); named in [1](chapter1/axiom-01-immutability.md) & [20](chapter1/axiom-20-discriminated-unions.md)]
 
 ---
 
