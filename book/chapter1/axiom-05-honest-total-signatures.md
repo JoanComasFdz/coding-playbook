@@ -15,7 +15,7 @@ Two properties of a function signature, both visible *without* running the progr
 
 A signature is **honest** when:
 
-- **Every outcome the function can produce is represented in the return type.** A function whose body says `if (notFound) return -1; else return realIndex;` is dishonest: the return type is `int`, but the return *value* is a tagged union the caller has to decode by convention. So is a function that "returns the user, or `null` if not found," or that returns an empty string to mean "no value."
+- **Every outcome the function can produce is represented in the return type.** A function whose body says `if (notFound) return -1; else return realIndex;` is dishonest: the return type is `int`, but the return *value* is a tagged union the caller has to decode by convention. So is a function that "returns the user, or `null` if not found," or that returns an empty string to mean "no value." The smallest such case is a bare `bool`: returning `true`/`false` collapses the outcomes into a two-element tagged union whose cases have no names — *boolean blindness*[3], where the caller learns *that* something holds but never *what*, and is left with nothing valid to carry forward. Widening that `bool` into named cases is the same repair as widening the sentinel `int`, applied to the most degenerate return there is.
 - **No outcome is delivered through a side channel.** Throwing to signal an expected outcome is dishonest in the same way: the type system says one thing, the runtime delivers another. (Purity already forbids this from the body of a pure function; honesty makes it explicit at the signature level.)
 - **No `out` / `ref` parameters carry hidden return values.** `bool TryParse(string s, out int value)` is the canonical case: the signature pretends the function returns a `bool`, but two values come out and the caller has to wire both.
 
@@ -208,3 +208,7 @@ Two cases where the criterion is wrong or harmful:
 
 [2] **Scott Wlaschin**, *Designing with Types: Making Illegal States Unrepresentable*, fsharpforfunandprofit.com, 2013. A practical demonstration of using rich return and parameter types to remove whole categories of bugs by construction — the application of this axiom across a domain model.
 <https://fsharpforfunandprofit.com/posts/designing-with-types-making-illegal-states-unrepresentable/>
+
+[3] **Robert Harper**, *Boolean Blindness*, Existential Type, 2011 (crediting Dan Licata for the term); **John A. De Goes**, *Destroy All Ifs*, degoes.net, 2015. Both name what a bare `bool` discards — that a value is one of two cases, with the cases left anonymous — and both prescribe the cure this playbook reaches for throughout: replace the boolean with a named type, a value object ([Axiom 17](axiom-17-value-objects.md)) on the return or a discriminated union ([Axiom 20](axiom-20-discriminated-unions.md)) for the cases.
+<https://existentialtype.wordpress.com/2011/03/15/boolean-blindness/>
+<http://degoes.net/articles/destroy-all-ifs>

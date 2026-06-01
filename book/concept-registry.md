@@ -229,14 +229,6 @@ Headline: most famous "principles" I hadn't named (SOLID, CUPID, CQS, Tell-Don't
 
 ### Connascence (Meilir Page-Jones) — [✅ AXIOMATIZED → [Axiom 7](chapter1/axiom-07-connascence.md)]
 
-**What:** a graded, named taxonomy of coupling. Static (Name → Type → Meaning → Position → Algorithm) + dynamic (Execution order → Timing → Value → Identity), weakest→strongest. Three axes: **strength, degree, locality**. Weirich's rules: convert strong→weak; the farther apart two things sit, the weaker their connascence must be.
-
-**Why it's the standout:** it's the *measurement theory underneath axioms I already wrote*, and it retroactively justifies them — Typestate = Execution-order → Type; value objects = Meaning → Type; make-illegal-states = killing Connascence of Value; immutability = killing Connascence of Identity; flag args = Connascence of Meaning; positional→named/records = Position → Name. The "thinking tool to argue about borderline coupling" I felt was missing.
-
-**Resolved:** landed as an inline lens-axiom at position 7 (beside Cohesion), not a separate framing chapter. The static/dynamic taxonomy follows Page-Jones; the operative cut for the playbook is *compiler-enforced vs. convention-carried*, and the contested Position-vs-Algorithm ordering is flagged rather than asserted.
-
-**Source:** Page-Jones, *Fundamentals of OO Design in UML* (1999); connascence.io; Jim Weirich talks.
-
 ---
 
 ### Define errors out of existence (Ousterhout) — [AXIOM? / FOLD]
@@ -261,13 +253,7 @@ Headline: most famous "principles" I hadn't named (SOLID, CUPID, CQS, Tell-Don't
 
 ---
 
-### Boolean blindness (Licata / Harper; De Goes) — [FOLD → Discriminated unions + flag-args]
-
-**What:** a `bool` param/return erases *which case you're in*; a `bool` is a degenerate, anonymous 2-case sum type. The deeper "why" beneath flag-args ("prefer a named DU").
-
-**Verdict:** fold as the named "why" into the DU axiom and the flag-args material already absorbed into [Cohesion](chapter1/axiom-06-cohesion.md). Jargon-light and memorable — generalizes flag-args from "ugly call site" to "lost type information."
-
-**Source:** term coined by Dan Licata / Robert Harper; De Goes, "Destroy All Ifs".
+### Boolean blindness (Licata / Harper; De Goes) — [🔁 FOLDED → coined in [Axiom 5](chapter1/axiom-05-honest-total-signatures.md); named across 6, 17, 20]
 
 ---
 

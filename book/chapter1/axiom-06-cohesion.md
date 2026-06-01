@@ -66,7 +66,7 @@ public String renderLine(LineItem item, boolean isReceipt) {
 </tr>
 </table>
 
-The `bool isReceipt` is the tell. One function now carries two reasons to change: invoice rules and receipt rules share a body and an `if`. The day receipts grow a second marker, you reopen the function that also renders invoices — and the diff touches code that had no business changing. Similarity bought you a shared body and a shared blast radius.
+The `bool isReceipt` is the tell. One function now carries two reasons to change: invoice rules and receipt rules share a body and an `if`. The day receipts grow a second marker, you reopen the function that also renders invoices — and the diff touches code that had no business changing. Similarity bought you a shared body and a shared blast radius. The flag is *boolean-blind* at the call site as well — `RenderLine(item, true)`: true of *what*? — the surface tell [Axiom 5](axiom-05-honest-total-signatures.md) names; but the unreadable argument is the lesser fault here, and two reasons to change sharing one body is the one that costs you.
 
 Cohesion splits by reason-to-change, and extracts only the part that is *genuinely* one concept:
 
