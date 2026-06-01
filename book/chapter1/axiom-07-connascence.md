@@ -30,11 +30,14 @@ This is the playbook's second evaluative axiom, and its second lens. It builds n
 - **Connascence of Position (CoP).** Units must agree on the *order* of things — most commonly positional arguments. `transfer(from, to, amount)` binds every caller to that order; swap two same-typed parameters and nothing complains until money moves the wrong way.
 - **Connascence of Algorithm (CoA).** Units must agree on a specific algorithm. Two ends of a channel must hash, checksum, or serialise the same way; change the algorithm on one side and the other silently rejects every message.
 
-Dynamic — invisible in the source, surfacing only at runtime, and stronger still:
+Dynamic — invisible in the source, surfacing only at runtime, and stronger still. Weakest first:
 
 - **Connascence of Execution (CoE).** Units must agree on the *order in which operations run*. You must authenticate before you fetch the profile; you must open before you read. Nothing in the types forbids the wrong order — the contract is temporal, and it is enforced, if at all, by a runtime guard.
+- **Connascence of Timing (CoTiming).** Units must agree on the *timing* of operations — a deadline, a window, the interleaving of two threads. This is the concurrency-and-duration form, more about runtime scheduling than the anatomy of a module, so it falls outside this playbook's scope; it is named here only to keep the ordering honest, sitting between Execution and Value.
+- **Connascence of Value (CoV).** Several values must *change together* to preserve an invariant that binds them. `Total` must equal `Subtotal + Tax`; a period's `Start` must not pass its `End`; the same constant copied into two files must match. No single type carries the rule, so the agreement lives among the values themselves, kept by whoever remembers to update all of them at once.
+- **Connascence of Identity (CoI).** Two or more units must reference *the very same instance* — not merely equal values, but one shared entity: two views onto a cart, two handles on a connection, two readers of a cache. The compiler sees two references of the same type and cannot tell whether they point at one object or two, so the agreement is object identity, invisible until the two silently diverge at runtime. It is the **strongest** form of all.
 
-The literature agrees on the static/dynamic split, and on Name and Type as the two weakest; it disagrees a little on the exact rank of Meaning, Position, and Algorithm among themselves. That precise order matters less than the line drawn through the list next.
+The literature agrees on the static/dynamic split, on Name and Type as the two weakest, and on Identity as the strongest; it is looser about the exact rank of Meaning, Position, and Algorithm among the static forms, and treats the whole sequence as approximate — even Weirich declined to fix a precise order. That precise order matters less than the line drawn through the list next.
 
 The line this playbook cares about most is not static-versus-dynamic but **compiler-enforced versus convention-carried**, and it falls right after Type. CoN and CoT are the only forms the compiler enforces — violate them and the build breaks. From CoM onward — and CoP whenever the swapped values share a type — the type system is blind, and the agreement is kept by humans, comments, and memory; the violation waits for a failing test, or a customer. That is the same line [Axiom 5](axiom-05-honest-total-signatures.md) draws between honest and dishonest signatures, now running *between* units instead of inside one. **Weakening** a connascence means moving it across that line — a magic value lifted into a type (CoM → CoT) is the canonical step. The other two moves fall out of the remaining axes: **reduce degree** (fewer units sharing the convention) and **localise** (bring connascent units close, ideally into one). Strength has the most leverage, because turning a runtime agreement into a compile-time one is the difference between a broken build and a broken production.
 
@@ -42,7 +45,7 @@ The line this playbook cares about most is not static-versus-dynamic but **compi
 
 ## Examples
 
-One minimal example of each form, in the taxonomy's weakest-to-strongest order. Each shows the *agreement itself* — what is bound to what — and where the compiler stands on it: holding the two sides to the agreement, or blind to it. None of them shows the cure; that is the rest of the chapter's job.
+One minimal example of each form (all but Timing, which is out of scope), in the taxonomy's weakest-to-strongest order. Each shows the *agreement itself* — what is bound to what — and where the compiler stands on it: holding the two sides to the agreement, or blind to it. None of them shows the cure; that is the rest of the chapter's job.
 
 ### Connascence of Name (CoN)
 
@@ -255,7 +258,85 @@ session.authenticate();   // nothing in the types forced this to come before the
 </tr>
 </table>
 
-The two calls are bound in time — authenticate, then fetch. The contract is temporal: no parameter and no return type expresses it, so the wrong order is fully writeable and is caught, if at all, by a runtime guard. This is the strongest form shown here and the only purely *dynamic* one — invisible in the source, surfacing only when the program runs.
+The two calls are bound in time — authenticate, then fetch. The contract is temporal: no parameter and no return type expresses it, so the wrong order is fully writeable and is caught, if at all, by a runtime guard. It is the first purely *dynamic* form — invisible in the source, surfacing only when the program runs — and the two that follow are stronger still.
+
+### Connascence of Value (CoV)
+
+Several values must *change together* to keep an invariant that binds them.
+
+<table>
+<tr><th>C#</th><th>Java</th></tr>
+<tr>
+<td>
+
+```csharp
+// Total must always equal Subtotal + Tax — one invariant binding three values.
+public readonly record struct Invoice(decimal Subtotal, decimal Tax, decimal Total);
+
+var invoice = new Invoice(100.00m, 20.00m, 120.00m);   // consistent
+// Change one value and the rest must change too — but nothing makes you:
+var wrong = invoice with { Subtotal = 200.00m };       // compiles; Total still reads 120.00
+```
+
+</td>
+<td>
+
+```java
+// total must always equal subtotal + tax — one invariant binding three values.
+record Invoice(BigDecimal subtotal, BigDecimal tax, BigDecimal total) {}
+
+var invoice = new Invoice(new BigDecimal("100.00"),
+                          new BigDecimal("20.00"), new BigDecimal("120.00"));  // consistent
+// Change one value and the rest must change too — but nothing makes you:
+var wrong = new Invoice(new BigDecimal("200.00"),
+                        invoice.tax(), invoice.total());   // compiles; total still reads 120.00
+```
+
+</td>
+</tr>
+</table>
+
+`Subtotal`, `Tax`, and `Total` are bound by an arithmetic invariant: change one and the rest must follow, or the record quietly lies. No single type carries the rule — to the compiler they are three independent decimals — so the agreement lives *among the values*, kept by whoever remembers to touch all three. It is the dynamic cousin of Meaning: where CoM is one value whose *meaning* is conventional, CoV is several values whose *relationship* is conventional, caught (if at all) only when something reads them. It is also the precise shape [Axiom 21 — make illegal states unrepresentable](axiom-21-illegal-states.md) dissolves — store one value and derive the others, or refuse to construct the inconsistent combination, and there is nothing left to keep in sync.
+
+### Connascence of Identity (CoI)
+
+Two or more units must reference *the very same instance* — not merely equal values.
+
+<table>
+<tr><th>C#</th><th>Java</th></tr>
+<tr>
+<td>
+
+```csharp
+// summary and checkout must hold the SAME Cart instance, or they silently disagree.
+var cart     = new Cart();
+var summary  = new CartSummary(cart);   // holds a reference to cart
+var checkout = new Checkout(cart);      // must hold that same reference
+
+cart.Add(item);                         // both see the item — they share one instance
+// Hand checkout its own equal-but-separate Cart and nothing complains — until they diverge:
+var oops = new Checkout(new Cart());
+```
+
+</td>
+<td>
+
+```java
+// summary and checkout must hold the SAME Cart instance, or they silently disagree.
+var cart     = new Cart();
+var summary  = new CartSummary(cart);   // holds a reference to cart
+var checkout = new Checkout(cart);      // must hold that same reference
+
+cart.add(item);                         // both see the item — they share one instance
+// Hand checkout its own equal-but-separate Cart and nothing complains — until they diverge:
+var oops = new Checkout(new Cart());
+```
+
+</td>
+</tr>
+</table>
+
+`summary` and `checkout` are bound by *identity*: they must hold one and the same `Cart`, not two carts that merely compare equal. The compiler sees two `Cart` references and cannot tell whether they alias one object or two, so handing `checkout` a separate-but-equal cart compiles and the two drift apart at runtime with nothing to flag it. That invisibility is why Identity is the strongest form on the scale — and it is the one this playbook's central model is built to *dissolve* rather than weaken: immutable values have no shared mutable cell to alias, so passing a value leaves no identity for a second holder to depend on. Where genuine shared identity is unavoidable — a connection, a cache, a session — it lives in the impure shell, held in one place and fed into the pure core as a value, so the aliasing has a single visible home instead of being smeared across the call tree ([Axiom 24 — Session Context](axiom-24-session-context.md), [Axiom 25 — Stateful Shell](axiom-25-stateful-shell.md)).
 
 ---
 
@@ -263,7 +344,7 @@ The two calls are bound in time — authenticate, then fetch. The contract is te
 
 The competing force is that **strong connascence is the path of least resistance, and it works** — right up until it doesn't. Returning an `int` status code is faster to write than giving each outcome its own type. Passing four positional arguments is faster than giving each its own type. Relying on "everyone knows you call `init()` first" is faster than encoding the order so the wrong call cannot be written. Each strong-connascence shortcut buys speed now against a debt paid later, by whoever changes one side of the agreement and discovers — at runtime, or never — that the other side needed changing too.
 
-The trap is that strong connascence is **invisible at the moment you create it**. CoN and CoT announce themselves: the build breaks the instant they are violated, so you cannot ship a violation. CoM, a same-typed CoP, CoA, and CoE are silent — the program compiles, the happy path passes, and the dependency only speaks when a future change touches one unit and not its partner. This is the same asymmetry [Axiom 5](axiom-05-honest-total-signatures.md) draws between honest and dishonest signatures, now generalised across units: a dependency the type system can see is a dependency you cannot forget.
+The trap is that strong connascence is **invisible at the moment you create it**. CoN and CoT announce themselves: the build breaks the instant they are violated, so you cannot ship a violation. CoM, a same-typed CoP, CoA, CoE, CoV, and CoI are silent — the program compiles, the happy path passes, and the dependency only speaks when a future change touches one unit and not its partner. This is the same asymmetry [Axiom 5](axiom-05-honest-total-signatures.md) draws between honest and dishonest signatures, now generalised across units: a dependency the type system can see is a dependency you cannot forget.
 
 The second force is **over-correction**. Not every connascence is a problem to be eliminated; most code is held together by oceans of CoN and CoT, and that is fine — those are the *weak* forms, the ones tooling manages for you. The discipline is not "remove all connascence" — impossible, and the attempt produces its own tangle of indirection. It is "*don't pay in the strong forms what you could pay in the weak ones*," and "keep connascent units close." Locality is the release valve: a strong connascence between two adjacent lines is not worth a type to fix, because the reader changing one sees the other for free.
 
