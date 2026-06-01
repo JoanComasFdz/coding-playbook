@@ -4,7 +4,9 @@
 
 Joan Comas, Senior Software Architect — since June 2024
 
-**Status legend:** ✅ **Axiomatized** (became its own axiom) · 🔁 **Folded** (absorbed into an existing axiom) · ❌ **Discarded** (too niche / out of scope) · 🔍 **Open** (not yet decided — any `[TAG]` is the *recommended* disposition, not a decision yet)
+**Status legend:** ✅ **Axiomatized** (became its own axiom) · 🔁 **Folded** (absorbed into an existing axiom) · ❌ **Discarded** (too niche / out of scope) · 🔍 **Open** (not yet decided)
+
+**Recommendation tags** — on a concept still being weighed, the *suggested* disposition, not a decision: **[AXIOM?]** possible standalone axiom · **[FOLD]** fold into an existing axiom as a named hook / "why" · **[CONTRAST]** trade-off / non-dogmatism material · **[SKIP]** too niche, or already covered under another name.
 
 ---
 
@@ -207,7 +209,7 @@ Source: Dan North, "CUPID — for joyful coding" (2022), dannorth.net.
 
 🔍 **Open** — record the boundary only.
 
-Note (from research): CQRS is system topology = **out of scope** (it's a *consumer* of the building blocks, not one). Its code-level sibling is **CQS** (see the Command–Query Separation entry in the research sweep below) — a method returns a value *xor* changes state — and that one is now folded into [Axiom 11 — Impureheim](chapter1/axiom-11-impureheim.md) (and named in [Axiom 4](chapter1/axiom-04-pure-functions.md) and [Axiom 22](chapter1/axiom-22-pure-functions-returning-actions.md)). Keep this section only to *record the boundary*, not to write an axiom.
+Note (from research): CQRS is system topology = **out of scope** (it's a *consumer* of the building blocks, not one). Its code-level sibling is **CQS** (see the Command–Query Separation entry below) — a method returns a value *xor* changes state — and that one is now folded into [Axiom 11 — Impureheim](chapter1/axiom-11-impureheim.md) (and named in [Axiom 4](chapter1/axiom-04-pure-functions.md) and [Axiom 22](chapter1/axiom-22-pure-functions-returning-actions.md)). Keep this section only to *record the boundary*, not to write an axiom.
 
 ---
 
@@ -219,25 +221,7 @@ Should this be an axiom? an early one? a later one?
 
 ---
 
-## Research sweep — 2026-05-29: external concepts not yet covered
-
-A web + literature sweep against the current axioms surfaced the candidates below. Many have since been resolved — ✅ **axiomatized** or 🔁 **folded** — or set aside (skipped); the rest still carry a `[TAG]` recommending a disposition not yet decided.
-
-**Verdict tags:** **[AXIOM?]** possible standalone axiom · **[FOLD]** fold into an existing axiom as a named hook / "why" · **[CONTRAST]** trade-off / non-dogmatism material · **[SKIP]** too niche, or already covered under another name.
-
-Headline: most famous "principles" I hadn't named (SOLID, CUPID, CQS, Tell-Don't-Ask, Demeter, coupling/cohesion) are *already mine under better names* or are contrast pieces. The genuinely new territory is narrow: **connascence** (a meta-lens, now Axiom 7) and **"define errors out of existence"** (a still-open rung below `Result`).
-
----
-
-### Connascence (Meilir Page-Jones) — [✅ AXIOMATIZED]
-
-The sweep's top pick; full entry under **Connascence** earlier in this registry.
-
-- [Axiom 7 — Connascence](chapter1/axiom-07-connascence.md) — the chapter's second evaluative lens.
-
----
-
-### Define errors out of existence (Ousterhout) — [AXIOM? / FOLD]
+## Define errors out of existence (Ousterhout) — [AXIOM? / FOLD]
 
 **What:** redesign the API so the error case can't arise, instead of reporting it (`unlink` succeeds / marks-for-deletion; `substring` clamps to the available range). It sits *before* Result/Option in the simplicity ladder.
 
@@ -249,7 +233,7 @@ The sweep's top pick; full entry under **Connascence** earlier in this registry.
 
 ---
 
-### Deep vs. shallow modules (Ousterhout) — [AXIOM? / CONTRAST]
+## Deep vs. shallow modules (Ousterhout) — [AXIOM? / CONTRAST]
 
 **What:** module value = functionality ÷ interface cost; **deep** = small interface over lots of implementation. The counterweight: over-splitting into many tiny functions multiplies *shallow* interfaces and can *increase* complexity.
 
@@ -259,7 +243,7 @@ The sweep's top pick; full entry under **Connascence** earlier in this registry.
 
 ---
 
-### Boolean blindness (Licata / Harper; De Goes) — [🔁 FOLDED]
+## Boolean blindness (Licata / Harper; De Goes) — [🔁 FOLDED]
 
 A raw `bool` (or untyped flag) throws away the meaning of *what* is true — at the call site, `true` of what?
 
@@ -270,7 +254,7 @@ A raw `bool` (or untyped flag) throws away the meaning of *what* is true — at 
 
 ---
 
-### Algebraic Data Types — the umbrella + state-counting — [🔁 FOLDED]
+## Algebraic Data Types — the umbrella + state-counting — [🔁 FOLDED]
 
 Sum types (one-of) and product types (all-of); a type's reachable states = the cases summed, the fields multiplied. Counting them is the tool for making illegal states unrepresentable.
 
@@ -280,7 +264,7 @@ Sum types (one-of) and product types (all-of); a type's reachable states = the c
 
 ---
 
-### Design by Contract (Meyer) — [🔁 FOLDED]
+## Design by Contract (Meyer) — [🔁 FOLDED]
 
 Operations carry preconditions, postconditions, and invariants as part of their contract.
 
@@ -290,7 +274,7 @@ Operations carry preconditions, postconditions, and invariants as part of their 
 
 ---
 
-### Fail-fast on bugs vs. return-values for expected failures — [🔁 FOLDED]
+## Fail-fast on bugs vs. return-values for expected failures — [🔁 FOLDED]
 
 Crash immediately on a programmer error (a bug); return a value for an *expected* failure.
 
@@ -302,7 +286,7 @@ Crash immediately on a programmer error (a bug); return a value for an *expected
 
 ---
 
-### DRY — the real (knowledge) definition — [🔁 FOLDED]
+## DRY — the real (knowledge) definition — [🔁 FOLDED]
 
 Don't Repeat Yourself governs *knowledge*, not code text: one authoritative home per piece of knowledge.
 
@@ -312,20 +296,20 @@ Don't Repeat Yourself governs *knowledge*, not code text: one authoritative home
 
 ---
 
-### SLAP — single level of abstraction per function — [🔁 FOLDED]
+## SLAP — single level of abstraction per function — [🔁 FOLDED]
 
 Single Level of Abstraction Per function. Both useful halves already live elsewhere; the only standalone residue rests on an undefined "level of abstraction" the playbook declines.
 
 - [Axiom 6 — Cohesion](chapter1/axiom-06-cohesion.md) — the "each function does one job" half *is* cohesion; its *When NOT to* carries the reading-smell kernel: a body that forces mental inlining wants a *named* extraction — extract when the detail is a concept with its own reason to change, not to hit an altitude quota.
 - [Axiom 11 — Impureheim](chapter1/axiom-11-impureheim.md) — the "read the body as a paragraph of same-level steps" half is a byproduct of the gather→decide→act step-down, not a separate law.
 
-**Why no axiom of its own** — the residue ("match every statement to one altitude") rests on a "level of abstraction" that nothing — not even SLAP's own references — defines; applied mechanically it yields *extract-till-you-drop*, the mental-inlining smell [Axiom 6](chapter1/axiom-06-cohesion.md) already guards (and the deep-vs-shallow-modules tension logged above in this sweep).
+**Why no axiom of its own** — the residue ("match every statement to one altitude") rests on a "level of abstraction" that nothing — not even SLAP's own references — defines; applied mechanically it yields *extract-till-you-drop*, the mental-inlining smell [Axiom 6](chapter1/axiom-06-cohesion.md) already guards (and the deep-vs-shallow-modules tension noted above).
 
 **Source:** Kent Beck, *Composed Method* (*Smalltalk Best Practice Patterns*, 1997); acronym credited to Glenn Vanderburg, popularized by Neal Ford, *The Productive Programmer* (2008); restated as the *Stepdown Rule* by Robert C. Martin, *Clean Code* (2009); over-application critiqued by John Ousterhout, *A Philosophy of Software Design* (2018), and the Christin Gorman vs. Robert C. Martin "extract till you drop" debate.
 
 ---
 
-### Lenses / optics — [CONTRAST / restrained]
+## Lenses / optics — [CONTRAST / restrained]
 
 **What:** the nested-immutable-update tax; composable getter+setter bundles (lens=field, prism=case, traversal=many).
 
@@ -335,7 +319,7 @@ Single Level of Abstraction Per function. Both useful halves already live elsewh
 
 ---
 
-### Postel's Law vs. parse-don't-validate — [🔁 FOLDED]
+## Postel's Law vs. parse-don't-validate — [🔁 FOLDED]
 
 The Robustness Principle — *"be conservative in what you do, be liberal in what you accept."* Only *looks* opposed to parse-don't-validate: Postel governs surface *form*, parse-don't-validate governs *meaning* crossing the boundary.
 
@@ -347,7 +331,7 @@ The Robustness Principle — *"be conservative in what you do, be liberal in wha
 
 ---
 
-### Command–Query Separation (CQS) — [🔁 FOLDED]
+## Command–Query Separation (CQS) — [🔁 FOLDED]
 
 A method returns a value (query) *xor* changes state (command), never both — the OO ancestor of the pure/impure split. Purity is strictly stronger: a CQS "query" may still read mutable globals.
 
@@ -361,7 +345,7 @@ A method returns a value (query) *xor* changes state (command), never both — t
 
 ---
 
-### Tell, Don't Ask — [🔁 FOLDED]
+## Tell, Don't Ask — [🔁 FOLDED]
 
 The OO maxim: don't pull an object's data out to decide for it — push the decision into the object that owns the (mutable) state. A contrast piece, not a missing foundation: the playbook makes the *opposite* bet in its pure core and the *same* bet in its impure shell.
 
@@ -377,7 +361,7 @@ The OO maxim: don't pull an object's data out to decide for it — push the deci
 
 ---
 
-### Law of Demeter — [SKIP — narrow]
+## Law of Demeter — [SKIP — narrow]
 
 "One dot" — don't navigate object graphs. Its dangerous half is designed away and the rest is trivial: the law restricts *message sends* (behaviour), not field-walks over transparent data, so a value-core gives it almost nothing to bite on — and what remains is weak, compiler-enforced coupling, not a hazard.
 
@@ -392,7 +376,7 @@ Sibling of [Tell, Don't Ask](#tell-dont-ask): the two "don't reach through" maxi
 
 ---
 
-### Coupling & Cohesion (Constantine / Yourdon) — [SKIP — historical root]
+## Coupling & Cohesion (Constantine / Yourdon) — [SKIP — historical root]
 
 The original "low coupling, high cohesion": a coupling ladder (content/common/external/control/stamp/data) and a cohesion ladder (coincidental→functional). Control coupling = flag args; common coupling = shared mutable state.
 
@@ -402,7 +386,7 @@ The original "low coupling, high cohesion": a coupling ladder (content/common/ex
 
 ---
 
-### Information Hiding (Parnas) — [SKIP — mostly architecture]
+## Information Hiding (Parnas) — [SKIP — mostly architecture]
 
 A module hides a *secret* — a design decision likely to change. The root of encapsulation and of Ousterhout's deep modules.
 
@@ -412,7 +396,7 @@ Mostly a decomposition criterion at architectural altitude, hence out of scope. 
 
 ---
 
-### Monoid / Semigroup — [SKIP — vocabulary only]
+## Monoid / Semigroup — [SKIP — vocabulary only]
 
 An associative `combine` (plus an identity element for a monoid). `Aggregate`/`reduce` *is* a monoid fold; associativity is what licenses parallel reduction.
 
@@ -420,7 +404,7 @@ Worth at most one paragraph of vocabulary near any aggregation/fold material —
 
 ---
 
-### Catamorphism / fold — [SKIP — jargon]
+## Catamorphism / fold — [SKIP — jargon]
 
 The exhaustive `Match` on a DU *is* that DU's catamorphism — the total consumer of a sum type.
 
@@ -428,7 +412,7 @@ Too jargon-heavy to name; the totality point is already carried by [Axiom 10 —
 
 ---
 
-### Persistent data structures / structural sharing — [SKIP — sidebar]
+## Persistent data structures / structural sharing — [SKIP — sidebar]
 
 The "isn't immutability slow?" rebuttal: structural sharing makes "copies" cheap (only the changed path is rebuilt); reach for the standard immutable collections (`System.Collections.Immutable`, Vavr) rather than rolling your own.
 
@@ -436,7 +420,7 @@ Worth one reassurance sidebar inside [Axiom 1 — Immutability](chapter1/axiom-0
 
 ---
 
-### Referential transparency / determinism — [SKIP — already covered]
+## Referential transparency / determinism — [SKIP — already covered]
 
 Same call always returns the same value, and is substitutable for that value.
 
@@ -444,7 +428,7 @@ Same call always returns the same value, and is substitutable for that value.
 
 ---
 
-### Idempotence — [SKIP — already covered]
+## Idempotence — [SKIP — already covered]
 
 Applying an action twice lands in the same state as applying it once.
 
@@ -452,7 +436,7 @@ Applying an action twice lands in the same state as applying it once.
 
 ---
 
-### Zero-One-Infinity rule — [SKIP — one-liner]
+## Zero-One-Infinity rule — [SKIP — one-liner]
 
 No arbitrary fixed limits in your types — allow 0, exactly 1, or many, never "up to 3."
 
@@ -462,7 +446,7 @@ Memorable but narrow; a one-line aside in domain-modelling at most.
 
 ---
 
-### Composition over inheritance — [SKIP — off-register]
+## Composition over inheritance — [SKIP — off-register]
 
 Reuse by holding collaborators (delegation) rather than extending base classes.
 
