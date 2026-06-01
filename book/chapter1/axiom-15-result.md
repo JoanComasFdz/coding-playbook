@@ -263,7 +263,7 @@ The line between them shifts by context. "Database is unreachable" is exceptiona
 
 ## When NOT to
 
-**When the failure case is genuinely exceptional.** Programmer errors (null where the type system can't catch it, a precondition the caller was supposed to satisfy), system-level failures (out of memory, stack overflow), and "the runtime is no longer trustworthy" cases are what exceptions are *for*. Reaching for `Result<T, "OutOfMemory">` is the same dishonesty as throw-on-normal-failure, in reverse: the type pretends the program can keep going. Throw, fail fast, and let the surrounding system catch and report.
+**When the failure case is genuinely exceptional.** Programmer errors (null where the type system can't catch it, a precondition the caller was supposed to satisfy), system-level failures (out of memory, stack overflow), and "the runtime is no longer trustworthy" cases are what exceptions are *for*. Reaching for `Result<T, "OutOfMemory">` is the same dishonesty as throw-on-normal-failure, in reverse: the type pretends the program can keep going. Throw and *fail fast*[4] — halt loudly at the source rather than let a bug travel as a `Result` value a caller might handle and continue past — and let the surrounding system catch and report.
 
 **At the lowest layer of a wrapper.** Code that wraps a throwing API (JDBC, `HttpClient`, file IO) is the *one* place where catching an exception and lifting it into a `Failure<E>` belongs. Pushing Result *into* that wrapper — replacing the throw inside the standard library — is not the point of this axiom. Wrap once, lift, and let the rest of the code traffic in Result from there on.
 
@@ -283,3 +283,5 @@ The line between them shifts by context. "Database is unreachable" is exceptiona
 
 [3] **Vladimir Khorikov**, *CSharpFunctionalExtensions* (active, v3.7.0, March 2026) and the "Functional C#" course. The library's `Result` and `Result<T, E>` types are the pragmatic .NET answer the playbook's examples are shaped after; the docs discuss when to reach for Result and when exceptions still belong.
 <https://github.com/vkhorikov/CSharpFunctionalExtensions>
+
+[4] **James Shore**, *Fail Fast*, IEEE Software 21(5), 2004. The discipline of halting immediately on a programmer error or broken invariant, so the defect surfaces at its origin instead of several frames downstream disguised as a recoverable value. Its complement is *offensive programming* — declining to write defensive handling for conditions that can only arise from a bug, on the grounds that silently tolerating them hides the defect rather than containing it.

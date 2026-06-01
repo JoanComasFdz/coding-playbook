@@ -265,13 +265,13 @@ Headline: most famous "principles" I hadn't named (SOLID, CUPID, CQS, Tell-Don't
 
 ---
 
-### Fail-fast on bugs vs. return-values for expected failures — [FOLD → Result / exceptions story]
+### Fail-fast on bugs vs. return-values for expected failures — [🔁 FOLDED → [Axiom 15](chapter1/axiom-15-result.md)]
 
-**What:** the one distinction not yet explicit — contract violations / bugs should **throw/assert** (never `Result`); anticipated domain failures are **values** (`Result`/`Option`). The principled half of "offensive programming."
+The distinction was already explicit in Axiom 15 (the "what counts as an error?" heuristics and the When-NOT-to exception bullets); this fold only added the *fail-fast* name and the offensive-programming lineage.
 
-**Verdict:** short "why" inside the Result axiom; sharpens the Result-vs-exceptions boundary.
+**`assert` half deferred — not for now.** The dev-time `assert` / `Debug.Assert` mechanism for catching contract violations at their source was deliberately left out: in practice I've never reached for it or seen it used. Revisit only if it earns its keep.
 
-**Source:** offensive programming (Wikipedia); fail-fast lore.
+**Source:** James Shore, *Fail Fast* (IEEE Software, 2004); offensive programming (lore).
 
 ---
 
