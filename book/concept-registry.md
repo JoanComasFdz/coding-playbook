@@ -379,11 +379,16 @@ The OO maxim: don't pull an object's data out to decide for it — push the deci
 
 ### Law of Demeter — [SKIP — narrow]
 
-"One dot" — don't navigate object graphs. Largely *designed away* by value-passing pure cores: a core that receives plain values has no strangers to talk to.
+"One dot" — don't navigate object graphs. Its dangerous half is designed away and the rest is trivial: the law restricts *message sends* (behaviour), not field-walks over transparent data, so a value-core gives it almost nothing to bite on — and what remains is weak, compiler-enforced coupling, not a hazard.
 
-- [Axiom 7 — Connascence](chapter1/axiom-07-connascence.md) — subsumes it; a train-wreck is bad-locality connascence. Worth a mention as a coupling heuristic at most.
+- [Axiom 0 — Data is not Behaviour](chapter1/axiom-00-data-vs-behaviour.md) — the behavioural half: LoD governs which *methods* a unit may call; inert immutable data has no behaviour to reach through, so walking `person.Address.Street` is not what the law targets.
+- [Axiom 1 — Immutability](chapter1/axiom-01-immutability.md) — the action-at-a-distance half: immutable *all the way down* (the `Person → Address → Street` setter quiz) means no deep node can mutate underneath a holder, so deep reads are safe to pass around.
+- [Axiom 7 — Connascence](chapter1/axiom-07-connascence.md) — the residual: a field chain still binds the reader to the path, but in a typed value world that is Connascence of Name/Type — the weakest, compiler-enforced forms, where a rename or reshape breaks the build at every site. It is Axiom 7's *weak-and-local* case to leave alone, not a train-wreck to fear.
+- [Axiom 6 — Cohesion](chapter1/axiom-06-cohesion.md) — the look-alike: reaching deep to *recompute* a rule at the call site is a decide-in-one-place concern, not LoD.
 
-**Source:** Ian Holland, Demeter Project (1987).
+Sibling of [Tell, Don't Ask](#tell-dont-ask): the two "don't reach through" maxims — TDA the *behavioural* reach (folded, as the opposite bet), LoD the *structural* reach (a corollary of the value-core, hence skipped).
+
+**Source:** Karl Lieberherr & Ian Holland, *Assuring Good Style for Object-Oriented Programs* (IEEE Software, 1989) — the law stated as a restriction on which methods a unit may call; Demeter Project, Northeastern, from 1987. Andrew Hunt & David Thomas, *The Pragmatic Programmer* (1999) — treat it as a coupling heuristic for functions, not an absolute rule.
 
 ---
 
