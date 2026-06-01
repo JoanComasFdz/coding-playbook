@@ -563,6 +563,38 @@ Sharvit names the costs honestly[3] and they apply here too. Immutable types cos
 
 These costs buy what Why lists above. The trade is almost always worth it for line-of-business code; it sometimes is not for inner loops (see below).
 
+### "But isn't all this copying slow?"
+
+This is the worry hiding behind that allocation-pressure cost, and it deserves a straight answer. For a small record, a "copy" is a handful of field assignments — already cheap, not worth a second thought. The worry only bites when the value is a *collection*: surely adding one item to a 10,000-element list can't mean copying all 10,000 on every edit?
+
+It doesn't — if you reach for a **persistent collection**. These are immutable collections built as trees, so an updated "copy" shares every unchanged node with the original and rebuilds only the path to the one that changed — O(log n) new nodes, not O(n). The old version stays valid and untouched; the new one is cheap. That node-reuse is **structural sharing**, and it is what makes immutability practical at collection scale.
+
+The rule is: **don't hand-roll this.** Reach for the standard library — `System.Collections.Immutable` (`ImmutableList`, `ImmutableDictionary`, …) in C#, Vavr in Java[7] — and the sharing comes for free:
+
+<table>
+<tr><th>C#</th><th>Java</th></tr>
+<tr>
+<td>
+
+```csharp
+var a = ImmutableList.Create(1, 2, 3);
+var b = a.Add(4);   // a is still [1, 2, 3]; b reuses a's nodes
+```
+
+</td>
+<td>
+
+```java
+var a = Vector.of(1, 2, 3);
+var b = a.append(4); // a is still [1, 2, 3]; b reuses a's nodes
+```
+
+</td>
+</tr>
+</table>
+
+How these are built — the finger trees, the amortized-versus-worst-case bounds — is Okasaki's subject[4]; you *consume* the library, you do not implement it. That reference is the deep answer; this is the everyday one.
+
 ---
 
 ## When NOT to
@@ -591,3 +623,5 @@ Mutable state earns its keep in two main cases.
 <https://www.youtube.com/watch?v=rX0ItVEVjHc>. Already cited in [Axiom 0](axiom-00-data-vs-behaviour.md) as reference [6]; relevant here as the dominant counter-argument inside performance-critical inner loops.
 
 [6] **Joshua Bloch**, *Effective Java*, 3rd ed., Addison-Wesley, 2018 — Item 17, "Minimize mutability". The canonical Java-specific statement of the rules listed in this axiom's *Definitions* section, with the same five-point recipe (no mutators, ensure the class cannot be extended, make all fields final, make all fields private, ensure exclusive access to any mutable components).
+
+[7] **`System.Collections.Immutable`** (.NET) and **Vavr** (Java) are the mainstream persistent-collection libraries — immutable lists, maps, sets, and vectors with structural sharing built in, so you never hand-roll the trees in reference [4]. .NET: <https://learn.microsoft.com/en-us/dotnet/api/system.collections.immutable>. Vavr: <https://vavr.io>.

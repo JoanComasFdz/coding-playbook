@@ -444,11 +444,11 @@ The list `reduce` is itself a catamorphism (the List one), but it lives in [Mono
 
 ---
 
-## Persistent data structures / structural sharing — [SKIP — sidebar]
+## Persistent data structures / structural sharing — [🔁 FOLDED]
 
-The "isn't immutability slow?" rebuttal: structural sharing makes "copies" cheap (only the changed path is rebuilt); reach for the standard immutable collections (`System.Collections.Immutable`, Vavr) rather than rolling your own.
+The "isn't immutability slow?" rebuttal: structural sharing rebuilds only the changed path, so immutable "copies" of large collections stay cheap.
 
-Worth one reassurance sidebar inside [Axiom 1 — Immutability](chapter1/axiom-01-immutability.md); Okasaki-level theory is academic for this audience.
+- [Axiom 1 — Immutability](chapter1/axiom-01-immutability.md) — the ["But isn't all this copying slow?" sidebar](chapter1/axiom-01-immutability.md#but-isnt-all-this-copying-slow) in *Trade-offs*: a small record copies a few fields; a large collection uses a persistent collection (`System.Collections.Immutable`, Vavr) that shares unchanged nodes for O(log n) updates. Okasaki (ref [4] there) is the deep theory; the sidebar is the everyday answer.
 
 ---
 
