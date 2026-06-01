@@ -221,15 +221,18 @@ Should this be an axiom? an early one? a later one?
 
 ---
 
-## Define errors out of existence (Ousterhout) — [AXIOM? / FOLD]
+## Define errors out of existence (Ousterhout) — [🔁 FOLDED]
 
-**What:** redesign the API so the error case can't arise, instead of reporting it (`unlink` succeeds / marks-for-deletion; `substring` clamps to the available range). It sits *before* Result/Option in the simplicity ladder.
+Redesign so the error case cannot arise, instead of reporting it (`substring` clamps to the available range; deletion is idempotent). Simplicity-first's *first* move on the error ladder — before Result/Option, not beside them.
 
-**Why it matters:** it completes the north star into an explicit ordering the book only implies — *eliminate the error (simplest) → else return it honestly as Result/Option/DU (honest) → never throw for control flow (robust).*
+- [Axiom 5 — Honest/total signatures](chapter1/axiom-05-honest-total-signatures.md) — the mechanics: a third route to totality is to *broaden the operation* until every input has a defined answer (clamp / idempotent / default), the imperative-world name for making a function total. Its *When NOT to* carries the counterweight — absorbing an input that can only signal a caller bug *masks* the defect, so fail fast instead of clamping.
+- [Axiom 15 — Result](chapter1/axiom-15-result.md) — the ordering: the explicit ladder *eliminate → return honestly → fail fast* positions Result as rung 2, not rung 1, completing the north star (*simple → honest → robust*) for error handling.
+- Structural eliminators — the same move at larger grain, each making the bad case unconstructable rather than handled: a value ([Axiom 17](chapter1/axiom-17-value-objects.md)), a record's shape ([Axiom 21](chapter1/axiom-21-illegal-states.md)), a call sequence ([Axiom 26](chapter1/axiom-26-typestate.md)).
+- Honest-return rung — [Axiom 12](chapter1/axiom-12-maybe.md) / [Axiom 13](chapter1/axiom-13-either.md): when the case is a real outcome that cannot be erased, it becomes a value.
 
-**Verdict:** high value. Either a short standalone axiom, or a "why" prepended to the Maybe/Result axioms. Decide which.
+**Not carried:** Ousterhout's other ch. 10 techniques — *exception masking* and *exception aggregation* are handler-placement / topology concerns (out of scope); *just crash* is already the fail-fast rung folded into [Axiom 15](chapter1/axiom-15-result.md).
 
-**Source:** John Ousterhout, *A Philosophy of Software Design* (2018).
+**Source:** John Ousterhout, *A Philosophy of Software Design* (2018), ch. 10.
 
 ---
 

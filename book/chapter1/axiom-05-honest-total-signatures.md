@@ -156,6 +156,8 @@ public BigDecimal divide(int numerator, NonZeroInt denominator) {
 
 `Divide` now has no partial case of its own to report. The input type admits no zero, so the body has no value to refuse. The partial fact has been pushed upstream — to whoever constructs a `NonZeroInt` — and `Divide` is total without widening its output. Widen the output or narrow the input; both paths land on the same property, and most real fixes use a mix of the two.
 
+There is a third route, blunter than either: **define the failing case out of existence** — redesign the operation so the input that used to be illegal now has a defined, sensible answer. A `Substring` that *clamps* an out-of-range length to what the string actually has, a delete that simply *succeeds* when the row is already gone (idempotent), a lookup that returns an empty list rather than refusing an empty query — each is total not because its output was widened or its input narrowed, but because the operation was *redefined* until no input is an error[4]. It is the most aggressive form of the axiom: the cheapest outcome to handle is the one that no longer exists. Its hazard mirrors its power, and *When NOT to* draws the line.
+
 ---
 
 ## Problem / forces
@@ -198,6 +200,7 @@ Two cases where the criterion is wrong or harmful:
 
 - **At the boundary, where the function is allowed to talk to the world.** An impure function from [Axiom 3](axiom-03-impure-functions.md) can fail because the database is gone, the network blinked, or the disk is full. Those outcomes are not part of the function's *own* logic; they belong to the shell and its retry / timeout / circuit-breaker discipline, not to the signature of a domain function. Honesty applies to outcomes the function *decides on*, not to the catalogue of plumbing failures.
 - **When the proposed extra outcome is really input validation.** Honesty asks for outcomes the function *decides on*. "The input was malformed" is not such an outcome — it belongs to the type of the parameter, not to the return type of every function that takes one. Folding input validation into the return type re-creates the check at every call site instead of solving it once where the input is constructed.
+- **When defining the error out of existence would mask a bug.** Totalizing by *absorbing* a bad input — clamping it, swallowing it, returning a default — is right only when the broadened behaviour is one the caller genuinely wants. When the bad input can arise only from a caller's mistake (a negative count, an index that *should* have been in range), silently absorbing it hides the defect at the exact spot it could have surfaced. There the honest move is the opposite: refuse loudly and let the bug fail fast, rather than define it out of existence and let it travel downstream as a plausible-looking value.
 
 ---
 
@@ -212,3 +215,5 @@ Two cases where the criterion is wrong or harmful:
 [3] **Robert Harper**, *Boolean Blindness*, Existential Type, 2011 (crediting Dan Licata for the term); **John A. De Goes**, *Destroy All Ifs*, degoes.net, 2015. Both name what a bare `bool` discards — that a value is one of two cases, with the cases left anonymous — and both prescribe the cure this playbook reaches for throughout: replace the boolean with a named type, a value object ([Axiom 17](axiom-17-value-objects.md)) on the return or a discriminated union ([Axiom 20](axiom-20-discriminated-unions.md)) for the cases.
 <https://existentialtype.wordpress.com/2011/03/15/boolean-blindness/>
 <http://degoes.net/articles/destroy-all-ifs>
+
+[4] **John Ousterhout**, *A Philosophy of Software Design*, Yaknyam Press, 2018, ch. 10 ("Define Errors Out of Existence"). The argument that the cheapest exception to handle is the one designed away — redefine an operation's semantics so the formerly-erroneous case becomes a normal, defined outcome (`substring` clamps, deletion is idempotent). The counterweight in *When NOT to* — that absorbing a bug-signalling input masks the defect — is the boundary this playbook draws around the technique.

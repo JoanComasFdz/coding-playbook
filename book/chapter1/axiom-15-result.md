@@ -246,6 +246,18 @@ A `Result<T, E>`-returning function is a function — it slots into pipelines, h
 
 ---
 
+## The ladder: eliminate, then return, then fail fast
+
+Result is the *second* move, not the first. Simplicity-first — *as simple as possible, then as honest as possible, then as robust as possible* — resolves into three rungs for any would-be error, and Result owns the middle one:
+
+1. **Eliminate it.** Before reporting a failure, ask whether the case can be designed away. Make the function total ([Axiom 5](axiom-05-honest-total-signatures.md)) — narrow the input until the bad value cannot be constructed, or broaden the operation until every input has a defined answer. An error defined out of existence needs no `Result`, no handler, no test; it is the simplest code there is, because it is the code that isn't there. (Later in the chapter the same move scales up — to a whole value, to the shape of a record, to the legal order of calls.)
+2. **Return it honestly.** When the failure is a real outcome of the function's own logic — wrong password, row not found, malformed input — it belongs in the return type as a value. This axiom is that rung: `Result` carries the outcome the runtime would otherwise have unwound the stack to deliver.
+3. **Fail fast.** When the "failure" can only mean a bug or an untrustworthy runtime — a violated invariant, an impossible state, out of memory — throw, halt, and let a higher layer log. *When NOT to* below is this rung.
+
+The rungs are ordered, and the order is the north star. Sliding *down* a rung is always allowed — you can `Result`-wrap something you might have eliminated, and the code still works. The mistakes are sideways and up: skipping rung 1 to handle an error you could have erased, or jumping to rung 3 to *throw* an outcome that was really rung 2's to return.
+
+---
+
 ## Trade-offs
 
 Result costs the same things [Either](axiom-13-either.md) costs — verbosity at the producer, a small allocation per call — plus one decision Either didn't make: **what should `E` be?** A string is cheapest and reads well at small scale, but the caller cannot branch on it without parsing. A typed enum or named failure record is honest about the cases but couples the producer to its callers' branching needs. There is no universally right answer; pick one per bounded slice of the codebase, and put the choice in an ADR rather than re-deciding it per function.
