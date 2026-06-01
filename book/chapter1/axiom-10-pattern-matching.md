@@ -8,7 +8,7 @@
 
 [Axiom 0](axiom-00-data-vs-behaviour.md) drew the line: data is a passive description of what something is; behaviour is a separate operation defined over it. When the data can take one of several shapes, the natural way to define a behaviour over it is *case analysis* — one clause per shape, each clause naming the result for that shape. Pattern matching is the syntax for that clausal definition: the shape on the left, the result on the right, the value's parts bound in the same step.
 
-Through [Axiom 7](axiom-07-connascence.md)'s lens, exhaustive matching is what keeps a sealed type and its consumers bound by a compiler-enforced [Connascence of Type](axiom-07-connascence.md#connascence-of-type-cot) rather than a convention: add a case to the type and every match that does not yet handle it stops compiling, so "did every consumer remember every case?" is answered by the build instead of discovered in production. It is the consumer-side complement to the discriminated unions ([Axiom 20](axiom-20-discriminated-unions.md)) the chapter builds next.
+Through [Axiom 7](axiom-07-connascence.md)'s lens, exhaustive matching is what keeps a sealed type and its consumers bound by a compiler-enforced [Connascence of Type](axiom-07-connascence.md#connascence-of-type-cot) rather than a convention: add a case to the type and every match that does not yet handle it stops compiling, so "did every consumer remember every case?" is answered by the build instead of discovered in production. It is the consumer-side complement to the discriminated unions the chapter builds next.
 
 ---
 
@@ -268,7 +268,7 @@ switch (decision)                         // impure dispatch
 
 Same for the `Match` method form: `var result = x.Compute(...); result.Match(...)`, not `x.Compute(...).Match(...)`.
 
-The reason is **visual separation between pure and impure**. The pure call lives on one line; the impure dispatch lives on the next. A reviewer scanning vertically sees the two halves of the [Impureim sandwich](axiom-11-impureheim.md) at a glance — *compute*, then *act* — without parsing an expression. Inlining the call collapses the two halves into one expression and hides the boundary the playbook spends so much effort marking.
+The reason is **visual separation between pure and impure**. The pure call lives on one line; the impure dispatch lives on the next. A reviewer scanning vertically sees the two halves at a glance — *compute*, then *act* — without parsing an expression. Inlining the call collapses the two halves into one expression and hides the boundary the playbook spends so much effort marking.
 
 Three downstream benefits follow from that visual cue:
 
