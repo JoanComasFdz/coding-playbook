@@ -421,9 +421,26 @@ Worth at most one paragraph of vocabulary, as an aside near that fold/aggregatio
 
 ## Catamorphism / fold — [SKIP — jargon]
 
-The exhaustive `Match` on a DU *is* that DU's catamorphism — the total consumer of a sum type.
+**What:** the one total operation that *consumes* an algebraic data type — hand it one function per case and it collapses the value to a single result. "Catamorphism" is just the umbrella word for **fold, generalised from lists to any sum type**:
 
-Too jargon-heavy to name; the totality point is already carried by [Axiom 10 — Pattern matching](chapter1/axiom-10-pattern-matching.md) and [Axiom 5 — Honest/total signatures](chapter1/axiom-05-honest-total-signatures.md). A one-line aside for the curious at most.
+| type | the fold | handlers you supply |
+|---|---|---|
+| `List<T>` | `Aggregate`/`reduce` | a seed + `(acc, item) → acc` |
+| `Maybe<T>` | `Match` | `onSome`, `onNone` |
+| `Result<T,E>` | `Match` / `fold` | `onOk`, `onErr` |
+| `Shape` (DU) | `Match` | one per variant |
+
+- For a **recursive** type (list, tree) the fold is `Match` *plus the recursive call* threaded through each case — that recursion is what collapses the structure into one value.
+- For a **flat** DU (`Add | Update | Remove`) there is nothing to recurse into, so the catamorphism just *is* exhaustive `Match`: one handler per variant.
+- Its defining trait is **totality** — a handler for every case, nothing skipped — the exact property the compiler checks on an exhaustive match.
+
+**Verdict:** declined as jargon, the same call as [Monoid / Semigroup](#monoid--semigroup--skip--vocabulary-only). The substance — the total consumer of a sum type — is already taught *and used* under the name `Match`, and the word buys nothing in C#/Java: there is no `Cata` construct to implement, `switch`/`.Match` is the whole API. Beyond a one-line aside it is category-theory tourism.
+
+- [Axiom 10 — Pattern matching](chapter1/axiom-10-pattern-matching.md) — the home. The [`Match` method form](chapter1/axiom-10-pattern-matching.md#the-method-form) (`R Match<R>(Func<Circle,R>, …)`) *is* the catamorphism encoding — one handler per case, returning `R`, with exhaustiveness as its totality; ref [4] there already cites `Option.fold`/`Result.fold`, the catamorphisms by name.
+- [Axiom 5 — Honest/total signatures](chapter1/axiom-05-honest-total-signatures.md) — that totality is the same total-consumer property: every case answered, no partial branch.
+- [Axiom 12 — Maybe](chapter1/axiom-12-maybe.md), [Axiom 13 — Either](chapter1/axiom-13-either.md), [Axiom 15 — Result](chapter1/axiom-15-result.md) — each type's `.Match` is its two-case catamorphism.
+
+The list `reduce` is itself a catamorphism (the List one), but it lives in [Monoid / Semigroup](#monoid--semigroup--skip--vocabulary-only) as the *monoid fold*; this entry is the general notion, whose everyday face on the book's flat DUs is `Match`.
 
 ---
 
