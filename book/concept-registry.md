@@ -261,13 +261,7 @@ Headline: most famous "principles" I hadn't named (SOLID, CUPID, CQS, Tell-Don't
 
 ---
 
-### Design by Contract (Meyer) — [FOLD → Value objects / parse-don't-validate]
-
-**What:** preconditions + postconditions + class invariants. The lens that sharpens *why types beat runtime assertions* — smart constructors enforce invariants by construction; parse-don't-validate *discharges* preconditions at the type boundary; types can't be disabled in production (Eiffel's assertions can).
-
-**Verdict:** conceptual-why material for value-objects + honest-signatures, not a technique of its own. "DbC asks the same three questions; we answer them with types, at compile time."
-
-**Source:** Meyer, *OO Software Construction*; "Applying Design by Contract" (IEEE, 1992).
+### Design by Contract (Meyer) — [🔁 FOLDED → [Axiom 17](chapter1/axiom-17-value-objects.md); postconditions via [5](chapter1/axiom-05-honest-total-signatures.md), preconditions-as-sequence via [26](chapter1/axiom-26-typestate.md)]
 
 ---
 
