@@ -478,10 +478,21 @@ Memorable but narrow; a one-line aside in domain-modelling at most.
 
 ---
 
-## Composition over inheritance — [SKIP — off-register]
+## Composition over inheritance — [SKIP — already the positive program]
 
-Reuse by holding collaborators (delegation) rather than extending base classes.
+Reuse by holding and passing collaborators as values rather than extending a base class. Not skipped for clashing with the register — skipped because the register already *is* it: the book composes behaviour as function values, and inheritance stays on the table as an honest trade-off in the axioms' *When NOT to*, never as a target.
 
-Foundational but OO-classical, against this book's FP-leaning register. If used at all, recast in the book's idiom (functions/values + explicit delegation) and present inheritance as a trade-off point — never an attack (per CLAUDE.md).
+The composition half — the default:
 
-**Source:** Gang of Four, *Design Patterns* (1994).
+- [Axiom 8 — First-class functions](chapter1/axiom-08-first-class-functions.md) — behaviour is a *value before it needs a host*, "the prerequisite for composition"; the GoF Strategy/Command/Visitor patterns (ref [1] there) are what function values collapse, Norvig's "16 of 23 patterns vanish" the count (ref [2]).
+- [Axiom 9 — Higher-order functions](chapter1/axiom-09-higher-order-functions.md) — where the day-to-day composition lives (`Compose`); names the rival outright — "expressing varying behaviour through inheritance or interface plumbing" pays a type per variation where a function-as-parameter pays one slot. Template Method / Strategy resolve here (ref [2]).
+
+The over-inheritance half — the hierarchy designed away, kept honestly:
+
+- [Axiom 0 — Data is not Behaviour](chapter1/axiom-00-data-vs-behaviour.md) — the root: inert data plus free functions removes the base-class-for-reuse reflex at the source.
+- [Axiom 20 — Discriminated unions](chapter1/axiom-20-discriminated-unions.md) — a closed subtype hierarchy consumed by polymorphic dispatch becomes a sealed DU + pattern match; the *When NOT to* keeps a virtual method per leaf for intrinsic operations and the non-sealed interface "exactly the OO shape" for an open set.
+- [Axiom 10 — Pattern matching](chapter1/axiom-10-pattern-matching.md) — the same virtual-dispatch-vs-match trade-off, inheritance kept as the right tool for intrinsic behaviour and open sets.
+
+Echoes the [SOLID critique](#solid-critique)'s note that the **O**/**L** letters are about inheritance hierarchies this FP-leaning register sidesteps.
+
+**Source:** Gang of Four, *Design Patterns* (1994) — cross-listed at [Axiom 8](chapter1/axiom-08-first-class-functions.md) ref [1] and [Axiom 9](chapter1/axiom-09-higher-order-functions.md) ref [2].
