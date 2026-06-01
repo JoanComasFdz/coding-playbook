@@ -8,6 +8,8 @@
 
 [Axiom 13](axiom-13-either.md) handled two-outcome computations with `Either<L, R>`; [Axiom 15](axiom-15-result.md) named the success/failure variant of that shape as `Result<T, E>`. Both were already sealed hierarchies — an abstract parent plus two case-records — consumed by a pattern match with two arms. Many real-world decisions produce more than two honest outcomes: a card authorization can be approved, declined, or require step-up verification; a parse can yield a valid value, a recoverable warning, or a fatal mismatch. Each outcome carries different data. The discriminated union is the data type that admits exactly those N cases and forbids any other combination of fields.
 
+Through [Axiom 7](axiom-07-connascence.md)'s lens, this axiom weakens a [Connascence of Meaning](axiom-07-connascence.md#connascence-of-meaning-com) — magic codes and boolean flags every consumer decodes by convention — into a Connascence of Type the compiler exhausts.
+
 ---
 
 ## Definitions

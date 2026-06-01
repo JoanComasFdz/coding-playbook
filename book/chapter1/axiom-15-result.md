@@ -8,6 +8,8 @@
 
 [Axiom 5](axiom-05-honest-total-signatures.md) says every outcome belongs in the return type; [Axiom 13](axiom-13-either.md) says distinct outcomes belong there *as values*. Result is the everyday named pair where the two outcomes are *success* and *failure*. Combined with [Axiom 14](axiom-14-unit.md), it covers the full grid: success carrying a value, success carrying nothing meaningful (`Result<Unit, E>`), or failure carrying an error.
 
+Through [Axiom 7](axiom-07-connascence.md)'s lens, this axiom weakens a [Connascence of Meaning](axiom-07-connascence.md#connascence-of-meaning-com) — the error codes, sentinels, and exception channels a caller must just *know* — into a Connascence of Type.
+
 ---
 
 ## Definitions

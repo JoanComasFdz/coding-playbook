@@ -7,6 +7,8 @@
 
 [Axiom 5](axiom-05-honest-total-signatures.md) named two ways to reach a total signature — widen the output, or *narrow the input*. The narrowing path needed a type whose values were guaranteed valid by construction; `NonZeroInt` was the placeholder. This axiom is the toolkit for building those types. A value object is a small immutable record ([Axiom 1](axiom-01-immutability.md)) whose construction *is* the parse step — raw input checked once on the way in, producing either a value the rest of the code can trust or a `Failure` ([Axiom 15](axiom-15-result.md)) explaining why it couldn't.
 
+Through [Axiom 7](axiom-07-connascence.md)'s lens, this axiom weakens a [Connascence of Meaning](axiom-07-connascence.md#connascence-of-meaning-com) — every call site re-checking what a bare string *means* — into a Connascence of Type, retiring the same-typed [Connascence of Position](axiom-07-connascence.md#connascence-of-position-cop) behind swapped arguments along the way.
+
 ---
 
 ## Definitions

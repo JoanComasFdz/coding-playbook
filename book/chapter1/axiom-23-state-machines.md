@@ -11,6 +11,8 @@
 
 [Axiom 22](axiom-22-pure-functions-returning-actions.md) returned an action describing what the shell should do — a pure function returning a sealed DU of variants the shell pattern-matches and executes. This axiom keeps that exact shape and adds two structural moves: the entity's state joins the inputs alongside the command, and each successful variant carries the next state. That single addition turns the one-shot decision into a continuous machine — the same function, called repeatedly with the current state in hand, drives the entity through its lifetime. This is what the chapter has been building toward: pure functions over immutable types, returning DUs; a single impure orchestrator is the only seam; stateful resources are held in the shell and fed in as values. The pattern applies as much to long-running infrastructure classes as to business entities — wherever state is spread across fields that change together, this axiom is the refactor that consolidates them.
 
+Through [Axiom 7](axiom-07-connascence.md)'s lens, this axiom weakens a [Connascence of Execution](axiom-07-connascence.md#connascence-of-execution-coe) — the legal order of transitions, otherwise scattered across methods and enforced at runtime — into a Connascence of Type.
+
 > Most classes that have more than 1 data field (not depencies) area ctually hiding an implicit state machine behind several disconnected data points. This axiom should be use as the default way to represent state when there is more than 1 data field for state.
 
 ---

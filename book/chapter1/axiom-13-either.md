@@ -8,6 +8,8 @@
 
 [Axiom 0](axiom-00-data-vs-behaviour.md) says data is a value; [Axiom 1](axiom-01-immutability.md) says values do not change; [Axiom 12](axiom-12-maybe.md) says absence is itself a value. This axiom adds the next honest thing data does: when a computation can produce one of two distinct outcomes, *both* belong in the return type — and `Either<L, R>` is the minimum way to spell that.
 
+Through [Axiom 7](axiom-07-connascence.md)'s lens, this axiom weakens a [Connascence of Meaning](axiom-07-connascence.md#connascence-of-meaning-com) — a tombstone or flag whose meaning the type cannot carry — into a Connascence of Type.
+
 This file is short on purpose. The rest of it is about what Either replaces — the three mainstream patterns that *pretend* a two-outcome function has one outcome.
 
 ---

@@ -7,6 +7,8 @@
 
 [Axiom 0](axiom-00-data-vs-behaviour.md) says data is a value; [Axiom 1](axiom-01-immutability.md) says values do not change. This axiom adds a third honest thing data does: when there is no value, the type still says so.
 
+Through [Axiom 7](axiom-07-connascence.md)'s lens, this axiom weakens a [Connascence of Meaning](axiom-07-connascence.md#connascence-of-meaning-com) — every caller agreeing by convention that `null` means *absent* — into a Connascence of Type.
+
 
 > **A note on the C# examples below.** This axiom uses C# nullable reference types (`T?`) because they are the language's built-in answer. Their enforcement is *compile-time-only and advisory* — the build passes on a warning — which makes them a structurally weaker implementation of this axiom than Java's `Optional<T>`. See [Maybe in C# beyond `T?`](#maybe-in-c-beyond-t) for the .NET ecosystem's structural alternatives.
 

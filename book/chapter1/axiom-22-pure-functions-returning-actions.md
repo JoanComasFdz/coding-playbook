@@ -10,6 +10,8 @@
 
 [Axiom 20](axiom-20-discriminated-unions.md) named the general sealed-DU shape — N honest outcomes, one variant per outcome, exhaustively pattern-matched. [Axiom 11](axiom-11-impureheim.md) sketched the sandwich — effects at the edges, pure logic in the middle. This axiom is the meeting point: when the pure middle's job is to decide *what the shell should do next*, the most honest return type is a DU whose variants are the things the shell is allowed to do. The structural foreshadowing in [Axiom 4](axiom-04-pure-functions.md) — `DecideAdd(cart, product, quantity) -> CartDecision` with `AddLine | IncreaseLine | Rejected` — was this axiom. Now the pattern has its name.
 
+Through [Axiom 7](axiom-07-connascence.md)'s lens, this axiom weakens a [Connascence of Meaning](axiom-07-connascence.md#connascence-of-meaning-com) — the status string or flag the shell must decode back into *what to do* — into a Connascence of Type.
+
 ---
 
 ## Definitions

@@ -9,6 +9,8 @@
 
 [Axiom 17](axiom-17-value-objects.md) made a *single value* honest — `Username.From("")` cannot exist. This axiom makes a *combination* of values honest: a `Paid` bill cannot exist without its payment reference, and a `Pending` bill cannot carry one. [Axiom 20](axiom-20-discriminated-unions.md) gave the mechanism — a sealed type whose variants each carry their own payload — with computation *outcomes* as the motivating example (approved / declined / step-up). This axiom points that same mechanism at the *persistent shape of a domain thing across its lifecycle*. It is the gentlest member of the family and the one reached for most: long before an engineer needs anything heavier, they need to stop modelling a five-state entity as one record with nine nullable fields.
 
+Through [Axiom 7](axiom-07-connascence.md)'s lens, this axiom weakens a [Connascence of Meaning](axiom-07-connascence.md#connascence-of-meaning-com) spread across a record's nullable fields — the unwritten rule for which may be set together — into a Connascence of Type, so the illegal combinations cannot be built.
+
 The slogan is older than typed FP's adoption of it: a *product* type (a record) represents "A **and** B **and** C — all present at once"; a *sum* type (a DU) represents "A **or** B **or** C — exactly one at a time." A lifecycle is an *or*. Modelling it as a product and then nulling out the fields that do not apply to the current case is using the wrong half of the algebra, and every `if (x != null)` downstream is the interest paid on that mistake.
 
 ---
