@@ -16,6 +16,8 @@ Session Context is the named place for that data. It is mutable — deliberately
 
 This is not a new pattern. Mainstream frameworks already ship it under different names. In C#, ASP.NET Core's `HttpContext` is per-request, threaded explicitly to middleware (`InvokeAsync(HttpContext ctx, ...)`), with an `Items` dictionary for cross-handler accumulators; Entity Framework Core's `DbContext` is per-request, threaded to repositories, and accumulates pending entity changes that `SaveChanges()` flushes at session end. The Java siblings are Jakarta's `HttpServletRequest` (request-scoped attributes via `getAttribute` / `setAttribute`) and JPA's `EntityManager` (the persistence-context Unit of Work). All four are *typed* to be passed explicitly — the shape this axiom names — though each framework also offers an ambient accessor on top (`IHttpContextAccessor`, Spring's `RequestContextHolder`, JPA's `@PersistenceContext` field injection); those are the anti-pattern form the Problem/forces section below catalogues.
 
+Through [Axiom 7](axiom-07-connascence.md)'s lens, ambient state is the most dangerous binding there is — a [Connascence of Identity](axiom-07-connascence.md#connascence-of-identity-coi): any function in the call tree may reach the one shared mutable instance, and no signature shows which ones do. Threading the context explicitly does not delete that shared identity — the instance is still shared — but it works the connascence's other two axes: it pulls the dependency into the open, so every function that needs the context declares it, and it localises that identity to the shell. An invisible, system-wide connascence becomes one the compiler can see and the reader can follow from signature to signature.
+
 ---
 
 ## Definitions

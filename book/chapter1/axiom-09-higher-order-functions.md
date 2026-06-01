@@ -7,6 +7,8 @@
 
 [Axiom 8](axiom-08-first-class-functions.md) named the prerequisite: a function is a value the program can hold, store, and pass. This axiom names what one *does* with that capability. Once functions fit through parameter slots and return types like any other value, a whole class of operations comes into reach — functions whose business is to combine, configure, or apply other functions. They are operations *over* function values, and they are where the day-to-day composition this playbook leans on actually lives.
 
+Through [Axiom 7](axiom-07-connascence.md)'s lens, a higher-order function improves the *locality* of variation: the shape is named once in the function, and the step that varies is passed in as a typed value at the call site — where the variation actually lives. A behaviour each caller would otherwise re-implement by the same informal convention becomes one named, compiler-checked seam — a [Connascence of Type](axiom-07-connascence.md#connascence-of-type-cot) instead of a per-call agreement the compiler cannot see.
+
 ---
 
 ## Definitions

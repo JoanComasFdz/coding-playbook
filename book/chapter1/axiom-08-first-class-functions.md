@@ -6,6 +6,8 @@
 
 [Axiom 5](axiom-05-honest-total-signatures.md) set the criterion for a function worth keeping — every outcome named in the return, every input the type admits accepted by the body. This axiom names the property that lets two such functions be composed at all: a function is not only something a program *does* — it is a *value* the program can hold, store, move, and pass.
 
+Through [Axiom 7](axiom-07-connascence.md)'s lens, this axiom weakens no connascence on its own — it is the *carrier* the later weakenings ride on. Once a function is a value, the operation that composes functions is a value too, and a dispatch once carried by a stringly-keyed `switch` (a [Connascence of Meaning](axiom-07-connascence.md#connascence-of-meaning-com)) can become a typed lookup the compiler checks. First-class functions don't make that move; they make it *available*.
+
 ---
 
 ## Definitions

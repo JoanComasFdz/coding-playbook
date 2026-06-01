@@ -9,6 +9,8 @@
 
 This file is short on purpose. It names the shape and the reason for it — the machinery follows.
 
+Through [Axiom 7](axiom-07-connascence.md)'s lens, the sandwich improves the *locality* of a [Connascence of Execution](axiom-07-connascence.md#connascence-of-execution-coe): the gather → decide → act order that would otherwise be scattered through a call tree is forced into one visible home at the seams. It does not make the wrong order unwriteable but it puts the order where a reader sees it in one frame.
+
 ---
 
 ## Definitions
