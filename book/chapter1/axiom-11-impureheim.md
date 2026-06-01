@@ -1,4 +1,4 @@
-# Axiom 10 — Impureheim
+# Axiom 11 — Impureheim
 
 **Impureheim is the shape where every effect lives in a thin impure shell at the edges, and the work that decides lives in a pure core in the middle.**
 

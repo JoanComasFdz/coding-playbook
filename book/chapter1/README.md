@@ -34,80 +34,84 @@ The code examples they provide are for educational purposes and are not final, p
 
 **6. Cohesion** — one function, one reason to change: one input shape, one decision, one output shape. Group and split code by reason-to-change, not by surface similarity.
 
-*↳ Pure, honest, and cohesive — the criterion for a well-formed function is now complete, and the rest of the chapter is the toolkit. We'll want to compose such functions, which first means treating functions as values.*
+*↳ Cohesion measured a single unit from the inside — one reason to change. Turn the same question outward — what forces a change in one unit to ripple into another? — and you have the chapter's second lens.*
 
-**7. First-class functions** — functions stored, passed, returned.
+**7. Connascence** — a graded, named taxonomy of how two units are coupled (name, type, meaning, position, algorithm, execution order), judged on three axes: strength, degree, locality. The work is to weaken strong connascence toward weak, shrink its degree, and pull connascent units closer. The chapter's second evaluative lens — it builds nothing, but names what every weakening still to come is doing.
+
+*↳ Pure, honest, cohesive, and weakly coupled — the criteria for well-formed code are now complete, and the rest of the chapter is the toolkit. We'll want to compose such functions, which first means treating functions as values.*
+
+**8. First-class functions** — functions stored, passed, returned.
 
 *↳ Once functions are values, functions can take and return other functions.*
 
-**8. Higher-order functions** — functions over functions.
+**9. Higher-order functions** — functions over functions.
 
 *↳ That's the machinery the container types will need (map/flatMap are HOFs) — but before introducing them, we need a clean way to take their values apart.*
 
-**9. Pattern matching** — branch on a value's shape.
+**10. Pattern matching** — branch on a value's shape.
 
 *↳ With pure/impure understood, a criterion for good signatures, and a way to branch, we can now sketch the target we're building toward.*
 
-**10. Impureheim** *(concept only)* — effects at the edges, pure logic in the middle.
+**11. Impureheim** *(concept only)* — effects at the edges, pure logic in the middle.
 
 *↳ The north star. That pure core is only worth having if we have good types to fill it — starting with the simplest.*
 
-**11. Maybe** — presence or absence (examples now lean on the HOFs from 8).
+**12. Maybe** — presence or absence (examples now lean on the HOFs from 9).
 
 *↳ Absence is one missing case; next, a value that's one of two types.*
 
-**12. Either** — one of two types (a sealed interface + records).
+**13. Either** — one of two types (a sealed interface + records).
 
 *↳ Before specializing this into success/failure, we must handle operations that succeed but return nothing.*
 
-**13. Unit** — a type with a single value, for "nothing meaningful to return."
+**14. Unit** — a type with a single value, for "nothing meaningful to return."
 
 *↳ With Unit available for the no-value case, Result can be defined cleanly.*
 
-**14. Result** *(concept)* — success or failure, no exceptions.
+**15. Result** *(concept)* — success or failure, no exceptions.
 
 *↳ A bare Result is clumsy; the HOFs from earlier let us transform and chain it.*
 
-**15. Result combinators** — map / flatMap / mapError.
+**16. Result combinators** — map / flatMap / mapError.
 
 *↳ Chaining needs things to chain: small fallible constructors.*
 
-**16. Value objects** *(string failures first)* — make invalid states unrepresentable; each `from` returns a Result.
+**17. Value objects** *(string failures first)* — make invalid states unrepresentable; each `from` returns a Result.
 
 *↳ A domain full of fallible constructors is exactly what we can now wire together.*
 
-**17. Railway** — chain them so the first failure short-circuits.
+**18. Railway** — chain them so the first failure short-circuits.
 
 *↳ But stopping at the first error isn't always what you want.*
 
-**18. Validation** — a `ValidationError` convention plus accumulate-every-error, the deliberate contrast to railway.
+**19. Validation** — a `ValidationError` convention plus accumulate-every-error, the deliberate contrast to railway.
 
 *↳ All of this handled two outcomes; for three or more we generalize the shape.*
 
-**19. Discriminated unions** *(3+ outcomes)* — consumed via the pattern matching from 9; the reveal that Either and Result were DUs all along.
+**20. Discriminated unions** *(3+ outcomes)* — consumed via the pattern matching from 10; the reveal that Either and Result were DUs all along.
 
 *↳ The same sum-type machinery models not just a computation's outcomes but the persistent shape of a thing across its lifecycle.*
 
-**20. Make illegal states unrepresentable** — model a thing that is in one of several states as a sum of per-state records, not a product of nullable fields; each field lives only on the state where it is valid. The data-shape sibling of value objects (16) and the base the state machine (22) and typestate (25) escalate from.
+**21. Make illegal states unrepresentable** — model a thing that is in one of several states as a sum of per-state records, not a product of nullable fields; each field lives only on the state where it is valid. The data-shape sibling of value objects (17) and the base the state machine (23) and typestate (26) escalate from.
 
 *↳ That was data at rest; when the pure core decides what should *happen*, model its output the same way — as a DU of actions.*
 
-**21. Pure functions returning actions** — the pure core decides, the impure shell executes (delivering the sandwich from 10).
+**22. Pure functions returning actions** — the pure core decides, the impure shell executes (delivering the sandwich from 11).
 
 *↳ Generalize "decide an action" into "decide the next state."*
 
-**22. State machines** — centralized state, transitions as DUs, decisions as pure functions returning actions. Everything composes.
+**23. State machines** — centralized state, transitions as DUs, decisions as pure functions returning actions. Everything composes.
 
 *↳ The shell was one-shot — load, decide, persist, return. Many programs aren't one-shot. Before we can describe what their longer-lived shells *do*, we need to name what they *hold*.*
 
-**23. Session Context** — per-session mutable state held by the shell: accumulators, signals, flags, callbacks. Distinct from FSM state and from globals.
+**24. Session Context** — per-session mutable state held by the shell: accumulators, signals, flags, callbacks. Distinct from FSM state and from globals.
 
 *↳ With a place to keep the session's working memory, the shell shape can grow beyond one-shot — into a loop that drives the FSM forward over the whole session.*
 
-**24. Stateful Shell** — the long-running shell shape: read current state, dispatch the effect that state demands, await an environmental event, call `Transition`, repeat. *(Lineage: the language-runtime fetch-decode-execute *Interpreter Loop*.)*
+**25. Stateful Shell** — the long-running shell shape: read current state, dispatch the effect that state demands, await an environmental event, call `Transition`, repeat. *(Lineage: the language-runtime fetch-decode-execute *Interpreter Loop*.)*
 
-*↳ Twenty-four axioms in, the structural toolkit is complete — entities, decisions, shells, the session-scoped state they hold, and the long-lived resources the shell carries between calls. One niche escalation closes the chapter: when the legal *order* of calls is itself part of the contract, lift each state into its own type so the wrong-order call cannot be written.*
+*↳ Twenty-five axioms in, the structural toolkit is complete — entities, decisions, shells, the session-scoped state they hold, and the long-lived resources the shell carries between calls. One niche escalation closes the chapter: when the legal *order* of calls is itself part of the contract, lift each state into its own type so the wrong-order call cannot be written.*
 
-**25. Typestate** — encode call order in the type system; each state is its own type, transitions return the next type, and operations valid only in one state live only on that state's type. The narrow-use type-level counterpart to the value-level state machines from 22.
+**26. Typestate** — encode call order in the type system; each state is its own type, transitions return the next type, and operations valid only in one state live only on that state's type. The narrow-use type-level counterpart to the value-level state machines from 23.
 
-*Note: most bridges are strict dependencies — the next chapter literally needs the previous one. Two (10 and 21) are intentionally motivational rather than strict: Impureheim is introduced early as a "north star" to give the tool-building that follows a clear purpose, and it pays off at 21. Axiom 25 is the chapter's one out-of-arc item — a niche tool placed at the end so it does not interrupt the constantly-used material that precedes it.*
+*Note: most bridges are strict dependencies — the next axiom literally needs the previous one. A few are deliberately not. Connascence (7) is an evaluative lens set beside Cohesion: the tools that follow it do not depend on it, but it names what each of them is doing. Impureheim (11) is introduced early as a "north star" to give the tool-building that follows a clear purpose, and it pays off at 22. And Typestate (26) is the chapter's one out-of-arc item — a niche tool placed at the end so it does not interrupt the constantly-used material that precedes it.*

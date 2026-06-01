@@ -1,4 +1,4 @@
-# Axiom 7 — First-class functions
+# Axiom 8 — First-class functions
 
 **A function is a value — it can be assigned to a variable, stored in a collection, passed as an argument, and returned as a result.**
 

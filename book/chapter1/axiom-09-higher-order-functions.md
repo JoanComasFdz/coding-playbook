@@ -1,11 +1,11 @@
-# Axiom 8 — Higher-order functions
+# Axiom 9 — Higher-order functions
 
 **A function is higher-order when it takes a function as a parameter, returns a function as its result, or both.**
 
 - The function being passed or returned is just a value of a function type, like any other value.
 - Higher-order functions are how a program names a *shape* once and lets callers fill in the *step*.
 
-[Axiom 7](axiom-07-first-class-functions.md) named the prerequisite: a function is a value the program can hold, store, and pass. This axiom names what one *does* with that capability. Once functions fit through parameter slots and return types like any other value, a whole class of operations comes into reach — functions whose business is to combine, configure, or apply other functions. They are operations *over* function values, and they are where the day-to-day composition this playbook leans on actually lives.
+[Axiom 8](axiom-08-first-class-functions.md) named the prerequisite: a function is a value the program can hold, store, and pass. This axiom names what one *does* with that capability. Once functions fit through parameter slots and return types like any other value, a whole class of operations comes into reach — functions whose business is to combine, configure, or apply other functions. They are operations *over* function values, and they are where the day-to-day composition this playbook leans on actually lives.
 
 ---
 
@@ -19,7 +19,7 @@ A function is **higher-order** when at least one of the following is true:
 A function that does both — takes a function and returns one — is higher-order by either definition. The pattern appears at two distinct sizes in real code:
 
 - **Operations that consume a function.** `Select`/`map`, `Where`/`filter`, `Aggregate`/`reduce`, `List.sort(comparator)`, `forEach`. The body is a fixed traversal; the caller plugs in the per-element decision. The library writes the traversal once; every call site writes only the variation.
-- **Operations that produce a function.** A factory that, given some configuration, returns a function pre-bound to it: `Multiplier(factor)` from [Axiom 7](axiom-07-first-class-functions.md), a `Comparator` builder, a function-composition operator. The result is a value the program can hold and reuse, with the configuration already inside.
+- **Operations that produce a function.** A factory that, given some configuration, returns a function pre-bound to it: `Multiplier(factor)` from [Axiom 8](axiom-08-first-class-functions.md), a `Comparator` builder, a function-composition operator. The result is a value the program can hold and reuse, with the configuration already inside.
 
 This axiom rejects three mainstream defaults that take on the same responsibility through other constructs:
 
@@ -118,7 +118,7 @@ var clean = lines.stream().map(normalize).toList();
 </tr>
 </table>
 
-`Compose` is higher-order by both definitions at once: it takes two functions and returns one. The resulting `normalize` is not a method, not an object; it is a **closure** in the sense of [Axiom 7](axiom-07-first-class-functions.md) — the function value that applies `trim` and then `toLower`, with both captured from the call that built it. Ready to be passed anywhere a `Func<string, string>` is expected; the caller never needs to spell out the chain again.
+`Compose` is higher-order by both definitions at once: it takes two functions and returns one. The resulting `normalize` is not a method, not an object; it is a **closure** in the sense of [Axiom 8](axiom-08-first-class-functions.md) — the function value that applies `trim` and then `toLower`, with both captured from the call that built it. Ready to be passed anywhere a `Func<string, string>` is expected; the caller never needs to spell out the chain again.
 
 The clearest sign that an HOF is wanting to be extracted is a piece of code where the *same shape* repeats with a different *step* in the middle: open and close a resource, walk and accumulate, retry on failure, time and report. Pull the step into a parameter; the shape goes from copy-pasted to written once.
 
@@ -128,7 +128,7 @@ The clearest sign that an HOF is wanting to be extracted is a piece of code wher
 
 The competing force is **the habit of expressing varying behaviour through inheritance or interface plumbing**. The dominant OO formulations for "this shape, with this step swapped in" are Template Method and Strategy-as-interface. Both work; both pay a tax — a type per variation, a directory of small classes, a wiring step in the composition root. A function-as-parameter delivers the same separation in one parameter slot, with the variation living at the call site instead of in a new file.
 
-There is a real force in the other direction. HOF chains can be harder to step through in a debugger; the stack trace shows the wrapper but the lambda inside it is anonymous. A deeply chained pipeline of unnamed steps becomes opaque the moment something needs investigating. The remedy is the discipline from [Axiom 7](axiom-07-first-class-functions.md): name the function when it earns a name. A `static` method passed to an HOF is exactly as discoverable as a regular method.
+There is a real force in the other direction. HOF chains can be harder to step through in a debugger; the stack trace shows the wrapper but the lambda inside it is anonymous. A deeply chained pipeline of unnamed steps becomes opaque the moment something needs investigating. The remedy is the discipline from [Axiom 8](axiom-08-first-class-functions.md): name the function when it earns a name. A `static` method passed to an HOF is exactly as discoverable as a regular method.
 
 Not every place that "takes a piece of behaviour" benefits from collapsing to a function. Where the behaviour is genuinely multi-method (open / read / close), the interface is the right shape and its cohesion is the point. The axiom is about the case where the interface exists only to wrap a single operation — that case is the function-shaped one.
 
@@ -156,7 +156,7 @@ The first cost is **debugging shape**. A stack trace through `Map(items, item =>
 
 The second cost is **type-inference friction in some languages.** A function that takes a `Func<T, U>` parameter sometimes needs an explicit type argument at the call site because the compiler cannot infer `T` and `U` from a bare lambda. The fix is local — annotate the lambda, or assign it to a typed local — but the friction is real, especially in deeply generic helper APIs.
 
-The third cost, in disciplined codebases, is **discoverability**. A class implementing `IComparer<Order>` appears in `Find Usages`; a lambda passed inline does not. The remedy is the same as in [Axiom 7](axiom-07-first-class-functions.md): name the function when it earns a name. A `static` method handed to an HOF participates in symbol indexing exactly as any other method.
+The third cost, in disciplined codebases, is **discoverability**. A class implementing `IComparer<Order>` appears in `Find Usages`; a lambda passed inline does not. The remedy is the same as in [Axiom 8](axiom-08-first-class-functions.md): name the function when it earns a name. A `static` method handed to an HOF participates in symbol indexing exactly as any other method.
 
 ---
 
@@ -165,7 +165,7 @@ The third cost, in disciplined codebases, is **discoverability**. A class implem
 Two cases where the function-as-parameter reflex is the wrong reflex:
 
 - **Behaviour that is genuinely multi-method.** An `IDisposable`, an `IEnumerator<T>`, an `IObserver<T>` declare *several* operations that have to be implemented together; their cohesion is the point of having a type. Collapsing to a single function is a degradation; the interface is the right shape.
-- **Behaviour that needs a stable identity.** A plugin handler resolved by string key from a `Map<String, Function<...>>` works as long as the keys live inside the same program. A handler that has to survive serialization, scanning by an annotation processor, or registration across processes needs a class — the same exception called out in [Axiom 7](axiom-07-first-class-functions.md).
+- **Behaviour that needs a stable identity.** A plugin handler resolved by string key from a `Map<String, Function<...>>` works as long as the keys live inside the same program. A handler that has to survive serialization, scanning by an annotation processor, or registration across processes needs a class — the same exception called out in [Axiom 8](axiom-08-first-class-functions.md).
 
 ---
 
@@ -174,4 +174,4 @@ Two cases where the function-as-parameter reflex is the wrong reflex:
 [1] **John Hughes**, *Why Functional Programming Matters*, Research Topics in Functional Programming, Addison-Wesley, 1990. Already cited in earlier axioms; cross-listed here because its central argument — that higher-order functions are the *glue* that makes small, simple definitions compose into large programs — is the formal case for this axiom. The paper's worked examples (`foldr`, `map`, numerical algorithms parameterised by their step) are the canonical demonstrations.
 <https://www.cs.kent.ac.uk/people/staff/dat/miranda/whyfp90.pdf>
 
-[2] **Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides**, *Design Patterns: Elements of Reusable Object-Oriented Software*, Addison-Wesley, 1994. Template Method, Strategy, and Command are the OO formulations that higher-order functions replace at smaller cost. Already cited in [Axiom 7](axiom-07-first-class-functions.md); included again because this is where those patterns *resolve* — HOFs are how the playbook expresses them when the variation is one function.
+[2] **Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides**, *Design Patterns: Elements of Reusable Object-Oriented Software*, Addison-Wesley, 1994. Template Method, Strategy, and Command are the OO formulations that higher-order functions replace at smaller cost. Already cited in [Axiom 8](axiom-08-first-class-functions.md); included again because this is where those patterns *resolve* — HOFs are how the playbook expresses them when the variation is one function.

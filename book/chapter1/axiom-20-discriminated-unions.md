@@ -1,12 +1,12 @@
-# Axiom 19 — Discriminated unions
+# Axiom 20 — Discriminated unions
 
-**A discriminated union is a sealed type whose permitted variants each carry their own payload — the same machinery as [Either](axiom-12-either.md) and [Result](axiom-14-result.md), generalized to three or more honest outcomes.**
+**A discriminated union is a sealed type whose permitted variants each carry their own payload — the same machinery as [Either](axiom-13-either.md) and [Result](axiom-15-result.md), generalized to three or more honest outcomes.**
 
 - N case-types live under one sealed parent; each variant is its own record with its own fields.
 - A value is exactly one variant at a time; the cases are disjoint by construction.
-- Consumed by exhaustive pattern matching ([Axiom 9](axiom-09-pattern-matching.md)) — the compiler verifies that every case has a branch.
+- Consumed by exhaustive pattern matching ([Axiom 10](axiom-10-pattern-matching.md)) — the compiler verifies that every case has a branch.
 
-[Axiom 12](axiom-12-either.md) handled two-outcome computations with `Either<L, R>`; [Axiom 14](axiom-14-result.md) named the success/failure variant of that shape as `Result<T, E>`. Both were already sealed hierarchies — an abstract parent plus two case-records — consumed by a pattern match with two arms. Many real-world decisions produce more than two honest outcomes: a card authorization can be approved, declined, or require step-up verification; a parse can yield a valid value, a recoverable warning, or a fatal mismatch. Each outcome carries different data. The discriminated union is the data type that admits exactly those N cases and forbids any other combination of fields.
+[Axiom 13](axiom-13-either.md) handled two-outcome computations with `Either<L, R>`; [Axiom 15](axiom-15-result.md) named the success/failure variant of that shape as `Result<T, E>`. Both were already sealed hierarchies — an abstract parent plus two case-records — consumed by a pattern match with two arms. Many real-world decisions produce more than two honest outcomes: a card authorization can be approved, declined, or require step-up verification; a parse can yield a valid value, a recoverable warning, or a fatal mismatch. Each outcome carries different data. The discriminated union is the data type that admits exactly those N cases and forbids any other combination of fields.
 
 ---
 
@@ -17,11 +17,11 @@ A *discriminated union* (DU, also called a *sum type* or *tagged union*) is:
 - **A sealed parent type** — the set of permitted variants is closed and known at compile time. In Java this is `sealed interface T permits A, B, C` (JEP 409); in C# it's an `abstract record` whose only descendants are `sealed record`s in the same file or module.
 - **N case-types, one per variant** — each variant is its own record (or `final class`) declaring only the fields that variant carries. No optional fields, no nullable smuggling.
 - **Disjoint by construction** — a value is one variant or another, never both, never neither.
-- **Consumed by pattern matching** — narrowing and binding happen inside the arm, as in [Axiom 9](axiom-09-pattern-matching.md); exhaustiveness is a compile-time property over the sealed set.
+- **Consumed by pattern matching** — narrowing and binding happen inside the arm, as in [Axiom 10](axiom-10-pattern-matching.md); exhaustiveness is a compile-time property over the sealed set.
 
-The 2-case versions are already named: `Either<L, R>` and `Result<T, E>`. This axiom is the general form at any arity. The reveal is that the sealed-interface-plus-records pattern reused from [Axiom 9](axiom-09-pattern-matching.md) onward *is* the DU; the earlier axioms specialized it to the two-case shape because that case is common enough to deserve a name.
+The 2-case versions are already named: `Either<L, R>` and `Result<T, E>`. This axiom is the general form at any arity. The reveal is that the sealed-interface-plus-records pattern reused from [Axiom 10](axiom-10-pattern-matching.md) onward *is* the DU; the earlier axioms specialized it to the two-case shape because that case is common enough to deserve a name.
 
-The compile-time guarantee is fully enforced on the Java side (a missing arm is a compile error). On the C# side it is partial — C# 14 cannot prove the hierarchy closed, so an exhaustive switch over a `sealed`-leaved hierarchy emits CS8509 if a case is missed rather than a hard error. The honesty gradient is the same one [Axiom 12](axiom-12-either.md) documented for `Either`.
+The compile-time guarantee is fully enforced on the Java side (a missing arm is a compile error). On the C# side it is partial — C# 14 cannot prove the hierarchy closed, so an exhaustive switch over a `sealed`-leaved hierarchy emits CS8509 if a case is missed rather than a hard error. The honesty gradient is the same one [Axiom 13](axiom-13-either.md) documented for `Either`.
 
 ---
 
@@ -130,13 +130,13 @@ Options 1, 2 and 3 share a single dishonesty: the *combination of fields* that's
 What the DU gets right that the flat-record / nullable-payload / enum-tag forms do not:
 
 **1. The set of outcomes is closed and verified.**
-Sealing declares the full set in one place. A pattern match consumes them exhaustively; omit a case and the toolchain complains (compile error on Java, CS8509 warning on C#). Adding a new variant turns "every place I need to update" into a list the compiler hands the engineer — the same enforcement gradient [Axiom 9](axiom-09-pattern-matching.md) names for sealed `Shape`.
+Sealing declares the full set in one place. A pattern match consumes them exhaustively; omit a case and the toolchain complains (compile error on Java, CS8509 warning on C#). Adding a new variant turns "every place I need to update" into a list the compiler hands the engineer — the same enforcement gradient [Axiom 10](axiom-10-pattern-matching.md) names for sealed `Shape`.
 
 **2. Each variant carries exactly its own payload.**
 `Approved` has an `AuthCode` and nothing else. `Declined` has a `Reason` and nothing else. There is no `Approved` instance with a stray `ChallengeUrl` field — that record literally does not have one. Invalid combinations are not "guarded against"; they are *unrepresentable*, which is the operational form of the "make illegal states unrepresentable" principle from [Axiom 5](axiom-05-honest-total-signatures.md) at the variant level.
 
 **3. Either and Result generalize to N cases without new machinery.**
-The two-case sealed hierarchies from [Axiom 12](axiom-12-either.md) and [Axiom 14](axiom-14-result.md) used the exact same toolchain — sealed parent, case-records, pattern match — that this axiom uses at higher arity. The reader doesn't learn a new language feature for the three-case version; they apply the same shape with one more permitted leaf. The two named special cases earned their names because the *meaning* — left/right, success/failure — is reused across thousands of functions; everywhere else, the variants get domain names because the domain is what's specific.
+The two-case sealed hierarchies from [Axiom 13](axiom-13-either.md) and [Axiom 15](axiom-15-result.md) used the exact same toolchain — sealed parent, case-records, pattern match — that this axiom uses at higher arity. The reader doesn't learn a new language feature for the three-case version; they apply the same shape with one more permitted leaf. The two named special cases earned their names because the *meaning* — left/right, success/failure — is reused across thousands of functions; everywhere else, the variants get domain names because the domain is what's specific.
 
 **4. The consuming code reads as a table.**
 A pattern match over a DU sits the cases side by side, one per line: shape on the left, work on the right. A reviewer counts variants against arms; a reader sees the full decision in one place. The flat-record / nullable-field forms distribute the same decision across `if`-ladders or scattered helper methods; the DU keeps it in one expression, and the type system keeps it complete.
@@ -149,15 +149,15 @@ A pattern match over a DU sits the cases side by side, one per line: shape on th
 
 **Allocation per result.** The sealed-hierarchy form requires the variants to be classes — a C# `record struct` can't inherit from an `abstract record`, and Java records are always reference types. Each variant is a heap allocation per call. For line-of-business code this is dust under the table; for inner loops on the JVM or in C# value-type-heavy paths it can matter. Struct-encoded unions (`OneOf<A, B, C>` libraries on the .NET side, hand-rolled struct discriminators with `[StructLayout(LayoutKind.Explicit)]`) trade the sealed-hierarchy encoding for zero allocation; the honesty cost of going back to a runtime tag is real, and the practice is to keep the DU for the boundary and pay the allocation cost there.
 
-**Java records can't enforce smart-constructor invariants.** Same gotcha [Axiom 16](axiom-16-value-objects.md) named for value objects: `record Approved(String authCode) implements PaymentOutcome {}` accepts `null` and the empty string. When a variant carries invariants beyond its shape, the leaf has to be a `final class` with a private constructor and a `From` factory, or its invariants live in the value-object types it wraps.
+**Java records can't enforce smart-constructor invariants.** Same gotcha [Axiom 17](axiom-17-value-objects.md) named for value objects: `record Approved(String authCode) implements PaymentOutcome {}` accepts `null` and the empty string. When a variant carries invariants beyond its shape, the leaf has to be a `final class` with a private constructor and a `From` factory, or its invariants live in the value-object types it wraps.
 
-**Some operations belong on the type, not in a consumer.** When the same operation has a per-variant definition that is intrinsic to each variant — *render a string for this payment outcome*, *is this terminal?* — a virtual method per leaf keeps the implementation next to its data. Pattern matching over the DU centralizes the same operation in the consumer. Both are valid; the choice between them is the same one [Axiom 9](axiom-09-pattern-matching.md) drew, applied to the consumption of a multi-case data type instead of a two-case one.
+**Some operations belong on the type, not in a consumer.** When the same operation has a per-variant definition that is intrinsic to each variant — *render a string for this payment outcome*, *is this terminal?* — a virtual method per leaf keeps the implementation next to its data. Pattern matching over the DU centralizes the same operation in the consumer. Both are valid; the choice between them is the same one [Axiom 10](axiom-10-pattern-matching.md) drew, applied to the consumption of a multi-case data type instead of a two-case one.
 
 ---
 
 ## When NOT to
 
-**Two cases with one named answer.** When the two outcomes are *value or no value*, *one of two distinct things*, or *success or failure*, the named types [Axiom 11](axiom-11-maybe.md), [Axiom 12](axiom-12-either.md) and [Axiom 14](axiom-14-result.md) already provide are the right reach. Inventing a fresh sealed hierarchy when one of those fits is reinvention. The general DU shape pays off at arity three and above.
+**Two cases with one named answer.** When the two outcomes are *value or no value*, *one of two distinct things*, or *success or failure*, the named types [Axiom 12](axiom-12-maybe.md), [Axiom 13](axiom-13-either.md) and [Axiom 15](axiom-15-result.md) already provide are the right reach. Inventing a fresh sealed hierarchy when one of those fits is reinvention. The general DU shape pays off at arity three and above.
 
 **The set of cases is open by design.** Plugin hosts, extension points, codebases where the variant list is expected to grow outside the module. Sealing requires every variant to live where the parent is declared; for an open set, a non-sealed interface with a virtual method per implementor — exactly the OO shape — is the right fit. The compile-time exhaustiveness guarantee of the DU is paid for in closure.
 
@@ -171,7 +171,7 @@ A pattern match over a DU sits the cases side by side, one per line: shape on th
 
 [1] **Haskell** `data` declarations (Haskell 2010 Report), **Rust** `enum`, **F#** discriminated unions, **Scala** `sealed trait` / `enum`, **TypeScript** tagged unions. The DU is the shape these languages model the case-list as a first-class type — long before C# and Java arrived at the same shape via `sealed interface`/`abstract record` plus pattern matching.
 
-[2] **OpenJDK**, *JEP 409: Sealed Classes*, finalised in Java 17 (2021). Cross-listed from [Axiom 9](axiom-09-pattern-matching.md) and [Axiom 12](axiom-12-either.md). The language feature that makes the closed-set guarantee a compile-time property: a sealed parent declares its permitted subtypes, and the compiler enforces both the closure and exhaustive consumption over it.
+[2] **OpenJDK**, *JEP 409: Sealed Classes*, finalised in Java 17 (2021). Cross-listed from [Axiom 10](axiom-10-pattern-matching.md) and [Axiom 13](axiom-13-either.md). The language feature that makes the closed-set guarantee a compile-time property: a sealed parent declares its permitted subtypes, and the compiler enforces both the closure and exhaustive consumption over it.
 <https://openjdk.org/jeps/409>
 
 [3] **Scott Wlaschin**, *Designing with Types: Discriminated unions*, F# for Fun and Profit. The canonical introduction to using DUs to model business outcomes — each variant is its own shape with only its own data, the consumer dispatches by case. The C# / Java sealed-hierarchy form is the direct translation of the F# original.
@@ -180,5 +180,5 @@ A pattern match over a DU sits the cases side by side, one per line: shape on th
 [4] **Scott Wlaschin**, *Designing with Types: Making illegal states unrepresentable*, F# for Fun and Profit. Cross-listed from [Axiom 5](axiom-05-honest-total-signatures.md). The DU is the operational form of "illegal states unrepresentable" applied to multi-outcome data: each impossible combination of fields is not "checked against" but *literally not a type that exists*.
 <https://fsharpforfunandprofit.com/posts/designing-with-types-making-illegal-states-unrepresentable/>
 
-[5] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022. Cross-listed from [Axiom 0](axiom-00-data-vs-behaviour.md), [Axiom 1](axiom-01-immutability.md), [Axiom 11](axiom-11-maybe.md), and [Axiom 12](axiom-12-either.md). The broader case that distinct kinds-of-thing belong as distinct shapes of data — exactly the move from "one flat record with optional fields" to "a sealed hierarchy whose variants each declare only their own fields."
+[5] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022. Cross-listed from [Axiom 0](axiom-00-data-vs-behaviour.md), [Axiom 1](axiom-01-immutability.md), [Axiom 12](axiom-12-maybe.md), and [Axiom 13](axiom-13-either.md). The broader case that distinct kinds-of-thing belong as distinct shapes of data — exactly the move from "one flat record with optional fields" to "a sealed hierarchy whose variants each declare only their own fields."
 <https://www.manning.com/books/data-oriented-programming>

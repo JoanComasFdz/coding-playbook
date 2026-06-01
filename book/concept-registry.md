@@ -16,31 +16,31 @@ Joan Comas, Senior Software Architect — since June 2024
 
 ## Maybe
 
-✅ **Axiomatized** → [Axiom 11 — Maybe](chapter1/axiom-11-maybe.md)
+✅ **Axiomatized** → [Axiom 12 — Maybe](chapter1/axiom-12-maybe.md)
 
 ---
 
 ## Either
 
-✅ **Axiomatized** → [Axiom 12 — Either](chapter1/axiom-12-either.md)
+✅ **Axiomatized** → [Axiom 13 — Either](chapter1/axiom-13-either.md)
 
 ---
 
 ## Result pattern
 
-✅ **Axiomatized** → [Axiom 14 — Result](chapter1/axiom-14-result.md)
+✅ **Axiomatized** → [Axiom 15 — Result](chapter1/axiom-15-result.md)
 
 ---
 
 ## Discriminated unions
 
-✅ **Axiomatized** → [Axiom 19 — Discriminated unions](chapter1/axiom-19-discriminated-unions.md)
+✅ **Axiomatized** → [Axiom 20 — Discriminated unions](chapter1/axiom-20-discriminated-unions.md)
 
 ---
 
 ## Pattern matching
 
-✅ **Axiomatized** → [Axiom 9 — Pattern matching](chapter1/axiom-09-pattern-matching.md)
+✅ **Axiomatized** → [Axiom 10 — Pattern matching](chapter1/axiom-10-pattern-matching.md)
 
 ---
 
@@ -64,61 +64,69 @@ Joan Comas, Senior Software Architect — since June 2024
 
 ## First-class functions
 
-✅ **Axiomatized** → [Axiom 7 — First-class functions](chapter1/axiom-07-first-class-functions.md)
+✅ **Axiomatized** → [Axiom 8 — First-class functions](chapter1/axiom-08-first-class-functions.md)
 
 ---
 
 ## Higher-order functions
 
-✅ **Axiomatized** → [Axiom 8 — Higher-order functions](chapter1/axiom-08-higher-order-functions.md)
+✅ **Axiomatized** → [Axiom 9 — Higher-order functions](chapter1/axiom-09-higher-order-functions.md)
 
 ---
 
 ## Impureheim: the impure–pure–impure sandwich
 
-✅ **Axiomatized** → [Axiom 10 — Impureheim](chapter1/axiom-10-impureheim.md)
+✅ **Axiomatized** → [Axiom 11 — Impureheim](chapter1/axiom-11-impureheim.md)
 
 ---
 
 ## Value Objects
 
-✅ **Axiomatized** → [Axiom 16 — Value objects](chapter1/axiom-16-value-objects.md)
+✅ **Axiomatized** → [Axiom 17 — Value objects](chapter1/axiom-17-value-objects.md)
 
 ---
 
 ## State Machines
 
-✅ **Axiomatized** → [Axiom 22 — State machines](chapter1/axiom-22-state-machines.md)
+✅ **Axiomatized** → [Axiom 23 — State machines](chapter1/axiom-23-state-machines.md)
 
 ---
 
 ## Pure functions return actions
 
-✅ **Axiomatized** → [Axiom 21 — Pure functions returning actions](chapter1/axiom-21-pure-functions-returning-actions.md)
+✅ **Axiomatized** → [Axiom 22 — Pure functions returning actions](chapter1/axiom-22-pure-functions-returning-actions.md)
 
 ---
 
 ## Session Context
 
-✅ **Axiomatized** → [Axiom 23 — Session Context](chapter1/axiom-23-session-context.md)
+✅ **Axiomatized** → [Axiom 24 — Session Context](chapter1/axiom-24-session-context.md)
 
 ---
 
 ## Stateful Shell
 
-✅ **Axiomatized** → [Axiom 24 — Stateful Shell](chapter1/axiom-24-stateful-shell.md)
+✅ **Axiomatized** → [Axiom 25 — Stateful Shell](chapter1/axiom-25-stateful-shell.md)
 
 ---
 
 ## Encode ordering in types (temporal coupling)
 
-✅ **Axiomatized** → [Axiom 25 — Typestate](chapter1/axiom-25-typestate.md)
+✅ **Axiomatized** → [Axiom 26 — Typestate](chapter1/axiom-26-typestate.md)
+
+---
+
+## Connascence
+
+✅ **Axiomatized** → [Axiom 7 — Connascence](chapter1/axiom-07-connascence.md)
+
+The chapter's second evaluative lens, set beside Cohesion. This resolves the top-pick open candidate in the research sweep below: connascence landed as an inline lens-axiom at position 7, not a separate framing chapter. Its taxonomy keeps Page-Jones's static/dynamic split, but the cut the playbook optimises against is *compiler-enforced vs. convention-carried*; the contested Position-vs-Algorithm strength ordering is flagged rather than asserted.
 
 ---
 
 ## Closures
 
-🔁 **Folded** → [Axiom 7 — First-class functions](chapter1/axiom-07-first-class-functions.md) (Why #3, "Closures carry state along with the function").
+🔁 **Folded** → [Axiom 8 — First-class functions](chapter1/axiom-08-first-class-functions.md) (Why #3, "Closures carry state along with the function").
 
 ---
 
@@ -219,13 +227,13 @@ Headline: most famous "principles" I hadn't named (SOLID, CUPID, CQS, Tell-Don't
 
 ---
 
-### Connascence (Meilir Page-Jones) — [AXIOM? — top pick]
+### Connascence (Meilir Page-Jones) — [✅ AXIOMATIZED → [Axiom 7](chapter1/axiom-07-connascence.md)]
 
 **What:** a graded, named taxonomy of coupling. Static (Name → Type → Meaning → Position → Algorithm) + dynamic (Execution order → Timing → Value → Identity), weakest→strongest. Three axes: **strength, degree, locality**. Weirich's rules: convert strong→weak; the farther apart two things sit, the weaker their connascence must be.
 
 **Why it's the standout:** it's the *measurement theory underneath axioms I already wrote*, and it retroactively justifies them — Typestate = Execution-order → Type; value objects = Meaning → Type; make-illegal-states = killing Connascence of Value; immutability = killing Connascence of Identity; flag args = Connascence of Meaning; positional→named/records = Position → Name. The "thinking tool to argue about borderline coupling" I felt was missing.
 
-**Open question to resolve:** leaf axiom, or a *cross-cutting lens / framing chapter* (since it explains the others rather than sitting beside them)? Also: verify the Position-vs-Algorithm ordering against the Page-Jones primary text — secondary sources disagree.
+**Resolved:** landed as an inline lens-axiom at position 7 (beside Cohesion), not a separate framing chapter. The static/dynamic taxonomy follows Page-Jones; the operative cut for the playbook is *compiler-enforced vs. convention-carried*, and the contested Position-vs-Algorithm ordering is flagged rather than asserted.
 
 **Source:** Page-Jones, *Fundamentals of OO Design in UML* (1999); connascence.io; Jim Weirich talks.
 
@@ -367,7 +375,7 @@ Headline: most famous "principles" I hadn't named (SOLID, CUPID, CQS, Tell-Don't
 
 **What:** the original "low coupling, high cohesion". Coupling ladder (content/common/external/control/stamp/data); cohesion ladder (coincidental→functional). Control coupling = flag args; common coupling = shared mutable state.
 
-**Verdict:** historical bedrock, subsumed by connascence's finer grain. Cite once where connascence lands.
+**Verdict:** historical bedrock, subsumed by connascence's finer grain. Cited in [Axiom 7 — Connascence](chapter1/axiom-07-connascence.md) (Structured Design = ref [5]).
 
 **Source:** Stevens, Myers & Constantine, "Structured Design" (IBM Systems Journal, 1974).
 
