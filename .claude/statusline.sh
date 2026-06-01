@@ -5,6 +5,8 @@ MODEL=$(echo "$input" | jq -r '.model.display_name')
 DIR=$(echo "$input" | jq -r '.workspace.current_dir')
 COST=$(echo "$input" | jq -r '.cost.total_cost_usd // 0')
 PCT=$(echo "$input" | jq -r '.context_window.used_percentage // 0' | cut -d. -f1)
+TOKENS=$(echo "$input" | jq -r '.context_window.total_input_tokens // 0')
+TOKENS_FMT=$(echo "$TOKENS" | sed ':a;s/\B[0-9]\{3\}\>/,&/;ta')
 DURATION_MS=$(echo "$input" | jq -r '.cost.total_duration_ms // 0')
 
 CYAN='\033[36m'; GREEN='\033[32m'; YELLOW='\033[33m'; RED='\033[31m'; RESET='\033[0m'
@@ -18,7 +20,11 @@ FILLED=$((PCT / 10)); EMPTY=$((10 - FILLED))
 printf -v FILL "%${FILLED}s"; printf -v PAD "%${EMPTY}s"
 BAR="${FILL// /█}${PAD// /░}"
 
-MINS=$((DURATION_MS / 60000)); SECS=$(((DURATION_MS % 60000) / 1000))
+HOURS=$((DURATION_MS / 3600000))
+MINS=$(((DURATION_MS % 3600000) / 60000))
+SECS=$(((DURATION_MS % 60000) / 1000))
+if [ "$HOURS" -gt 0 ]; then TIME_FMT="${HOURS}h ${MINS}min"
+else TIME_FMT="${MINS}m ${SECS}s"; fi
 
 # Resolve the branch from the workspace dir, not whatever cwd the status line ran in.
 BRANCH=""
@@ -27,4 +33,4 @@ cd "$DIR" 2>/dev/null && git rev-parse --git-dir > /dev/null 2>&1 \
 
 echo -e "${CYAN}[$MODEL]${RESET} 📁 ${DIR##*/}$BRANCH"
 COST_FMT=$(printf '$%.2f' "$COST")
-echo -e "${BAR_COLOR}${BAR}${RESET} ${PCT}% | ${YELLOW}${COST_FMT}${RESET} | ⏱️ ${MINS}m ${SECS}s"
+echo -e "${BAR_COLOR}${BAR}${RESET} ${PCT}% | ${TOKENS_FMT} | ${YELLOW}${COST_FMT}${RESET} | ⏱️ ${TIME_FMT}"
