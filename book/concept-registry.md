@@ -205,7 +205,7 @@ Source: Dan North, "CUPID — for joyful coding" (2022), dannorth.net.
 
 🔍 **Open** — record the boundary only.
 
-Note (from research): CQRS is system topology = **out of scope** (it's a *consumer* of the building blocks, not one). Its code-level sibling is **CQS** (see the Command–Query Separation entry in the research sweep below) — a method returns a value *xor* changes state — and that one is already covered by Pure functions + Impureheim. Keep this section only to *record the boundary*, not to write an axiom.
+Note (from research): CQRS is system topology = **out of scope** (it's a *consumer* of the building blocks, not one). Its code-level sibling is **CQS** (see the Command–Query Separation entry in the research sweep below) — a method returns a value *xor* changes state — and that one is now folded into [Axiom 11 — Impureheim](chapter1/axiom-11-impureheim.md) (and named in [Axiom 4](chapter1/axiom-04-pure-functions.md) and [Axiom 22](chapter1/axiom-22-pure-functions-returning-actions.md)). Keep this section only to *record the boundary*, not to write an axiom.
 
 ---
 
@@ -309,13 +309,15 @@ The two only *look* opposed. Postel's *Robustness Principle* — *"be conservati
 
 ---
 
-### Command–Query Separation (CQS) — [SKIP — covered; distinct from CQRS]
+### Command–Query Separation (CQS) — [🔁 FOLDED → [Axiom 11](chapter1/axiom-11-impureheim.md); query half named in [Axiom 4](chapter1/axiom-04-pure-functions.md), command half in [Axiom 22](chapter1/axiom-22-pure-functions-returning-actions.md)]
 
 **What:** a method returns a value (query) *xor* changes state (command), never both. The OO ancestor of the pure/impure split; purity is strictly stronger (a CQS "query" may still read mutable globals).
 
-**Verdict:** one-line note; covered by Pure functions + Impureheim. Pin the **CQS (code) vs CQRS (architecture, out of scope)** distinction — see the [CQRS](#cqrs) section.
+**What the fold added.** CQS was covered but unnamed — out of step with how the other famous-but-covered principles landed (DRY, SLAP, Design by Contract all got named at their landing spot). This fold names it in three places, each at a distinct angle: [Axiom 11](chapter1/axiom-11-impureheim.md) is the primary home — Impureheim *is* CQS promoted from the method to the unit of work (gather = query, act = command, the seam a layer boundary rather than a naming convention), with Meyer added as reference [3] there. [Axiom 4](chapter1/axiom-04-pure-functions.md) carries the query half: purity outruns it, forbidding the *read* of mutable state that a CQS query still permits. [Axiom 22](chapter1/axiom-22-pure-functions-returning-actions.md) carries the command half: the would-be command splits into a pure `Decide` (returns a value) and an impure execute (returns nothing).
 
-**Source:** Bertrand Meyer.
+**CQRS stays out of the axioms.** Only the registry records the CQS (code) vs CQRS (architecture, out of scope) distinction — see the [CQRS](#cqrs) section. No axiom mentions CQRS.
+
+**Source:** Bertrand Meyer, *Object-Oriented Software Construction* (2nd ed., 1997).
 
 ---
 

@@ -35,7 +35,7 @@ The split makes a previously-tangled choice explicit:
 - *What* should happen lives in the pure core.
 - *That it happens* lives at the boundary.
 
-A method that did both — read context, decide, act — has split in two; the two halves now have different colours (pure / impure), different testability, and different reasons to change. The type system holds the seam: every variant the core can produce is a variant the shell must handle, and the compiler refuses anything else.
+A method that did both — read context, decide, act — has split in two: this is **Command–Query Separation** ([Axiom 11](axiom-11-impureheim.md)) carried to its conclusion — rather than keep one method honest, the query (`DecideAdd`, which returns a value) and the command (the shell's execute, which returns nothing) become *different functions*. The two halves now have different colours (pure / impure), different testability, and different reasons to change. The type system holds the seam: every variant the core can produce is a variant the shell must handle, and the compiler refuses anything else.
 
 ---
 

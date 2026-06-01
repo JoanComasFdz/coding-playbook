@@ -25,6 +25,8 @@ A unit of work that fits the shape has three layers, in this order:
 
 The shell is allowed to be empty on either end. A query handler may read inputs, decide, and return — no write. A scheduled cleanup may start from no inputs at all — decide, then write. The shape is "I/O at the edges, decisions in the middle"; the literal sandwich is the most common case, not the only one.
 
+This is an older rule promoted up a level. **Command–Query Separation** (Bertrand Meyer) asks each *method* to either return a value (a query) or change state (a command), never both. Impureheim moves that line from the method to the unit of work: the gather is all query, the act is all command, and the seam between them is a layer boundary rather than a per-method naming convention. The pure middle ([Axiom 4](axiom-04-pure-functions.md)) then sharpens the query half past what CQS asks — a CQS query may still read mutable state, where the middle reads nothing outside its parameters.
+
 The shape is recognised by the *signature* of the middle: a pure function whose parameters are the gathered values and whose return value is everything the bottom needs to act. Anything that breaks that — the middle reaching for the clock, the middle deciding to log, the middle throwing on bad input — collapses the sandwich back into a mixed function.
 
 ---
@@ -150,3 +152,5 @@ Two cases where the shape would be ceremony for its own sake:
 
 [2] **Eric Normand**, *Grokking Simplicity*, Manning Publications, 2021. Cross-listed from [Axiom 3](axiom-03-impure-functions.md) and [Axiom 4](axiom-04-pure-functions.md). The book's recurring picture — actions at the edges, calculations in the middle, data flowing between them — is the same shape this axiom names, framed for a working-engineer audience.
 <https://www.manning.com/books/grokking-simplicity>
+
+[3] **Bertrand Meyer**, *Object-Oriented Software Construction* (2nd ed.), Prentice Hall, 1997 — **Command–Query Separation**. The principle that a method should either return a value or change observable state, never both. Impureheim is that rule lifted from the method to the unit of work: query (gather) and command (act) become separate layers, and the pure middle ([Axiom 4](axiom-04-pure-functions.md)) makes the query half absolute rather than conventional.
