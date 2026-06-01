@@ -201,7 +201,7 @@ Source: Dan North, "CUPID — for joyful coding" (2022), dannorth.net.
 
 ---
 
-## CQRS
+## CQRS [ARCHITECTURE - OUT OF SCOPE]
 
 🔍 **Open** — record the boundary only.
 
@@ -301,13 +301,11 @@ This fold added a one-line reading-smell kernel to Axiom 6's *When NOT to*: a bo
 
 ---
 
-### Postel's Law vs. parse-don't-validate (the tension) — [CONTRAST / FOLD]
+### Postel's Law vs. parse-don't-validate (the tension) — [🔁 FOLDED → [Axiom 17](chapter1/axiom-17-value-objects.md), "Postel's Law, reconciled" aside in the *Why*]
 
-**What:** they look opposed but aren't — Postel ("liberal in what you accept") is about *surface form*; parse-don't-validate is strict about *meaning crossing the boundary*. "Lenient lexing, strict typing." Postel itself is now a cautionary tale (IETF "Postel was wrong"), not a rule to follow.
+The two only *look* opposed. Postel's *Robustness Principle* — *"be conservative in what you do, be liberal in what you accept"* (RFC 760, 1980) — governs **surface form**; parse-don't-validate governs **meaning** crossing the boundary. The synthesis is *lenient lexer, strict parser*: a smart constructor may be generous about the forms it accepts but must emit exactly one canonical value or a `Failure`, with the leniency confined to that step. Far from a rival, the smart constructor is the **cure** for Postel's harmful form — the IETF itself has since recanted the principle (Thomson & Schinazi, *Maintaining Robust Protocols*, RFC 9413, 2023), because liberal acceptance *without* normalisation is exactly the spec-drift / ossification a boundary parse prevents.
 
-**Verdict:** a sharp concept note reinforcing honest-signatures / parse-don't-validate; not an axiom.
-
-**Source:** RFC 760; Thomson, "Harmful Consequences of the Robustness Principle"; Alexis King, "Parse, don't validate".
+**Source:** RFC 760 / RFC 793 (Postel); RFC 9413 (Thomson & Schinazi, 2023); Alexis King, *Parse, Don't Validate* (2019).
 
 ---
 
