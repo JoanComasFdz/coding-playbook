@@ -281,13 +281,13 @@ Axiom 6 already corrected the *misreading* (dedupe-on-sight) via reason-to-chang
 
 ---
 
-### SLAP — single level of abstraction per function — [AXIOM?-soft / FOLD]
+### SLAP — single level of abstraction per function — [🔁 FOLDED → [Axiom 6](chapter1/axiom-06-cohesion.md)]
 
-**What:** every statement in a function body at the same altitude; push the "how" down into named helpers, read the body as a paragraph of same-level steps.
+SLAP bundles two claims the chapter already states more sharply, plus one residue it declines. Its "each function does one job" half *is* [Cohesion](chapter1/axiom-06-cohesion.md) — and the principle's own canonical reference (Principles Wiki) falls back on cohesion to explain when SLAP goes wrong. Its "read the body as a paragraph of same-level steps" half is a *byproduct* of [Impureheim](chapter1/axiom-11-impureheim.md)'s gather→decide→act step-down, not a separate law. The only standalone residue — "match every statement to one altitude" — rests on a "level of abstraction" that is **nowhere defined**, not even by the principle's own references; it is precisely the undefined vibe-metric the playbook replaces with checkable ones (reason-to-change, honest signatures). Applied mechanically it produces *extract-till-you-drop*: a swarm of one-line helpers the reader must mentally re-inline — the "mental inlining" failure already guarded by [Axiom 6](chapter1/axiom-06-cohesion.md)'s locality bullet, and the deep-vs-shallow-modules tension logged above in this sweep.
 
-**Verdict:** in-scope (it's literally "anatomy of a function") and uncovered, but soft — a concise how-to, sibling to Cohesion / honest-signatures. Needs a "when NOT to" (don't extract one-line helpers just to comply).
+This fold added a one-line reading-smell kernel to Axiom 6's *When NOT to*: a body that forces mental inlining wants a named extraction — extract when the detail is a concept with its own reason to change, not to hit an altitude quota.
 
-**Source:** Robert C. Martin, *Clean Code* (2009).
+**Lineage:** Kent Beck's *Composed Method* (*Smalltalk Best Practice Patterns*, 1997) is the root; the acronym SLAP is credited to Glenn Vanderburg and popularized by Neal Ford, *The Productive Programmer* (2008, ch. 13 "Composed Method and SLAP"); Robert C. Martin restated it as the *Stepdown Rule* in *Clean Code* (2009). Over-application critiqued by John Ousterhout, *A Philosophy of Software Design* (2018, deep vs. shallow modules), and the Christin Gorman vs. Robert C. Martin "extract till you drop" debate.
 
 ---
 
