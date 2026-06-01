@@ -277,6 +277,8 @@ Counters, the cancellation token, captured callbacks — anything the loop needs
 **6. The loop is host-agnostic.**
 The same shape runs on a dedicated thread, an `async` task, a virtual thread, a goroutine, or the main thread of a CLI program. The host provides the runtime; the loop is the shape that uses it. Moving from a blocking thread to `async` swaps the `await` keyword and the dispatch helpers' signatures; the loop's structure does not change.
 
+> **A note on Tell, Don't Ask.** [Axiom 0](axiom-00-data-vs-behaviour.md) set the OO maxim *Tell, Don't Ask* aside as the road not taken: in the pure core you pull data out as values and decide *outside* the object — the deliberate opposite of pushing behaviour into the state. The Stateful Shell is where that maxim comes back into its own. A connection, a socket, a pool, a broker handle is a genuine *place*, not a value — you cannot freeze a live connection into an immutable fact, and you should not reach into its insides to drive it by hand. So the shell *tells* them — `TryConnect()`, `conn.Read()`, `ConsumeUntilDropped(conn, ctx)` — and never asks for their internal state in order to decide externally. Tell-Don't-Ask was never wrong; it was *located*. It is the right rule on the stateful side of the seam — here, in the shell, around the resources that legitimately hold state — and the wrong rule on the pure side, where [Axiom 22](axiom-22-pure-functions-returning-actions.md) splits the decision back out as a value. The Impureim seam between core and shell is exactly the line where the maxim flips.
+
 ---
 
 ## Trade-offs

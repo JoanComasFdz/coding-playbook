@@ -42,9 +42,12 @@ methods that mutate it — quietly works against most of those forces:
   test in isolation.
 - The state is hidden, so concurrency means locks, and serialisation means ceremony.
 
-The competing force pulling the other way is **cohesion** — "keep the things that change
-together, together." That force is real, and the axiom does not deny it; it relocates it (see
-*when NOT to*).
+The competing force pulling the other way is the pull to keep a fact and the operations on it
+physically together — "keep the things that change together, together." That force is real, and
+the axiom does not deny it; it relocates it (see *when NOT to*). The mainstream OO discipline that *operationalises* that force has a name —
+**Tell, Don't Ask**: don't pull an object's data out to decide, push the decision into the
+object that owns the data. It is the deliberate opposite of this axiom, and *When NOT to* below
+treats it as the road not taken.
 
 ---
 
@@ -90,6 +93,26 @@ belongs to it no longer sit physically together), and **more named entities** to
 
 ## When NOT to
 
+**The Tell-Don't-Ask bet — the OO road not taken.** The co-location this axiom gives up — a fact
+and the logic over it living in one place — is exactly what the OO maxim *Tell, Don't Ask*[7]
+enforces by the opposite move. Both answer one
+question — a decision needs data; where do the two get co-located? — and give opposite answers.
+Tell-Don't-Ask says *move the decision to the data*: hide the state as private mutable fields and
+push the behaviour in beside it, so `account.withdraw(amount)` decides internally and the caller
+never sees the balance. This axiom says *move the data to the decision*: pull the state out as an
+inert value and hand it to a function that decides outside. Tell-Don't-Ask is genuinely *right
+under its premise* — that objects hold mutable state. In a mutable world, exposing a getter so a
+caller can decide-then-mutate is a real hazard: the rule scatters across every caller, and the
+gap between the read and the write is a race. The maxim closes both by welding the decision to
+the state. This playbook removes the premise instead: once the data is an *immutable value*,
+there is nothing to hide — exposing a value cannot be abused, because there is no setter to pair
+the getter with — and the same rule lives once, inside the function, not scattered across
+callers. Same goods (one home for the rule, no reaching-in); different mechanism (freeze the data
+rather than hide it behind behaviour). That co-location is not lost; it is relocated — partly to
+the module, where a function and the types it transforms sit together without fusing, and partly to
+the one region where mutable state still legitimately lives, where *telling* a stateful resource
+what to do, rather than asking for its insides, remains exactly right.
+
 This axiom does not address Mike Acton's **Data-Oriented *Design***[6], which uses the same
 slogan for a *performance* argument (cache locality, memory layout) — a different problem from
 the one Axiom 0 addresses, and out of scope for this playbook (see the
@@ -134,3 +157,9 @@ the chapters on Principle #1 (Separate code from data) and summarised in Appendi
 <https://www.youtube.com/watch?v=rX0ItVEVjHc>. Argues for designing code around the data, its
 transformations, and the hardware that runs them (cache locality, structure-of-arrays). Same
 slogan as Sharvit's DOP, different argument: this branch is about *performance*, not complexity.
+
+[7] **Andrew Hunt & David Thomas**, *The Pragmatic Programmer*, Addison-Wesley, 1999
+(20th-anniversary ed. 2019) — the origin of the *Tell, Don't Ask* maxim. See also **Martin
+Fowler**, *TellDontAsk*, martinfowler.com (bliki), which frames it as bundling data with the
+functions that operate on it and is careful to call it a reminder, not a rule to apply
+dogmatically. <https://martinfowler.com/bliki/TellDontAsk.html>

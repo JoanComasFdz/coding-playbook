@@ -51,6 +51,14 @@ Keep the **how-to concise** and put justifications elsewhere, split by *kind*:
 
 Prose density runs in three tiers: a **how-to** file is near-zero prose (mechanics + links), a **concept** file carries a tight why, an **ADR** carries the choice between alternatives. Link them: how-to → concept (durable why) → ADR (dated choice).
 
+## The concept registry
+
+`book/concept-registry.md` tracks every coding concept considered and where it landed — axiomatized (✅), folded (🔁), discarded (❌), or open (🔍). It is a **map, not a log**: each section says how a concept *is* reflected in the book today, never the history of how it got there. A section should be:
+
+- **Present tense.** "Lives in Axiom 0," never "was folded into" or "the fold added." No ledger narration of what changed when.
+- **Bullets, not prose.** A one-line *what* (the concept) plus a one-line verdict, then a bulleted list — one bullet per axiom it touches, each a link with a terse note on *how* it shows up there. It reads as an index of where-and-how, not an essay.
+- **A signpost, not a re-derivation.** Say the minimum to point the reader at the right axiom; the argument lives in the axioms, so don't repeat it. Keep destination links in the bullets, not duplicated in the heading.
+
 ## Per-topic template
 
 For consistency and fairness, draft each topic as: **Problem / forces → What I do today → Why → C#/Java example → Trade-offs & when NOT to → What might change tomorrow.** The last two sections are the playbook's non-dogmatism — don't skip them.

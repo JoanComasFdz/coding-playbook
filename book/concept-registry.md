@@ -321,13 +321,19 @@ The two only *look* opposed. Postel's *Robustness Principle* — *"be conservati
 
 ---
 
-### Tell, Don't Ask — [CONTRAST]
+### Tell, Don't Ask — [🔁 FOLDED]
 
-**What:** push behaviour into the stateful object instead of pulling data out to decide. The *OO* answer to cohesion — the deliberate opposite of the functional core ("pull data out as values, decide purely").
+The OO maxim: don't pull an object's data out to decide for it — push the decision into the object that owns the (mutable) state. A contrast piece, not a missing foundation: the playbook makes the *opposite* bet in its pure core and the *same* bet in its impure shell.
 
-**Verdict:** trade-off / non-dogmatism piece; sharpens why the functional core makes a different bet. Not a missing foundation.
+**Where it lives, and how:**
 
-**Source:** Hunt & Thomas; Fowler bliki.
+- [**Axiom 0 — Data is not Behaviour**](chapter1/axiom-00-data-vs-behaviour.md) — the road not taken. Tell-Don't-Ask moves the decision *to* the data; the playbook moves the data *to* the decision. Same goal (one home for the rule, no reaching into internals), opposite mechanism (freeze the data vs. hide it behind behaviour).
+- [**Axiom 22 — Pure functions returning actions**](chapter1/axiom-22-pure-functions-returning-actions.md) — the inversion. Tell-Don't-Ask *fuses* deciding and acting; this axiom *splits* them: pure `Decide` returns an action value, impure shell executes it.
+- [**Axiom 25 — Stateful Shell**](chapter1/axiom-25-stateful-shell.md) — where it belongs. Connections, pools, sockets are places, not values; the shell *tells* them and never asks for their insides. Right rule on the stateful side of the seam, wrong on the pure side.
+
+**Why no axiom of its own** — the goods it offers already have homes: encapsulation → [Axiom 17](chapter1/axiom-17-value-objects.md); rule-in-one-place → [Axiom 6](chapter1/axiom-06-cohesion.md) + [Axiom 22](chapter1/axiom-22-pure-functions-returning-actions.md); read-write-race safety → [Axiom 1](chapter1/axiom-01-immutability.md) + [Axiom 26](chapter1/axiom-26-typestate.md).
+
+**Source:** Andrew Hunt & David Thomas, *The Pragmatic Programmer* (1999); Martin Fowler, *TellDontAsk* (bliki) — cited at [Axiom 0](chapter1/axiom-00-data-vs-behaviour.md) ref [7].
 
 ---
 
