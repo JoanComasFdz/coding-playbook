@@ -468,11 +468,14 @@ Applying an action twice lands in the same state as applying it once.
 
 ---
 
-## Zero-One-Infinity rule — [SKIP — one-liner]
+## Zero-One-Infinity rule — [🔁 FOLDED]
 
-No arbitrary fixed limits in your types — allow 0, exactly 1, or many, never "up to 3."
+Allow none, exactly one, or unbounded-many of a thing — never an arbitrary fixed cap. Its only code-level residue is the *inverse* of [Axiom 21](chapter1/axiom-21-illegal-states.md); "arbitrary" is a domain judgment the type cannot make, so it is no standalone coding axiom.
 
-Memorable but narrow; a one-line aside in domain-modelling at most.
+- [Axiom 21 — Make illegal states unrepresentable](chapter1/axiom-21-illegal-states.md) — the home: the state-count run backwards. A type representing *fewer* states than the domain allows (a list capped at three for convenience) makes a **legal** state unrepresentable — the mirror of this axiom; the fix is to loosen until representable meets legal.
+- [Axiom 17 — Value objects](chapter1/axiom-17-value-objects.md) — where a cap *is* a real invariant: a value object whose `Add` returns a `Result` failure on overflow encodes the bound honestly — the cure for a justified limit, not a banned number.
+
+**Deferred:** the other half — *deciding whether a given bound is real* — is not a chapter-1 tool but a modelling discipline; it belongs with later domain-design material (DDD tactical patterns), not the foundations. The registry sits outside the chapters precisely to carry that kind of forward pointer.
 
 **Source:** van der Poel / MacLennan.
 
