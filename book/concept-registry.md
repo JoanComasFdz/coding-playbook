@@ -10,6 +10,28 @@ Joan Comas, Senior Software Architect — since June 2024
 
 ---
 
+## SOLID critique
+
+Lives in [Chapter 1](chapter1/README.md) — the motivating hook: SOLID names the symptom after a design has gone wrong, but doesn't generate one. North's framing carries it: **principles are compliance gates (binary: conform or don't); properties are gradients you move along** — the cleanest "why look past SOLID," aligned with simplicity-first and the three-tier why model.
+
+Several SOLID letters already land elsewhere, usually sharper at code level —
+- **S**RP ≈ [Cohesion](chapter2/axiom-06-cohesion.md) ("one reason to change", but at function grain).
+- **D**IP ≈ Impureheim + the composition root.
+- **I**SP ≈ honest / small surface area.
+- **O**/**L** are mostly about inheritance hierarchies, which this book's FP-leaning register sidesteps.
+
+---
+
+## CUPID
+
+🔍 **Open** — mapped property-by-property in [Chapter 1](chapter1/README.md); the only thing still open is whether the three above-altitude parts (Observable, Idiomatic, minimal-dependencies-as-packaging) ever earn a home — a hypothetical Ch4/5.
+
+Dan North's reaction to SOLID: five **properties** (gradients you *move toward*), not rules. The short of it — **CUPID names the destination, the axioms are the route** — with the full per-property map into the axioms and Plays carried in [Chapter 1](chapter1/README.md), not repeated here.
+
+Source: Dan North, "CUPID — for joyful coding" (2022), dannorth.net; cupid.dev property pages.
+
+---
+
 ## Immutability — [✅ AXIOMATIZED]
 
 - [Axiom 1 — Immutability](chapter2/axiom-01-immutability.md)
@@ -150,59 +172,6 @@ A coupling taxonomy; the chapter's second evaluative lens, set beside [Cohesion]
 
 ---
 
-## Caches — [❌ DISCARDED]
-
-Memoising results behind a stateful store. Too niche to be an axiom.
-
-If ever revisited: explore the FP take plus the correctness of the decorator pattern, especially in OOP.
-
----
-
-## SOLID critique
-
-Lives in [Chapter 1](chapter1/README.md) — the motivating hook: SOLID names the symptom after a design has gone wrong, but doesn't generate one. North's framing carries it: **principles are compliance gates (binary: conform or don't); properties are gradients you move along** — the cleanest "why look past SOLID," aligned with simplicity-first and the three-tier why model.
-
-Several SOLID letters already land elsewhere, usually sharper at code level —
-- **S**RP ≈ [Cohesion](chapter2/axiom-06-cohesion.md) ("one reason to change", but at function grain).
-- **D**IP ≈ Impureheim + the composition root.
-- **I**SP ≈ honest / small surface area.
-- **O**/**L** are mostly about inheritance hierarchies, which this book's FP-leaning register sidesteps.
-
----
-
-## CUPID
-
-🔍 **Open** — mapped property-by-property in [Chapter 1](chapter1/README.md); the only thing still open is whether the three above-altitude parts (Observable, Idiomatic, minimal-dependencies-as-packaging) ever earn a home — a hypothetical Ch4/5.
-
-Dan North's reaction to SOLID: five **properties** (gradients you *move toward*), not rules. The short of it — **CUPID names the destination, the axioms are the route** — with the full per-property map into the axioms and Plays carried in [Chapter 1](chapter1/README.md), not repeated here.
-
-Source: Dan North, "CUPID — for joyful coding" (2022), dannorth.net; cupid.dev property pages.
-
----
-
-## DDD Tactical Patterns
-
-🔍 **Open** — the chapter's headline area: a planned **Chapter 2 Play**, *"FP-style DDD tactical patterns"* (scoped in the [Chapter 2 README](chapter3/README.md), not yet drafted).
-
-- Anemic models real definition, not "put methods in domain objects" — the rebuttal the FP-style domain owes, since pure-functions-over-immutable-data looks anemic only by the naive reading.
-- Aggregate as a [Decider](chapter2/axiom-22-pure-functions-returning-actions.md); domain event as a [discriminated union](chapter2/axiom-20-discriminated-unions.md); entity lifecycle as a [state machine](chapter2/axiom-23-state-machines.md); value object as [Axiom 17](chapter2/axiom-17-value-objects.md).
-
----
-
-## Vertical Slice Architecture
-
-🔍 **Open**
-
----
-
-## CQRS [ARCHITECTURE - OUT OF SCOPE]
-
-🔍 **Open** — record the boundary only.
-
-Note (from research): CQRS is system topology = **out of scope** (it's a *consumer* of the building blocks, not one). Its code-level sibling is **CQS** (see the Command–Query Separation entry below) — a method returns a value *xor* changes state — and that one is now folded into [Axiom 11 — Impureheim](chapter2/axiom-11-impureheim.md) (and named in [Axiom 4](chapter2/axiom-04-pure-functions.md) and [Axiom 22](chapter2/axiom-22-pure-functions-returning-actions.md)). Keep this section only to *record the boundary*, not to write an axiom.
-
----
-
 ## Ubiquitous language
 
 🔍 **Open**
@@ -224,18 +193,6 @@ Redesign so the error case cannot arise, instead of reporting it (`substring` cl
 **Not carried:** Ousterhout's other ch. 10 techniques — *exception masking* and *exception aggregation* are handler-placement / topology concerns (out of scope); *just crash* is already the fail-fast rung folded into [Axiom 15](chapter2/axiom-15-result.md).
 
 **Source:** John Ousterhout, *A Philosophy of Software Design* (2018), ch. 10.
-
----
-
-## Deep vs. shallow modules (Ousterhout)
-
-🔍 **Open** — splits across both altitudes; the positive half is a planned **Chapter 2 Play**, *"Deep modules, small interfaces"* (scoped in the [Chapter 2 README](chapter3/README.md), not yet drafted).
-
-**What:** module value = functionality ÷ interface cost; **deep** = small interface over lots of implementation. The counterweight: over-splitting into many tiny functions multiplies *shallow* interfaces and can *increase* complexity.
-
-**Verdict:** splits by altitude. The **counterweight** half — don't over-split functions into shallow one-line helpers — stays folded at function grain in [Axiom 6](chapter2/axiom-06-cohesion.md)'s *When NOT to* (shred-locality) and [Axiom 9](chapter2/axiom-09-higher-order-functions.md)'s *Trade-offs* (deep chains of wrappers). The **positive** half — functionality ÷ interface cost — is the Chapter 2 Play, paired there with [Information Hiding](#information-hiding-parnas) as its other face and read through [Cohesion](chapter2/axiom-06-cohesion.md) / [Connascence](chapter2/axiom-07-connascence.md) at module grain.
-
-**Source:** Ousterhout, *A Philosophy of Software Design* (2018).
 
 ---
 
@@ -299,7 +256,7 @@ Single Level of Abstraction Per function. Both useful halves already live elsewh
 - [Axiom 6 — Cohesion](chapter2/axiom-06-cohesion.md) — the "each function does one job" half *is* cohesion; its *When NOT to* carries the reading-smell kernel: a body that forces mental inlining wants a *named* extraction — extract when the detail is a concept with its own reason to change, not to hit an altitude quota.
 - [Axiom 11 — Impureheim](chapter2/axiom-11-impureheim.md) — the "read the body as a paragraph of same-level steps" half is a byproduct of the gather→decide→act step-down, not a separate law.
 
-**Why no axiom of its own** — the residue ("match every statement to one altitude") rests on a "level of abstraction" that nothing — not even SLAP's own references — defines; applied mechanically it yields *extract-till-you-drop*, the mental-inlining smell [Axiom 6](chapter2/axiom-06-cohesion.md) already guards (and the deep-vs-shallow-modules tension noted above).
+**Why no axiom of its own** — the residue ("match every statement to one altitude") rests on a "level of abstraction" that nothing — not even SLAP's own references — defines; applied mechanically it yields *extract-till-you-drop*, the mental-inlining smell [Axiom 6](chapter2/axiom-06-cohesion.md) already guards (and the deep-vs-shallow-modules tension noted below).
 
 **Source:** Kent Beck, *Composed Method* (*Smalltalk Best Practice Patterns*, 1997); acronym credited to Glenn Vanderburg, popularized by Neal Ford, *The Productive Programmer* (2008); restated as the *Stepdown Rule* by Robert C. Martin, *Clean Code* (2009); over-application critiqued by John Ousterhout, *A Philosophy of Software Design* (2018), and the Christin Gorman vs. Robert C. Martin "extract till you drop" debate.
 
@@ -379,18 +336,6 @@ The original "low coupling, high cohesion": a coupling ladder (content/common/ex
 - [Axiom 7 — Connascence](chapter2/axiom-07-connascence.md) — the historical bedrock connascence builds on, subsumed by its finer grain; *Structured Design* is ref [5] there.
 
 **Source:** Stevens, Myers & Constantine, "Structured Design" (IBM Systems Journal, 1974).
-
----
-
-## Information Hiding (Parnas)
-
-🔍 **Open** — its code-shaping end is a planned **Chapter 2 Play**, paired with [Deep vs. shallow modules](#deep-vs-shallow-modules-ousterhout) (scoped in the [Chapter 2 README](chapter3/README.md), not yet drafted).
-
-A module hides a *secret* — a design decision likely to change. The root of encapsulation and of Ousterhout's deep modules; the same idea read from the secret's side rather than the interface's.
-
-The *strategic* half — decomposition at architectural altitude — stays out of scope. Two in-scope echoes remain: the impure shell hides the stateful *secret* ([Axiom 25 — Stateful Shell](chapter2/axiom-25-stateful-shell.md)), and at module grain "hide the volatile decision behind a small interface" is the Chapter 2 deep-module Play.
-
-**Source:** D.L. Parnas, "On the Criteria To Be Used in Decomposing Systems into Modules" (CACM, 1972).
 
 ---
 
@@ -497,3 +442,58 @@ The over-inheritance half — the hierarchy designed away, kept honestly:
 Echoes the [SOLID critique](#solid-critique)'s note that the **O**/**L** letters are about inheritance hierarchies this FP-leaning register sidesteps.
 
 **Source:** Gang of Four, *Design Patterns* (1994) — cross-listed at [Axiom 8](chapter2/axiom-08-first-class-functions.md) ref [1] and [Axiom 9](chapter2/axiom-09-higher-order-functions.md) ref [2].
+
+---
+
+## DDD Tactical Patterns
+
+🔍 **Open** — the chapter's headline area: a planned **Chapter 2 Play**, *"FP-style DDD tactical patterns"* (scoped in the [Chapter 2 README](chapter3/README.md), not yet drafted).
+
+- Anemic models real definition, not "put methods in domain objects" — the rebuttal the FP-style domain owes, since pure-functions-over-immutable-data looks anemic only by the naive reading.
+- Aggregate as a [Decider](chapter2/axiom-22-pure-functions-returning-actions.md); domain event as a [discriminated union](chapter2/axiom-20-discriminated-unions.md); entity lifecycle as a [state machine](chapter2/axiom-23-state-machines.md); value object as [Axiom 17](chapter2/axiom-17-value-objects.md).
+
+---
+
+## Vertical Slice Architecture
+
+🔍 **Open**
+
+---
+
+## Deep vs. shallow modules (Ousterhout)
+
+🔍 **Open** — splits across both altitudes; the positive half is a planned **Chapter 2 Play**, *"Deep modules, small interfaces"* (scoped in the [Chapter 2 README](chapter3/README.md), not yet drafted).
+
+**What:** module value = functionality ÷ interface cost; **deep** = small interface over lots of implementation. The counterweight: over-splitting into many tiny functions multiplies *shallow* interfaces and can *increase* complexity.
+
+**Verdict:** splits by altitude. The **counterweight** half — don't over-split functions into shallow one-line helpers — stays folded at function grain in [Axiom 6](chapter2/axiom-06-cohesion.md)'s *When NOT to* (shred-locality) and [Axiom 9](chapter2/axiom-09-higher-order-functions.md)'s *Trade-offs* (deep chains of wrappers). The **positive** half — functionality ÷ interface cost — is the Chapter 2 Play, paired there with [Information Hiding](#information-hiding-parnas) as its other face and read through [Cohesion](chapter2/axiom-06-cohesion.md) / [Connascence](chapter2/axiom-07-connascence.md) at module grain.
+
+**Source:** Ousterhout, *A Philosophy of Software Design* (2018).
+
+---
+
+## Information Hiding (Parnas)
+
+🔍 **Open** — its code-shaping end is a planned **Chapter 2 Play**, paired with [Deep vs. shallow modules](#deep-vs-shallow-modules-ousterhout) (scoped in the [Chapter 2 README](chapter3/README.md), not yet drafted).
+
+A module hides a *secret* — a design decision likely to change. The root of encapsulation and of Ousterhout's deep modules; the same idea read from the secret's side rather than the interface's.
+
+The *strategic* half — decomposition at architectural altitude — stays out of scope. Two in-scope echoes remain: the impure shell hides the stateful *secret* ([Axiom 25 — Stateful Shell](chapter2/axiom-25-stateful-shell.md)), and at module grain "hide the volatile decision behind a small interface" is the Chapter 2 deep-module Play.
+
+**Source:** D.L. Parnas, "On the Criteria To Be Used in Decomposing Systems into Modules" (CACM, 1972).
+
+---
+
+## CQRS [ARCHITECTURE - OUT OF SCOPE]
+
+🔍 **Open** — record the boundary only.
+
+Note (from research): CQRS is system topology = **out of scope** (it's a *consumer* of the building blocks, not one). Its code-level sibling is **CQS** (see the Command–Query Separation entry above) — a method returns a value *xor* changes state — and that one is now folded into [Axiom 11 — Impureheim](chapter2/axiom-11-impureheim.md) (and named in [Axiom 4](chapter2/axiom-04-pure-functions.md) and [Axiom 22](chapter2/axiom-22-pure-functions-returning-actions.md)). Keep this section only to *record the boundary*, not to write an axiom.
+
+---
+
+## Caches — [❌ DISCARDED]
+
+Memoising results behind a stateful store. Too niche to be an axiom.
+
+If ever revisited: explore the FP take plus the correctness of the decorator pattern, especially in OOP.
