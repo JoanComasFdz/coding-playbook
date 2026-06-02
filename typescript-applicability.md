@@ -29,33 +29,33 @@ But four of the playbook's load-bearing guarantees lean on **nominal typing** an
 
 | Axiom | Applies? | TS mechanism vs. the C#/Java example |
 |---|---|---|
-| [0 Data vs Behaviour](book/chapter1/axiom-00-data-vs-behaviour.md) | ✅ unchanged | Language-agnostic; TS culture already leans this way (plain data + functions). |
-| [1 Immutability](book/chapter1/axiom-01-immutability.md) | ⚠️ weaker | `readonly` / `as const` / `Readonly<T>` are **shallow + erased**; no value equality; `Object.freeze` is the only runtime teeth. The reflection quizzes and "records are values" don't map. |
-| [2 Side effects](book/chapter1/axiom-02-side-effects.md) | ✅ unchanged | Same recognition discipline; the API catalogue needs a JS rewrite (`Date.now`, `Math.random`, `fetch`, `fs`, `console`, throwing, microtasks). |
-| [3 Impure functions](book/chapter1/axiom-03-impure-functions.md) | ✅ unchanged | Same; minor bonus — `async` *is* surfaced in the type (`Promise<T>`), unlike most effects. |
-| [4 Pure functions](book/chapter1/axiom-04-pure-functions.md) | ✅ unchanged | Identical; no purity enforcement, same as C#/Java. |
-| [5 Honest/total signatures](book/chapter1/axiom-05-honest-total-signatures.md) | ✅ **stronger** | DUs make "widen the output" cheap; the `out`/`ref` dishonesty doesn't exist in TS. **But** `any`/`as` and structural typing undercut totality, and exhaustiveness isn't free. |
-| [6 Cohesion](book/chapter1/axiom-06-cohesion.md) | ✅ unchanged | Pure judgement; transcribes directly. |
-| [7 Connascence](book/chapter1/axiom-07-connascence.md) | ⚠️ **shifts** | **The CoT example breaks** (below). The "compiler-enforced vs convention" line moves because CoT is only as strong as branding makes it. |
-| [8 First-class functions](book/chapter1/axiom-08-first-class-functions.md) | ✅ **stronger** | TS/JS has the cleanest story of the three — no `Func<>` / delegate ceremony, native closures. |
-| [9 Higher-order functions](book/chapter1/axiom-09-higher-order-functions.md) | ✅ **stronger** | Native `map`/`filter`/`reduce`; less inference friction than the axiom warns about. |
-| [10 Pattern matching](book/chapter1/axiom-10-pattern-matching.md) | ⚠️ **different** | No native pattern matching / no `switch` *expression*. Discriminant-`switch` + `never`, or `ts-pattern`. The `Match`-method form works. |
-| [11 Impureheim](book/chapter1/axiom-11-impureheim.md) | ✅ unchanged | Same sandwich; gather is usually `await`ed. |
-| [12 Maybe](book/chapter1/axiom-12-maybe.md) | ✅ **stronger** | `T \| undefined` under `strict` is structural + compile-enforced *and* allocation-free — it lands **above C# NRT** (advisory) and matches Java `Optional`'s enforcement. The "no Optional in fields/collections" caveats are largely Java-specific (`field?: T` is idiomatic in TS). |
-| [13 Either](book/chapter1/axiom-13-either.md) | ✅ **stronger** | Trivial DU; the `out`-param critique is moot. |
-| [14 Unit](book/chapter1/axiom-14-unit.md) | ➖ partly dissolves | TS `void` *is* a type and `undefined` is a one-value type — most of the "void isn't first-class" problem the axiom solves doesn't exist in TS. |
-| [15 Result](book/chapter1/axiom-15-result.md) | ✅ **stronger motivation** | DU or `neverthrow`/`Effect`. Exceptions are *less* honest than C#/Java (no checked exceptions, `catch (e: unknown)`), so the case for Result is stronger. |
-| [16 Result combinators](book/chapter1/axiom-16-result-combinators.md) | ✅ unchanged | `neverthrow`'s `map`/`mapErr`/`andThen`; `Promise.then` and `Array.flatMap` make the "same shape elsewhere" point vividly. |
-| [17 Value objects](book/chapter1/axiom-17-value-objects.md) | ⚠️ **weaker / different** | Biggest divergence (below). Spirit is *extremely* idiomatic via **Zod**, but the nominal guarantees need branding / `#private`, and value-equality is absent. |
-| [18 Railway](book/chapter1/axiom-18-railway.md) | ✅ unchanged | `neverthrow` chains are the railway verbatim. |
-| [19 Validation (accumulate)](book/chapter1/axiom-19-validation.md) | ✅ **stronger** | Variadic-arity pain is smaller (variadic tuple types); and **Zod accumulates all field errors by default** — Axiom 19 out of the box. |
-| [20 Discriminated unions](book/chapter1/axiom-20-discriminated-unions.md) | ✅ **best fit** | TS's crown jewel; the axiom already cites TS tagged unions. Only gap: exhaustiveness opt-in. |
-| [21 Illegal states unrepresentable](book/chapter1/axiom-21-illegal-states.md) | ✅ **best fit** | Sum-of-records is pure idiom; the product/sum arithmetic ports directly. |
-| [22 Pure fns returning actions](book/chapter1/axiom-22-pure-functions-returning-actions.md) | ✅ unchanged | Action DU + dispatch switch; clean. |
-| [23 State machines](book/chapter1/axiom-23-state-machines.md) | ✅ unchanged | `Transition(state, command) → event` over DUs; XState exists, but the pure-function form is natural. |
-| [24 Session Context](book/chapter1/axiom-24-session-context.md) | ✅ unchanged | Mutable object threaded explicitly; ambient anti-patterns map to `AsyncLocalStorage` / React context. |
-| [25 Stateful Shell](book/chapter1/axiom-25-stateful-shell.md) | ✅ unchanged | Loop + async dispatch; cancellation → `AbortController` / `AbortSignal` instead of `CancellationToken`. |
-| [26 Typestate](book/chapter1/axiom-26-typestate.md) | ⚠️ weaker construction / stronger DSL | Linear typestate needs `#private` for construction control; but the **stacking-generics** variant (Kysely, Drizzle, Zod builders) is arguably *more* natural in TS than C#/Java. |
+| [0 Data vs Behaviour](book/chapter2/axiom-00-data-vs-behaviour.md) | ✅ unchanged | Language-agnostic; TS culture already leans this way (plain data + functions). |
+| [1 Immutability](book/chapter2/axiom-01-immutability.md) | ⚠️ weaker | `readonly` / `as const` / `Readonly<T>` are **shallow + erased**; no value equality; `Object.freeze` is the only runtime teeth. The reflection quizzes and "records are values" don't map. |
+| [2 Side effects](book/chapter2/axiom-02-side-effects.md) | ✅ unchanged | Same recognition discipline; the API catalogue needs a JS rewrite (`Date.now`, `Math.random`, `fetch`, `fs`, `console`, throwing, microtasks). |
+| [3 Impure functions](book/chapter2/axiom-03-impure-functions.md) | ✅ unchanged | Same; minor bonus — `async` *is* surfaced in the type (`Promise<T>`), unlike most effects. |
+| [4 Pure functions](book/chapter2/axiom-04-pure-functions.md) | ✅ unchanged | Identical; no purity enforcement, same as C#/Java. |
+| [5 Honest/total signatures](book/chapter2/axiom-05-honest-total-signatures.md) | ✅ **stronger** | DUs make "widen the output" cheap; the `out`/`ref` dishonesty doesn't exist in TS. **But** `any`/`as` and structural typing undercut totality, and exhaustiveness isn't free. |
+| [6 Cohesion](book/chapter2/axiom-06-cohesion.md) | ✅ unchanged | Pure judgement; transcribes directly. |
+| [7 Connascence](book/chapter2/axiom-07-connascence.md) | ⚠️ **shifts** | **The CoT example breaks** (below). The "compiler-enforced vs convention" line moves because CoT is only as strong as branding makes it. |
+| [8 First-class functions](book/chapter2/axiom-08-first-class-functions.md) | ✅ **stronger** | TS/JS has the cleanest story of the three — no `Func<>` / delegate ceremony, native closures. |
+| [9 Higher-order functions](book/chapter2/axiom-09-higher-order-functions.md) | ✅ **stronger** | Native `map`/`filter`/`reduce`; less inference friction than the axiom warns about. |
+| [10 Pattern matching](book/chapter2/axiom-10-pattern-matching.md) | ⚠️ **different** | No native pattern matching / no `switch` *expression*. Discriminant-`switch` + `never`, or `ts-pattern`. The `Match`-method form works. |
+| [11 Impureheim](book/chapter2/axiom-11-impureheim.md) | ✅ unchanged | Same sandwich; gather is usually `await`ed. |
+| [12 Maybe](book/chapter2/axiom-12-maybe.md) | ✅ **stronger** | `T \| undefined` under `strict` is structural + compile-enforced *and* allocation-free — it lands **above C# NRT** (advisory) and matches Java `Optional`'s enforcement. The "no Optional in fields/collections" caveats are largely Java-specific (`field?: T` is idiomatic in TS). |
+| [13 Either](book/chapter2/axiom-13-either.md) | ✅ **stronger** | Trivial DU; the `out`-param critique is moot. |
+| [14 Unit](book/chapter2/axiom-14-unit.md) | ➖ partly dissolves | TS `void` *is* a type and `undefined` is a one-value type — most of the "void isn't first-class" problem the axiom solves doesn't exist in TS. |
+| [15 Result](book/chapter2/axiom-15-result.md) | ✅ **stronger motivation** | DU or `neverthrow`/`Effect`. Exceptions are *less* honest than C#/Java (no checked exceptions, `catch (e: unknown)`), so the case for Result is stronger. |
+| [16 Result combinators](book/chapter2/axiom-16-result-combinators.md) | ✅ unchanged | `neverthrow`'s `map`/`mapErr`/`andThen`; `Promise.then` and `Array.flatMap` make the "same shape elsewhere" point vividly. |
+| [17 Value objects](book/chapter2/axiom-17-value-objects.md) | ⚠️ **weaker / different** | Biggest divergence (below). Spirit is *extremely* idiomatic via **Zod**, but the nominal guarantees need branding / `#private`, and value-equality is absent. |
+| [18 Railway](book/chapter2/axiom-18-railway.md) | ✅ unchanged | `neverthrow` chains are the railway verbatim. |
+| [19 Validation (accumulate)](book/chapter2/axiom-19-validation.md) | ✅ **stronger** | Variadic-arity pain is smaller (variadic tuple types); and **Zod accumulates all field errors by default** — Axiom 19 out of the box. |
+| [20 Discriminated unions](book/chapter2/axiom-20-discriminated-unions.md) | ✅ **best fit** | TS's crown jewel; the axiom already cites TS tagged unions. Only gap: exhaustiveness opt-in. |
+| [21 Illegal states unrepresentable](book/chapter2/axiom-21-illegal-states.md) | ✅ **best fit** | Sum-of-records is pure idiom; the product/sum arithmetic ports directly. |
+| [22 Pure fns returning actions](book/chapter2/axiom-22-pure-functions-returning-actions.md) | ✅ unchanged | Action DU + dispatch switch; clean. |
+| [23 State machines](book/chapter2/axiom-23-state-machines.md) | ✅ unchanged | `Transition(state, command) → event` over DUs; XState exists, but the pure-function form is natural. |
+| [24 Session Context](book/chapter2/axiom-24-session-context.md) | ✅ unchanged | Mutable object threaded explicitly; ambient anti-patterns map to `AsyncLocalStorage` / React context. |
+| [25 Stateful Shell](book/chapter2/axiom-25-stateful-shell.md) | ✅ unchanged | Loop + async dispatch; cancellation → `AbortController` / `AbortSignal` instead of `CancellationToken`. |
+| [26 Typestate](book/chapter2/axiom-26-typestate.md) | ⚠️ weaker construction / stronger DSL | Linear typestate needs `#private` for construction control; but the **stacking-generics** variant (Kysely, Drizzle, Zod builders) is arguably *more* natural in TS than C#/Java. |
 
 **Tally:** ~19 apply unchanged or land better; 4 need real caveats (7, 17, 26, plus the swapped-argument protection that recurs across them); 3 need mechanism swaps (1, 10, 12); 1 partly dissolves (14).
 
@@ -267,18 +267,18 @@ Together these dissolve most of the dilemma: the choice is **not** "comparable b
 
 The frontend code the playbook *does* touch is domain logic, and it is **already comparable** to the backend versions:
 
-- Form validation → Axioms [17](book/chapter1/axiom-17-value-objects.md)/[19](book/chapter1/axiom-19-validation.md) (value objects, accumulate-every-error) — frontend-native via Zod + react-hook-form, still "parse input into domain values."
-- Decoding/validating an API response at the `fetch` boundary → [Axiom 17](book/chapter1/axiom-17-value-objects.md) / parse-don't-validate — arguably the single most compelling frontend use of the book, and the same axiom as the backend's input parse.
-- Deriving view-state from domain state → pure function, [Axiom 4](book/chapter1/axiom-04-pure-functions.md) (memoised selectors).
-- A multi-step wizard or cart as a state machine → Axioms [23](book/chapter1/axiom-23-state-machines.md)/[26](book/chapter1/axiom-26-typestate.md) (XState, `useReducer`).
+- Form validation → Axioms [17](book/chapter2/axiom-17-value-objects.md)/[19](book/chapter2/axiom-19-validation.md) (value objects, accumulate-every-error) — frontend-native via Zod + react-hook-form, still "parse input into domain values."
+- Decoding/validating an API response at the `fetch` boundary → [Axiom 17](book/chapter2/axiom-17-value-objects.md) / parse-don't-validate — arguably the single most compelling frontend use of the book, and the same axiom as the backend's input parse.
+- Deriving view-state from domain state → pure function, [Axiom 4](book/chapter2/axiom-04-pure-functions.md) (memoised selectors).
+- A multi-step wizard or cart as a state machine → Axioms [23](book/chapter2/axiom-23-state-machines.md)/[26](book/chapter2/axiom-26-typestate.md) (XState, `useReducer`).
 
-The frontend code the playbook *doesn't* touch — DOM, reactivity, component lifecycle — is exactly what it scopes out regardless of language. The book already says this: **[Axiom 26](book/chapter1/axiom-26-typestate.md)'s "When NOT to"** lists React hooks (`useX must be used within a Provider`) and Web Component `connectedCallback` as cases typestate can't reach, because they are tree-structural / framework-owned. The line is already drawn and consistent.
+The frontend code the playbook *doesn't* touch — DOM, reactivity, component lifecycle — is exactly what it scopes out regardless of language. The book already says this: **[Axiom 26](book/chapter2/axiom-26-typestate.md)'s "When NOT to"** lists React hooks (`useX must be used within a Provider`) and Web Component `connectedCallback` as cases typestate can't reach, because they are tree-structural / framework-owned. The line is already drawn and consistent.
 
 ### Three models, and the recommendation
 
 - **A — Parallel/comparable (the current device).** Same example, side-by-side columns; keeps "same axiom, every language" visible. The thing that makes the book work as a multi-language text.
 - **B — Native-idiom per language.** C# = backend service, TS = React component. Authentic, but loses comparability *and* drags framework noise into every example — the reader now learns React alongside the axiom, diluting it.
-- **C — Hybrid (recommended).** Keep the **pure-core examples parallel and comparable** across all languages (cart, order, validation, FSM). Vary **only the shell**, and only in the synthesis examples where a shell appears (Axioms [11](book/chapter1/axiom-11-impureheim.md), [15](book/chapter1/axiom-15-result.md), [18](book/chapter1/axiom-18-railway.md), [22](book/chapter1/axiom-22-pure-functions-returning-actions.md), [23](book/chapter1/axiom-23-state-machines.md), [25](book/chapter1/axiom-25-stateful-shell.md)), toward the reader's native idiom — and even then, keep it framework-light.
+- **C — Hybrid (recommended).** Keep the **pure-core examples parallel and comparable** across all languages (cart, order, validation, FSM). Vary **only the shell**, and only in the synthesis examples where a shell appears (Axioms [11](book/chapter2/axiom-11-impureheim.md), [15](book/chapter2/axiom-15-result.md), [18](book/chapter2/axiom-18-railway.md), [22](book/chapter2/axiom-22-pure-functions-returning-actions.md), [23](book/chapter2/axiom-23-state-machines.md), [25](book/chapter2/axiom-25-stateful-shell.md)), toward the reader's native idiom — and even then, keep it framework-light.
 
 Model C honours the book's own philosophy directly — **thin shell, fat core**: the shell is where idioms legitimately differ; the core is universal. Adapt the part that is *meant* to be environment-specific, leave the part that is *meant* to be portable alone.
 
@@ -295,9 +295,9 @@ Concrete shell substitutions, with the core unchanged:
 
 This is why UI-rendering examples are unnecessary to make the edition land:
 
-- A Redux / `useReducer` reducer is `(state, action) => state` — **literally [Axiom 23](book/chapter1/axiom-23-state-machines.md)'s `Transition`**, with the store as the shell. No JSX required.
-- `react-hook-form` + Zod is **Axioms [17](book/chapter1/axiom-17-value-objects.md) + [19](book/chapter1/axiom-19-validation.md)** out of the box.
-- A TanStack Query `queryFn` that fetches-then-decodes is **[Axiom 11](book/chapter1/axiom-11-impureheim.md)'s gather + [Axiom 17](book/chapter1/axiom-17-value-objects.md)'s parse.**
+- A Redux / `useReducer` reducer is `(state, action) => state` — **literally [Axiom 23](book/chapter2/axiom-23-state-machines.md)'s `Transition`**, with the store as the shell. No JSX required.
+- `react-hook-form` + Zod is **Axioms [17](book/chapter2/axiom-17-value-objects.md) + [19](book/chapter2/axiom-19-validation.md)** out of the box.
+- A TanStack Query `queryFn` that fetches-then-decodes is **[Axiom 11](book/chapter2/axiom-11-impureheim.md)'s gather + [Axiom 17](book/chapter2/axiom-17-value-objects.md)'s parse.**
 
 A frontend reader recognises the examples *as their own work* without the book ever rendering a component.
 
@@ -307,4 +307,4 @@ A real React component example is rarely minimal — it imports hooks rules, dep
 
 ### Bottom line
 
-Don't turn the TS examples into UI examples — that would lose comparability *and* drift into out-of-scope framework plumbing. Instead: keep pure-core examples identical and comparable across C#/Java/TS; vary only the shell, only where one appears, toward a frontend-native-but-framework-light idiom; and lean on the fact that the frontend's own primitives (reducers, RHF+Zod, query functions) *are* these axioms, so relatability comes for free. Let genuinely UI-specific concerns (reactivity, lifecycle, DOM) stay out of scope — the book already draws that line in [Axiom 26](book/chapter1/axiom-26-typestate.md), so it is a consistent boundary, not a new exception.
+Don't turn the TS examples into UI examples — that would lose comparability *and* drift into out-of-scope framework plumbing. Instead: keep pure-core examples identical and comparable across C#/Java/TS; vary only the shell, only where one appears, toward a frontend-native-but-framework-light idiom; and lean on the fact that the frontend's own primitives (reducers, RHF+Zod, query functions) *are* these axioms, so relatability comes for free. Let genuinely UI-specific concerns (reactivity, lifecycle, DOM) stay out of scope — the book already draws that line in [Axiom 26](book/chapter2/axiom-26-typestate.md), so it is a consistent boundary, not a new exception.
