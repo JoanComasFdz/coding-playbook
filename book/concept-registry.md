@@ -193,9 +193,10 @@ Source: Dan North, "CUPID — for joyful coding" (2022), dannorth.net.
 
 ## DDD Tactical Patterns
 
-🔍 **Open**
+🔍 **Open** — the chapter's headline area: a planned **Chapter 2 Play**, *"FP-style DDD tactical patterns"* (scoped in the [Chapter 2 README](chapter2/README.md), not yet drafted).
 
-- Anemic models real definition, not "put methods in domain objects".
+- Anemic models real definition, not "put methods in domain objects" — the rebuttal the FP-style domain owes, since pure-functions-over-immutable-data looks anemic only by the naive reading.
+- Aggregate as a [Decider](chapter1/axiom-22-pure-functions-returning-actions.md); domain event as a [discriminated union](chapter1/axiom-20-discriminated-unions.md); entity lifecycle as a [state machine](chapter1/axiom-23-state-machines.md); value object as [Axiom 17](chapter1/axiom-17-value-objects.md).
 
 ---
 
@@ -229,6 +230,7 @@ Redesign so the error case cannot arise, instead of reporting it (`substring` cl
 - [Axiom 15 — Result](chapter1/axiom-15-result.md) — the ordering: the explicit ladder *eliminate → return honestly → fail fast* positions Result as rung 2, not rung 1, completing the north star (*simple → honest → robust*) for error handling.
 - Structural eliminators — the same move at larger grain, each making the bad case unconstructable rather than handled: a value ([Axiom 17](chapter1/axiom-17-value-objects.md)), a record's shape ([Axiom 21](chapter1/axiom-21-illegal-states.md)), a call sequence ([Axiom 26](chapter1/axiom-26-typestate.md)).
 - Honest-return rung — [Axiom 12](chapter1/axiom-12-maybe.md) / [Axiom 13](chapter1/axiom-13-either.md): when the case is a real outcome that cannot be erased, it becomes a value.
+- **Surfaces in Chapter 2** as the Play *"Designing errors out of existence"* — the same move at design grain (aggregate boundaries, value-object invariants-at-construction); see the [Chapter 2 README](chapter2/README.md). Its home stays the folded axioms above; the Play composes them, adding no new principle.
 
 **Not carried:** Ousterhout's other ch. 10 techniques — *exception masking* and *exception aggregation* are handler-placement / topology concerns (out of scope); *just crash* is already the fail-fast rung folded into [Axiom 15](chapter1/axiom-15-result.md).
 
@@ -236,11 +238,13 @@ Redesign so the error case cannot arise, instead of reporting it (`substring` cl
 
 ---
 
-## Deep vs. shallow modules (Ousterhout) — [AXIOM? / CONTRAST]
+## Deep vs. shallow modules (Ousterhout)
+
+🔍 **Open** — splits across both altitudes; the positive half is a planned **Chapter 2 Play**, *"Deep modules, small interfaces"* (scoped in the [Chapter 2 README](chapter2/README.md), not yet drafted).
 
 **What:** module value = functionality ÷ interface cost; **deep** = small interface over lots of implementation. The counterweight: over-splitting into many tiny functions multiplies *shallow* interfaces and can *increase* complexity.
 
-**Verdict:** a healthy tension against combinator / tiny-function enthusiasm. Could be its own note, or a "when NOT to" inside [Cohesion](chapter1/axiom-06-cohesion.md) / Higher-order functions.
+**Verdict:** splits by altitude. The **counterweight** half — don't over-split functions into shallow one-line helpers — stays folded at function grain in [Axiom 6](chapter1/axiom-06-cohesion.md)'s *When NOT to* (shred-locality) and [Axiom 9](chapter1/axiom-09-higher-order-functions.md)'s *Trade-offs* (deep chains of wrappers). The **positive** half — functionality ÷ interface cost — is the Chapter 2 Play, paired there with [Information Hiding](#information-hiding-parnas) as its other face and read through [Cohesion](chapter1/axiom-06-cohesion.md) / [Connascence](chapter1/axiom-07-connascence.md) at module grain.
 
 **Source:** Ousterhout, *A Philosophy of Software Design* (2018).
 
@@ -389,11 +393,13 @@ The original "low coupling, high cohesion": a coupling ladder (content/common/ex
 
 ---
 
-## Information Hiding (Parnas) — [SKIP — mostly architecture]
+## Information Hiding (Parnas)
 
-A module hides a *secret* — a design decision likely to change. The root of encapsulation and of Ousterhout's deep modules.
+🔍 **Open** — its code-shaping end is a planned **Chapter 2 Play**, paired with [Deep vs. shallow modules](#deep-vs-shallow-modules-ousterhout) (scoped in the [Chapter 2 README](chapter2/README.md), not yet drafted).
 
-Mostly a decomposition criterion at architectural altitude, hence out of scope. The one in-scope echo: the impure shell hides the stateful *secret* — see [Axiom 25 — Stateful Shell](chapter1/axiom-25-stateful-shell.md).
+A module hides a *secret* — a design decision likely to change. The root of encapsulation and of Ousterhout's deep modules; the same idea read from the secret's side rather than the interface's.
+
+The *strategic* half — decomposition at architectural altitude — stays out of scope. Two in-scope echoes remain: the impure shell hides the stateful *secret* ([Axiom 25 — Stateful Shell](chapter1/axiom-25-stateful-shell.md)), and at module grain "hide the volatile decision behind a small interface" is the Chapter 2 deep-module Play.
 
 **Source:** D.L. Parnas, "On the Criteria To Be Used in Decomposing Systems into Modules" (CACM, 1972).
 

@@ -6,15 +6,37 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A personal **Coding Playbook** by the author — a curated set of building blocks, concise how-tos, and dated decisions for writing simple, honest, robust code in high-level general-purpose languages (C# and Java are the named targets).
 
+The book is organized in two chapters, at two altitudes. **Chapter 1 — Fundamentals** is the anatomy of a module and its functions: the axioms (data vs behaviour, immutability, purity, honest signatures, `Result`, value objects, …). **Chapter 2 — Plays** is one level up: how those axioms compose into a designed, persisted domain — FP-style DDD tactical patterns, immutable-data persistence, deep modules. Each chapter has its own scope rules below; the voice, the three-kinds-of-why model, the registry, and the per-topic template apply to both.
+
 It is **documentation, not software**. There is no build system, no test suite, and no runnable code at present. Content lives (or will live) as Markdown files. The `.gitignore` is a stock .NET template — its presence does not imply a .NET project; treat it as boilerplate until actual code appears.
 
-## Scope: code-level, not architecture
+## Scope: two altitudes, neither is system architecture
 
-This is a *Coding* Playbook, not an architecture book. It is about the **anatomy of a module and its functions** — what a signature promises, what a function receives and returns, how its internals compose. It is **not** about system topology.
+This is a *Coding* Playbook, not an architecture book. Both chapters sit *below* system topology; what changes between them is how far up from a single function they reach.
 
-Operational patterns (outbox, sagas, retries, circuit breakers, event-driven messaging, deployment) are **out of scope**: they are *consumers* of these building blocks, not building blocks themselves. If a draft drifts toward "how to architect a system," pull it back to "how to write the code inside the module."
+Two things are **out of scope for the whole book**:
 
-A few edge concerns are explicitly **in** scope *because they shape code*: the composition root / wiring, mapping between boundary↔domain↔persistence representations, and where stateful resources (caches, connection pools, connections) live — the answer being the impure shell, never the core.
+- **System topology and operational patterns** — outbox, sagas, retries, circuit breakers, event-driven messaging, deployment. They are *consumers* of these building blocks, not building blocks themselves.
+- **Strategic DDD** — bounded contexts, context maps, subdomain distillation. That is system decomposition; the book stays on the *tactical* (code-shaped) side.
+
+If a draft drifts toward "how to architect a system," pull it back to "how to write the code."
+
+### Chapter 1 — Fundamentals: the anatomy of a module and its functions
+
+What a signature promises, what a function receives and returns, how its internals compose. The axioms live here. This is the original scope of the book, unchanged.
+
+A few edge concerns are explicitly **in** scope at this level *because they shape code*: the composition root / wiring, mapping between boundary↔domain↔persistence representations, and where stateful resources (caches, connection pools, connections) live — the answer being the impure shell, never the core.
+
+### Chapter 2 — Plays: composing the axioms into a designed, persisted domain
+
+One level up from a single function: how the Chapter 1 building blocks assemble into a *designed module* and reach the outside world. This chapter is allowed material Chapter 1 deliberately excludes:
+
+- **FP-style DDD tactical patterns** — aggregates, entities, value objects, repositories, domain events — modelled the book's way: behaviour as pure functions and deciders over immutable data, not methods on mutable entities (see *The central model*). The "rich domain model" / Tell-Don't-Ask orthodoxy is the road not taken — presented as a trade-off, never attacked.
+- **Immutable-data persistence** — reading and writing immutable records without an identity-tracking ORM: EF `AsNoTracking()` (and Dapper) for C#, jOOQ for Java. The concrete realization of the impure shell's gather/act steps.
+- **Deep modules, small interfaces** — Ousterhout's "functionality ÷ interface cost"; the counterweight to tiny-function enthusiasm.
+- **Information hiding** — Parnas's "a module hides a design decision likely to change," at the in-scope, code-shaping end (the impure shell hiding the stateful secret), not as architectural decomposition.
+
+Chapter 2 is **Plays, not new principles**: it should *apply and compose* the Chapter 1 axioms, link back to them for the durable why, and never re-teach them under a DDD name. When a Chapter 2 technique is really a Chapter 1 axiom wearing a pattern's clothes (a DDD value object *is* Axiom 17), say so and link, rather than redefining it.
 
 ## The central model
 
@@ -31,6 +53,8 @@ That sentence is effectively a module's public-API contract. Three consequences 
 ## Vocabulary
 
 Use these terms consistently — they are the playbook's building blocks: data vs behaviour, immutable records, `Option`/`Maybe`, `Result`/`Either`, discriminated unions, pattern matching, total/honest signatures, pure vs impure functions, first-class & higher-order functions, the **Impureim sandwich**, value objects with smart constructors, **parse don't validate**, **make illegal states unrepresentable**, the **Decider**, composition/combinators.
+
+Chapter 2 adds its own tactical vocabulary — aggregate, entity, repository, deep module, information hiding — each introduced by linking back to the Chapter 1 axiom it composes, never as a fresh definition.
 
 ## Audience and voice
 
@@ -66,6 +90,6 @@ For consistency and fairness, draft each topic as: **Problem / forces → What I
 ## When adding content
 
 - Prefer extending or splitting existing Markdown files over new top-level files. Once a directory structure emerges, follow it; until then, **ask before introducing one** (ADRs conventionally collect in one place — confirm the location before creating it).
-- Mind the two halves: the concept intro is the **Fundamentals**; the applied per-part chapters (triggers / core / output) are the **Plays**.
-- **Situate new construct axioms against the two evaluative lenses.** Whenever it reads naturally, an axiom should note what it does through [Cohesion](book/chapter1/axiom-06-cohesion.md) (Axiom 6) and [Connascence](book/chapter1/axiom-07-connascence.md) (Axiom 7) — typically a short *"Through Axiom 7's lens, this weakens a Connascence of X into Y"* aside in the intro. Keep it an aside, not the argument, and skip it where there is genuinely no angle (some carrier/composition axioms rate only a one-liner, or none).
-- **Foreshadow, don't spoil.** Reference *earlier* axioms freely — backward links build the argument. A *later* axiom may be **foreshadowed** (a concept glimpsed at altitude, no pointer) but never **spoiled** (linked, numbered, or named). When a forward thread is worth drawing, write it as a backward link *from* the later axiom, not a forward link *to* it.
+- Mind the two halves: **Chapter 1 is the Fundamentals** (the axioms), **Chapter 2 is the Plays** (axioms composed into a designed, persisted domain). A Play must link back to every Chapter 1 axiom it rests on and must not restate the axiom's argument; guard the tactical/strategic line in Chapter 2 the way Chapter 1 guards the code/architecture line.
+- **(Chapter 1.) Situate new construct axioms against the two evaluative lenses.** Whenever it reads naturally, an axiom should note what it does through [Cohesion](book/chapter1/axiom-06-cohesion.md) (Axiom 6) and [Connascence](book/chapter1/axiom-07-connascence.md) (Axiom 7) — typically a short *"Through Axiom 7's lens, this weakens a Connascence of X into Y"* aside in the intro. Keep it an aside, not the argument, and skip it where there is genuinely no angle (some carrier/composition axioms rate only a one-liner, or none).
+- **(Chapter 1.) Foreshadow, don't spoil.** Reference *earlier* axioms freely — backward links build the argument. A *later* axiom may be **foreshadowed** (a concept glimpsed at altitude, no pointer) but never **spoiled** (linked, numbered, or named). When a forward thread is worth drawing, write it as a backward link *from* the later axiom, not a forward link *to* it. (The strict axiom-numbering arc is a Chapter 1 device; Chapter 2 Plays link freely across both chapters.)
