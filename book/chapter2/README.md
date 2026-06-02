@@ -1,21 +1,117 @@
-# Chapter 2 — Plays
+# Chapter 1
 
-Chapter 1 built the **Fundamentals**: the anatomy of a module and its functions, as a sequence of axioms. This chapter is one level up — the **Plays**: how those axioms compose into a *designed, persisted domain*.
+This chapter introduces all foundational principles that will shape the rest of the playbook.
 
-Nothing here is a new principle. Every Play applies and combines Chapter 1 axioms; where a pattern is really an axiom wearing different clothes (a DDD value object *is* [Axiom 17](../chapter1/axiom-17-value-objects.md)), it links back rather than re-teaching. The chapter stays on the **tactical** (code-shaped) side of design — not bounded contexts, context maps, or system topology.
+The principles are sequenced so each one rests only on principles already introduced. Read top to bottom, since the list forms a narrative spine.
 
-One stance holds the chapter together: **FP-style DDD**. Behaviour is pure functions and deciders over immutable data — invariants in smart constructors, decisions returning action DUs — not methods on mutable entities. The "rich domain model" / Tell-Don't-Ask orthodoxy is the road not taken, presented as a trade-off, never attacked. See [Axiom 0 — Data is not Behaviour](../chapter1/axiom-00-data-vs-behaviour.md).
+The code examples they provide are for educational purposes and are not final, production-ready, comprehensive implementations.
 
-## What's expected here
+## Index
 
-- **FP-style DDD tactical patterns.** Aggregates, entities, repositories, domain events — modelled the book's way. An aggregate is a **Decider**: a pure `decide` returning action/event DUs ([Axiom 22](../chapter1/axiom-22-pure-functions-returning-actions.md)), an `evolve` folding them back into state — an entity's lifecycle *is* a [state machine](../chapter1/axiom-23-state-machines.md), a domain event *is* a [discriminated union](../chapter1/axiom-20-discriminated-unions.md), a value object *is* [Axiom 17](../chapter1/axiom-17-value-objects.md). This is where the FP-style domain answers the *"isn't that just an anemic model?"* charge: it looks anemic only by the misreading that equates richness with mutable methods; by the real definition — the domain's logic lives *in* the domain, as pure functions — it is not.
+**0. Data vs Behaviour** — data is a fact; behaviour is an operation. We keep the two separate.
 
-- **Designing errors out of existence.** The design-level face of the fold already in [Axiom 5](../chapter1/axiom-05-honest-total-signatures.md) and [Axiom 15](../chapter1/axiom-15-result.md): how aggregate boundaries, value objects, and invariants-at-construction erase whole *classes* of error before any `Result` is reached for. The recurring instinct of the chapter — make the bad case unrepresentable, don't handle it.
+*↳ The founding premise. Once data is a fact rather than an object that owns and mutates its own state, the first thing you want from a fact is that it stays put.*
 
-- **Deep modules, small interfaces.** Ousterhout's "module value = functionality ÷ interface cost": designing a module that hides a lot behind a little — and the counterweight to tiny-function enthusiasm, where over-splitting multiplies *shallow* interfaces and adds complexity. Chapter 1's two evaluative lenses carry up here at module grain: a deep module is high [Cohesion](../chapter1/axiom-06-cohesion.md) behind a thin surface, and a small interface is less [Connascence](../chapter1/axiom-07-connascence.md) crossing the boundary. Its other face is **information hiding**, below — the secret is exactly what the small interface hides.
+**1. Immutability** — data that can't change after creation.
 
-- **Immutable-data persistence.** Reading and writing immutable records without an identity-tracking ORM fighting you: EF `AsNoTracking()` (and Dapper) for C#, jOOQ for Java. This is the concrete shell of the Impureim sandwich — the *gather* step materializes immutable records for the pure core, the *act* step maps action DUs back to commands. Mapping boundary↔domain↔persistence representations lives here. The *technique* is the Play; the specific tool pick (`AsNoTracking` by default, jOOQ) is a dated contextual choice that resolves to an ADR, linked from here rather than argued in prose.
+*↳ Removes one whole class of bug (mutating state); the other source is code that reaches outside itself — so next we name that.*
 
-- **Information hiding (Parnas).** "A module hides a design decision likely to change," at the in-scope, code-shaping end: the impure shell hiding the stateful secret ([Axiom 25](../chapter1/axiom-25-stateful-shell.md)), not architectural decomposition. The other face of **deep modules** above — same idea read from the secret's side rather than the interface's.
+**2. Side effects** — interactions with the outside world.
 
-> This README is a skeleton — the scope and planned Plays, not yet the Plays themselves. Order still to be decided (likely: design the immutable domain first, then persist it).
+*↳ Once you can spot an effect, you can label the functions that contain them.*
+
+**3. Impure functions** — functions carrying side effects; unpredictable output.
+
+*↳ And only now, with impurity named, can we define its opposite.*
+
+**4. Pure functions** — no effects; same input, same output.
+
+*↳ Purity closes the back door — no hidden inputs or outputs through effects. The front door can still lie, though: silently undefined on some inputs, or smuggling outcomes through nulls and sentinels.*
+
+**5. Honest, total signatures** — every outcome named in the return type; defined for every input the types admit.
+
+*↳ Honesty fixes what the signature says about its outcomes; it does not stop the function from promising too many at once. A signature can tell the whole truth and still weld two jobs together — so the companion criterion is that the function has only one.*
+
+**6. Cohesion** — one function, one reason to change: one input shape, one decision, one output shape. Group and split code by reason-to-change, not by surface similarity.
+
+*↳ Cohesion measured a single unit from the inside — one reason to change. Turn the same question outward — what forces a change in one unit to ripple into another? — and you have the chapter's second lens.*
+
+**7. Connascence** — a graded, named taxonomy of how two units are coupled (name, type, meaning, position, algorithm, execution order), judged on three axes: strength, degree, locality. The work is to weaken strong connascence toward weak, shrink its degree, and pull connascent units closer. The chapter's second evaluative lens — it builds nothing, but names what every weakening still to come is doing.
+
+*↳ Pure, honest, cohesive, and weakly coupled — the criteria for well-formed code are now complete, and the rest of the chapter is the toolkit. We'll want to compose such functions, which first means treating functions as values.*
+
+**8. First-class functions** — functions stored, passed, returned.
+
+*↳ Once functions are values, functions can take and return other functions.*
+
+**9. Higher-order functions** — functions over functions.
+
+*↳ That's the machinery the container types will need (map/flatMap are HOFs) — but before introducing them, we need a clean way to take their values apart.*
+
+**10. Pattern matching** — branch on a value's shape.
+
+*↳ With pure/impure understood, a criterion for good signatures, and a way to branch, we can now sketch the target we're building toward.*
+
+**11. Impureheim** *(concept only)* — effects at the edges, pure logic in the middle.
+
+*↳ The north star. That pure core is only worth having if we have good types to fill it — starting with the simplest.*
+
+**12. Maybe** — presence or absence (examples now lean on the HOFs from 9).
+
+*↳ Absence is one missing case; next, a value that's one of two types.*
+
+**13. Either** — one of two types (a sealed interface + records).
+
+*↳ Before specializing this into success/failure, we must handle operations that succeed but return nothing.*
+
+**14. Unit** — a type with a single value, for "nothing meaningful to return."
+
+*↳ With Unit available for the no-value case, Result can be defined cleanly.*
+
+**15. Result** *(concept)* — success or failure, no exceptions.
+
+*↳ A bare Result is clumsy; the HOFs from earlier let us transform and chain it.*
+
+**16. Result combinators** — map / flatMap / mapError.
+
+*↳ Chaining needs things to chain: small fallible constructors.*
+
+**17. Value objects** *(string failures first)* — make invalid states unrepresentable; each `from` returns a Result.
+
+*↳ A domain full of fallible constructors is exactly what we can now wire together.*
+
+**18. Railway** — chain them so the first failure short-circuits.
+
+*↳ But stopping at the first error isn't always what you want.*
+
+**19. Validation** — a `ValidationError` convention plus accumulate-every-error, the deliberate contrast to railway.
+
+*↳ All of this handled two outcomes; for three or more we generalize the shape.*
+
+**20. Discriminated unions** *(3+ outcomes)* — consumed via the pattern matching from 10; the reveal that Either and Result were DUs all along.
+
+*↳ The same sum-type machinery models not just a computation's outcomes but the persistent shape of a thing across its lifecycle.*
+
+**21. Make illegal states unrepresentable** — model a thing that is in one of several states as a sum of per-state records, not a product of nullable fields; each field lives only on the state where it is valid. The data-shape sibling of value objects (17) and the base the state machine (23) and typestate (26) escalate from.
+
+*↳ That was data at rest; when the pure core decides what should *happen*, model its output the same way — as a DU of actions.*
+
+**22. Pure functions returning actions** — the pure core decides, the impure shell executes (delivering the sandwich from 11).
+
+*↳ Generalize "decide an action" into "decide the next state."*
+
+**23. State machines** — centralized state, transitions as DUs, decisions as pure functions returning actions. Everything composes.
+
+*↳ The shell was one-shot — load, decide, persist, return. Many programs aren't one-shot. Before we can describe what their longer-lived shells *do*, we need to name what they *hold*.*
+
+**24. Session Context** — per-session mutable state held by the shell: accumulators, signals, flags, callbacks. Distinct from FSM state and from globals.
+
+*↳ With a place to keep the session's working memory, the shell shape can grow beyond one-shot — into a loop that drives the FSM forward over the whole session.*
+
+**25. Stateful Shell** — the long-running shell shape: read current state, dispatch the effect that state demands, await an environmental event, call `Transition`, repeat. *(Lineage: the language-runtime fetch-decode-execute *Interpreter Loop*.)*
+
+*↳ Twenty-five axioms in, the structural toolkit is complete — entities, decisions, shells, the session-scoped state they hold, and the long-lived resources the shell carries between calls. One niche escalation closes the chapter: when the legal *order* of calls is itself part of the contract, lift each state into its own type so the wrong-order call cannot be written.*
+
+**26. Typestate** — encode call order in the type system; each state is its own type, transitions return the next type, and operations valid only in one state live only on that state's type. The narrow-use type-level counterpart to the value-level state machines from 23.
+
+*Note: most bridges are strict dependencies — the next axiom literally needs the previous one. A few are deliberately not. Connascence (7) is an evaluative lens set beside Cohesion: the tools that follow it do not depend on it, but it names what each of them is doing. Impureheim (11) is introduced early as a "north star" to give the tool-building that follows a clear purpose, and it pays off at 22. And Typestate (26) is the chapter's one out-of-arc item — a niche tool placed at the end so it does not interrupt the constantly-used material that precedes it.*
