@@ -160,32 +160,30 @@ If ever revisited: explore the FP take plus the correctness of the decorator pat
 
 ## SOLID critique
 
-🔍 **Open** — critique to write.
+Lives in [Chapter 1](chapter1/README.md) — the motivating hook: SOLID names the symptom after a design has gone wrong, but doesn't generate one. North's framing carries it: **principles are compliance gates (binary: conform or don't); properties are gradients you move along** — the cleanest "why look past SOLID," aligned with simplicity-first and the three-tier why model.
 
-Ammunition from the CUPID research (below): North's framing — **principles are compliance gates (binary: you conform or you don't); properties are gradients you move along** — is the cleanest published "why avoid SOLID," and it lines up with simplicity-first + the three-tier why model (Principles / Conceptual-why / Contextual-choices).
-
-Also worth a map: several SOLID letters already land elsewhere, usually sharper at code level —
+Several SOLID letters already land elsewhere, usually sharper at code level —
 - **S**RP ≈ [Cohesion](chapter2/axiom-06-cohesion.md) ("one reason to change", but at function grain).
 - **D**IP ≈ Impureheim + the composition root.
 - **I**SP ≈ honest / small surface area.
 - **O**/**L** are mostly about inheritance hierarchies, which this book's FP-leaning register sidesteps.
 
-Next action: write the critique as "where each letter already lives (better-named) here, and where it doesn't apply."
-
 ---
 
 ## CUPID
 
-🔍 **Open** — decide *Idiomatic*; harvest the gates-vs-gradients line for SOLID.
+🔍 **Open** — *Idiomatic*'s home, and whether CUPID earns depth beyond a name-drop.
 
-Dan North's reaction to SOLID: five **properties** (gradients), not rules. Four of five are already covered here:
+Dan North's reaction to SOLID: five **properties** (gradients), not rules. [Chapter 1](chapter1/README.md) name-drops it in one paragraph ("revisited later"). Four of five are already covered here:
 - **Composable** ≈ combinators / Railway.
 - **Predictable** ≈ purity + honest signatures. (His *observability* sub-point is operational → out of scope.)
 - **Unix philosophy** ≈ [Cohesion](chapter2/axiom-06-cohesion.md) (one job, judged from the *outside*).
 - **Domain-based** ≈ value objects / [Ubiquitous language](#ubiquitous-language).
 - **Idiomatic** — the ONLY pillar with no analog here. "Code should feel familiar; follow language + local team idioms." Rhymes with the contextual choices (`AsNoTracking`, jOOQ) — those *are* idiom picks.
 
-Next action: decide whether **Idiomatic** earns its own (late) axiom or is just a contextual-choices note. Steal North's gates-vs-gradients line for the SOLID critique above.
+Still open:
+- Whether **Idiomatic** earns its own (late) axiom or is just a contextual-choices / ADR note.
+- A deeper CUPID treatment, if one is warranted — it lives *later* (an epilogue, or here in the registry), not in Chapter 1.
 
 Source: Dan North, "CUPID — for joyful coding" (2022), dannorth.net.
 
