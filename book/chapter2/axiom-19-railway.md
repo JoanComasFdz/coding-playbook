@@ -324,3 +324,7 @@ Every step in `Verify` is a pure function — same inputs, same `Result`. The ch
 
 [4] **John Hughes**, *Why Functional Programming Matters*, Research Topics in Functional Programming, Addison-Wesley, 1990. Cross-listed from [Axiom 10](axiom-10-higher-order-functions.md) and [Axiom 17](axiom-17-result-combinators.md). The "small combinators are the glue" argument is the foundational case for the railway: each step is a small definition; the combinators are the glue; the composed program is what you get for free.
 <https://www.cs.kent.ac.uk/people/staff/dat/miranda/whyfp90.pdf>
+
+---
+
+← Previous: [Axiom 18 — Value objects](axiom-18-value-objects.md) · Next: [Axiom 20 — Validation](axiom-20-validation.md) →

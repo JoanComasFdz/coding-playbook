@@ -321,3 +321,7 @@ The same shape runs on a dedicated thread, an `async` task, a virtual thread, a 
 
 [4] **Joe Armstrong**, *Programming Erlang* (2nd ed.), Pragmatic Bookshelf, 2013 — the chapters on `gen_server` and `gen_statem`. The OTP behaviours are the canonical reference for the framework form of this axiom (option 3 on the trade-off curve): the loop lives in the framework, the user supplies the per-state callback functions and a transition function. The Stateful Shell here is the hand-rolled equivalent — same shape, runtime owned by the host process rather than by OTP.
 <https://pragprog.com/titles/jaerlang2/programming-erlang/>
+
+---
+
+← Previous: [Axiom 25 — Session Context](axiom-25-session-context.md) · Next: [Axiom 27 — Typestate](axiom-27-typestate.md) →

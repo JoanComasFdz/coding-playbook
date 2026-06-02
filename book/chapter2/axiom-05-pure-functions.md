@@ -158,3 +158,7 @@ Two cases where the label does not earn its keep:
 
 [2] **Eric Normand**, *Grokking Simplicity*, Manning Publications, 2021. Chapters 2–4 introduce the *action / calculation / data* taxonomy: a calculation is this axiom's pure function. The book is a 300-page worked example of how separating calculations from actions changes the cost of testing, refactoring, and reasoning across a codebase. Already cited in [Axiom 4](axiom-04-impure-functions.md); cross-listed here as the practical companion to Hughes' formal argument.
 <https://www.manning.com/books/grokking-simplicity>
+
+---
+
+← Previous: [Axiom 4 — Impure functions](axiom-04-impure-functions.md) · Next: [Axiom 6 — Honest, total signatures](axiom-06-honest-total-signatures.md) →

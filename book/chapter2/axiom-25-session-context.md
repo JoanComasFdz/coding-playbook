@@ -220,3 +220,7 @@ A progress callback set up by *this* run of the importer is part of *this* sessi
 
 [3] **Vaughn Vernon**, *Implementing Domain-Driven Design*, Addison-Wesley, 2013. The book's chapters on *Application Services* describe the per-request coordinator that owns the session's working state — transactional boundary, identifiers, accumulators — and hands the entity's state through pure operations. The Application Service is the architectural sibling of this axiom's "shell holds the Session Context"; the names differ but the lifecycle and ownership match.
 <https://www.informit.com/store/implementing-domain-driven-design-9780321834577>
+
+---
+
+← Previous: [Axiom 24 — State machines](axiom-24-state-machines.md) · Next: [Axiom 26 — Stateful Shell](axiom-26-stateful-shell.md) →

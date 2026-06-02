@@ -154,3 +154,7 @@ Two cases where the shape would be ceremony for its own sake:
 <https://www.manning.com/books/grokking-simplicity>
 
 [3] **Bertrand Meyer**, *Object-Oriented Software Construction* (2nd ed.), Prentice Hall, 1997 — **Command–Query Separation**. The principle that a method should either return a value or change observable state, never both. Impureheim is that rule lifted from the method to the unit of work: query (gather) and command (act) become separate layers, and the pure middle ([Axiom 5](axiom-05-pure-functions.md)) makes the query half absolute rather than conventional.
+
+---
+
+← Previous: [Axiom 11 — Pattern matching](axiom-11-pattern-matching.md) · Next: [Axiom 13 — Maybe](axiom-13-maybe.md) →

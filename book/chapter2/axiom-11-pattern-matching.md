@@ -348,3 +348,7 @@ Two cases where another option on the trade-off curve fits better:
 
 [4] **Scott Wlaschin**, *Designing with Types* series, fsharpforfunandprofit.com. F#'s `Option.fold`, `Result.fold`, and the per-DU `match` keyword are the canonical functional treatment of "case analysis owned by the type" — the lineage of the `Match` method form. The C# / Java shape used in this axiom is the direct translation of that idiom into languages where pattern matching is a built-in language construct rather than a per-type member.
 <https://fsharpforfunandprofit.com/series/designing-with-types/>
+
+---
+
+← Previous: [Axiom 10 — Higher-order functions](axiom-10-higher-order-functions.md) · Next: [Axiom 12 — Impureheim](axiom-12-impureheim.md) →

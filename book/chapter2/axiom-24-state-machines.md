@@ -338,3 +338,7 @@ A pattern match on the event variant, one arm per effect, plus a `Save` call ins
 <https://www.manning.com/books/grokking-simplicity>
 
 [5] **John Hopcroft, Rajeev Motwani, Jeffrey Ullman**, *Introduction to Automata Theory, Languages, and Computation*, Addison-Wesley, 3rd ed. 2006. The mathematical ancestor — a Mealy machine, a finite automaton with output, formalised as `(Q, Σ, Λ, δ, λ, q0)` with transition function `δ: Q × Σ → Q` and output function `λ: Q × Σ → Λ`. The `Transition` function in this axiom is exactly the combined Mealy form `δ × λ: Q × Σ → (Q × Λ)` — same mathematics, expressed in types instead of set notation, with the output `Λ` widened to a DU of named event variants and the next-state component carried inside each successful variant.
+
+---
+
+← Previous: [Axiom 23 — Pure functions returning actions](axiom-23-pure-functions-returning-actions.md) · Next: [Axiom 25 — Session Context](axiom-25-session-context.md) →

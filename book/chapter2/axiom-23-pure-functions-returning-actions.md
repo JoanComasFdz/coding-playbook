@@ -316,3 +316,7 @@ A pattern match over a DU is some of the most predictable code in the codebase: 
 
 [6] **Scott Wlaschin**, *Domain Modeling Made Functional*, Pragmatic Bookshelf, 2018. Cross-listed from [Axiom 16](axiom-16-result.md), [Axiom 17](axiom-17-result-combinators.md), [Axiom 18](axiom-18-value-objects.md), [Axiom 19](axiom-19-railway.md), and [Axiom 20](axiom-20-validation.md). The book's *workflow* chapters end with a pure function returning a typed outcome and an outer shell dispatching by case — the F# original of this axiom's C# / Java treatment.
 <https://pragprog.com/titles/swdddf/domain-modeling-made-functional/>
+
+---
+
+← Previous: [Axiom 22 — Make illegal states unrepresentable](axiom-22-illegal-states.md) · Next: [Axiom 24 — State machines](axiom-24-state-machines.md) →

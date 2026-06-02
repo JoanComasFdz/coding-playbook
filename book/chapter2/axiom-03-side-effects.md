@@ -165,3 +165,7 @@ Deterministic logging is *not* an edge case — it is still a write to a logger,
 <https://www.manning.com/books/grokking-simplicity>
 
 [3] **John Hughes**, *Why Functional Programming Matters*, Research Topics in Functional Programming, Addison-Wesley, 1990. The original case for treating functions as composable values. Hughes' argument turns on functions being free of hidden inputs and hidden outputs — i.e., free of side effects — which is what makes composition tractable to begin with.
+
+---
+
+← Previous: [Axiom 2 — Immutability](axiom-02-immutability.md) · Next: [Axiom 4 — Impure functions](axiom-04-impure-functions.md) →

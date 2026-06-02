@@ -625,3 +625,7 @@ Mutable state earns its keep in two main cases.
 [6] **Joshua Bloch**, *Effective Java*, 3rd ed., Addison-Wesley, 2018 — Item 17, "Minimize mutability". The canonical Java-specific statement of the rules listed in this axiom's *Definitions* section, with the same five-point recipe (no mutators, ensure the class cannot be extended, make all fields final, make all fields private, ensure exclusive access to any mutable components).
 
 [7] **`System.Collections.Immutable`** (.NET) and **Vavr** (Java) are the mainstream persistent-collection libraries — immutable lists, maps, sets, and vectors with structural sharing built in, so you never hand-roll the trees in reference [4]. .NET: <https://learn.microsoft.com/en-us/dotnet/api/system.collections.immutable>. Vavr: <https://vavr.io>.
+
+---
+
+← Previous: [Axiom 1 — Data is not Behaviour](axiom-01-data-vs-behaviour.md) · Next: [Axiom 3 — Side effects](axiom-03-side-effects.md) →

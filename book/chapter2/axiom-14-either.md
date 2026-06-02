@@ -136,3 +136,7 @@ What Either does *not* cost you is honesty: the return type names what the funct
 
 [2] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022. Cited in [Axiom 1](axiom-01-data-vs-behaviour.md), [Axiom 2](axiom-02-immutability.md), and [Axiom 13](axiom-13-maybe.md); relevant here for the broader case that distinct outcomes belong in the data, not in the control flow.
 <https://www.manning.com/books/data-oriented-programming>
+
+---
+
+← Previous: [Axiom 13 — Maybe](axiom-13-maybe.md) · Next: [Axiom 15 — Unit](axiom-15-unit.md) →

@@ -162,3 +162,7 @@ Two cases where the function-value reflex is the wrong reflex:
 
 [2] **Peter Norvig**, *Design Patterns in Dynamic Languages*, OOPSLA tutorial, 1996. The classic talk that observed that 16 of the 23 GoF patterns become "invisible, simpler, or partly built into the language" once functions are first-class. The patterns that survive are the ones that organise *more than one* related behaviour.
 <https://norvig.com/design-patterns/>
+
+---
+
+← Previous: [Axiom 8 — Connascence](axiom-08-connascence.md) · Next: [Axiom 10 — Higher-order functions](axiom-10-higher-order-functions.md) →

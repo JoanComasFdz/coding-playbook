@@ -134,3 +134,7 @@ Languages without a built-in `Unit` (mainstream C# and Java both) require you to
 
 [2] **Haskell** `Data.Void` and the unit type `()`. Worth distinguishing the two by name: *Unit* (one inhabitant — "no information") and *Void* (zero inhabitants — "this function does not return at all") are different types that both replace the C-family `void` keyword, for different reasons.
 <https://hackage.haskell.org/package/base/docs/Data-Void.html>
+
+---
+
+← Previous: [Axiom 14 — Either](axiom-14-either.md) · Next: [Axiom 16 — Result](axiom-16-result.md) →

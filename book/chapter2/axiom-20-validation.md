@@ -367,3 +367,7 @@ N independent inputs become an N-arity `Combine` overload returning a `Combined<
 
 [6] **Vavr** — `io.vavr.control.Validation`. The off-the-shelf Java library shipping this axiom's exact staged shape: `Validation.combine(v1, v2, …).ap(builder)` accumulates up to eight validations (Vavr's `ap` is this axiom's `.map`). Same 8-arity ceiling, same accumulating behaviour. If a Java codebase already pulls in Vavr, this axiom's `Validation` utility class collapses into the library's existing type.
 <https://docs.vavr.io/#_validation>
+
+---
+
+← Previous: [Axiom 19 — Railway](axiom-19-railway.md) · Next: [Axiom 21 — Discriminated unions](axiom-21-discriminated-unions.md) →

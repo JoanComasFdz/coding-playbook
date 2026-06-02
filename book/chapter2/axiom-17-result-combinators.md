@@ -228,3 +228,7 @@ A function returning `Result<T, E>` promises every outcome lives in the return t
 
 [4] **Rust** `std::result::Result<T, E>` — `map`, `map_err`, `and_then`. The Rust standard library's three combinators are exactly the three this axiom names, with `and_then` standing in for `Bind`. A short, well-documented reference for the operations and their type signatures.
 <https://doc.rust-lang.org/std/result/enum.Result.html#method.map>
+
+---
+
+← Previous: [Axiom 16 — Result](axiom-16-result.md) · Next: [Axiom 18 — Value objects](axiom-18-value-objects.md) →

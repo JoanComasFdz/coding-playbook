@@ -170,3 +170,7 @@ The second cost is that cohesion sometimes tells you to **keep duplication you a
 [4] **Martin Fowler**, *Refactoring: Improving the Design of Existing Code*, 2nd ed., Addison-Wesley, 2018. Home of the **rule of three** (attributed to Don Roberts): refactor toward an abstraction when you have seen the duplication a third time, not the first — the discipline that keeps reason-to-change from being a guess.
 
 [5] **Andrew Hunt & David Thomas**, *The Pragmatic Programmer*, Addison-Wesley, 1999 (20th-anniversary ed. 2019). Source of the DRY principle in its original, often-forgotten form — *"every piece of knowledge must have a single, authoritative, unambiguous representation within a system"* — about knowledge, not duplicated code text. The misreading this axiom corrects is DRY applied to text instead of knowledge.
+
+---
+
+← Previous: [Axiom 6 — Honest, total signatures](axiom-06-honest-total-signatures.md) · Next: [Axiom 8 — Connascence](axiom-08-connascence.md) →

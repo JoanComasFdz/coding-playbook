@@ -23,3 +23,9 @@ Examples in this playbook use the current LTS versions of each target language:
 
 - **C# 14** on **.NET 10 LTS** (released November 2025)
 - **Java 25 LTS** (released September 2025)
+
+---
+
+## Start reading here
+
+**[Chapter 1](book/chapter1/README.md)**

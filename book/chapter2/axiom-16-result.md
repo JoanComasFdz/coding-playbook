@@ -297,3 +297,7 @@ The line between them shifts by context. "Database is unreachable" is exceptiona
 <https://github.com/vkhorikov/CSharpFunctionalExtensions>
 
 [4] **James Shore**, *Fail Fast*, IEEE Software 21(5), 2004. The discipline of halting immediately on a programmer error or broken invariant, so the defect surfaces at its origin instead of several frames downstream disguised as a recoverable value. Its complement is *offensive programming* — declining to write defensive handling for conditions that can only arise from a bug, on the grounds that silently tolerating them hides the defect rather than containing it.
+
+---
+
+← Previous: [Axiom 15 — Unit](axiom-15-unit.md) · Next: [Axiom 17 — Result combinators](axiom-17-result-combinators.md) →

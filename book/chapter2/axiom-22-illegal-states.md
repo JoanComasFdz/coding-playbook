@@ -240,3 +240,7 @@ Options 1 and 2 share one disease: the record can hold field combinations the do
 
 [3] **Alexis King**, *Parse, Don't Validate*, lexi-lambda.github.io, 2019. The adjacent discipline: push validity into the type at the boundary so the interior never re-checks it. A sum of per-state records is "parse, don't validate" applied to a thing's *state* — parse the row into the variant once, and every consumer downstream trusts the shape.
 <https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/>
+
+---
+
+← Previous: [Axiom 21 — Discriminated unions](axiom-21-discriminated-unions.md) · Next: [Axiom 23 — Pure functions returning actions](axiom-23-pure-functions-returning-actions.md) →

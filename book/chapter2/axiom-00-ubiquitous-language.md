@@ -114,3 +114,7 @@ None of this is enforced by the compiler yet — `Process` compiles as happily a
 [1] **Eric Evans**, *Domain-Driven Design: Tackling Complexity in the Heart of Software*, Addison-Wesley (2003) — coined *Ubiquitous Language*: a language structured around the domain model and used by all team members, in speech and in code, to connect the model to the implementation. This axiom keeps only that code-shaping half; the strategic apparatus around it (bounded contexts, context maps) is out of scope (see the [playbook scope](../../README.md#scope)).
 
 [2] **Phil Karlton**, widely attributed: *"There are only two hard things in Computer Science: cache invalidation and naming things."* The folklore acknowledgement that naming is a first-order problem, not a finishing touch.
+
+---
+
+← [Chapter 2 Contents](README.md) · Next: [Axiom 1 — Data is not Behaviour](axiom-01-data-vs-behaviour.md) →

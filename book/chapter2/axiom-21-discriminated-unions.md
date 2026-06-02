@@ -188,3 +188,7 @@ A pattern match over a DU sits the cases side by side, one per line: shape on th
 
 [5] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022. Cross-listed from [Axiom 1](axiom-01-data-vs-behaviour.md), [Axiom 2](axiom-02-immutability.md), [Axiom 13](axiom-13-maybe.md), and [Axiom 14](axiom-14-either.md). The broader case that distinct kinds-of-thing belong as distinct shapes of data — exactly the move from "one flat record with optional fields" to "a sealed hierarchy whose variants each declare only their own fields."
 <https://www.manning.com/books/data-oriented-programming>
+
+---
+
+← Previous: [Axiom 20 — Validation](axiom-20-validation.md) · Next: [Axiom 22 — Make illegal states unrepresentable](axiom-22-illegal-states.md) →

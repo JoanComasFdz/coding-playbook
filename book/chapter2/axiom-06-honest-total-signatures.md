@@ -219,3 +219,7 @@ Two cases where the criterion is wrong or harmful:
 <http://degoes.net/articles/destroy-all-ifs>
 
 [4] **John Ousterhout**, *A Philosophy of Software Design*, Yaknyam Press, 2018, ch. 10 ("Define Errors Out of Existence"). The argument that the cheapest exception to handle is the one designed away — redefine an operation's semantics so the formerly-erroneous case becomes a normal, defined outcome (`substring` clamps, deletion is idempotent). The counterweight in *When NOT to* — that absorbing a bug-signalling input masks the defect — is the boundary this playbook draws around the technique.
+
+---
+
+← Previous: [Axiom 5 — Pure functions](axiom-05-pure-functions.md) · Next: [Axiom 7 — Cohesion](axiom-07-cohesion.md) →

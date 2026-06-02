@@ -163,3 +163,7 @@ slogan as Sharvit's DOP, different argument: this branch is about *performance*,
 Fowler**, *TellDontAsk*, martinfowler.com (bliki), which frames it as bundling data with the
 functions that operate on it and is careful to call it a reminder, not a rule to apply
 dogmatically. <https://martinfowler.com/bliki/TellDontAsk.html>
+
+---
+
+← Previous: [Axiom 0 — Ubiquitous Language](axiom-00-ubiquitous-language.md) · Next: [Axiom 2 — Immutability](axiom-02-immutability.md) →

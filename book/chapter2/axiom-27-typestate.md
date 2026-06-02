@@ -390,3 +390,7 @@ A long-lived shell ([Axiom 26](axiom-26-stateful-shell.md)) that holds an `Authe
 
 [7] **Jeremy Skinner et al.**, *FluentValidation*. A mainstream C# reference implementation of the stacking-generic-types variant: `RuleFor(x => x.Property)` returns an `IRuleBuilder<T, TProperty>` that captures the selected property's type, and the rule methods chained after it are constrained against that captured type — a string rule on a numeric property does not compile. The everyday face of the variant, alongside Moq's and Mockito's `Setup`/`when` → `Returns`/`thenReturn` chains.
 <https://docs.fluentvalidation.net/>
+
+---
+
+← Previous: [Axiom 26 — Stateful Shell](axiom-26-stateful-shell.md) · [Chapter 2 Contents](README.md)

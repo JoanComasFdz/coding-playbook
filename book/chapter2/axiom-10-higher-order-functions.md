@@ -177,3 +177,7 @@ Two cases where the function-as-parameter reflex is the wrong reflex:
 <https://www.cs.kent.ac.uk/people/staff/dat/miranda/whyfp90.pdf>
 
 [2] **Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides**, *Design Patterns: Elements of Reusable Object-Oriented Software*, Addison-Wesley, 1994. Template Method, Strategy, and Command are the OO formulations that higher-order functions replace at smaller cost. Already cited in [Axiom 9](axiom-09-first-class-functions.md); included again because this is where those patterns *resolve* — HOFs are how the playbook expresses them when the variation is one function.
+
+---
+
+← Previous: [Axiom 9 — First-class functions](axiom-09-first-class-functions.md) · Next: [Axiom 11 — Pattern matching](axiom-11-pattern-matching.md) →

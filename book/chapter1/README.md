@@ -141,3 +141,6 @@ And once I have them:
 
 **How can I enforce those in the code itself, so I do not rely on anyone's discipline at review time?**
 
+---
+
+Next: [Chapter 2](../chapter2/README.md) →

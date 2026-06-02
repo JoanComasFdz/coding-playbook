@@ -208,3 +208,7 @@ Encode call order in the type system; each state is its own type, transitions re
 ---
 
 *Note: most bridges are strict dependencies — the next axiom literally needs the previous one. A few are deliberately not. Ubiquitous Language ([0](axiom-00-ubiquitous-language.md)) opens the chapter not because the next axiom needs it, but because it is the discipline the rest enforce: nothing structurally depends on it, yet every type, signature, and case that follows is where one of the domain's names gets compiled in. Connascence ([8](axiom-08-connascence.md)) is an evaluative lens set beside Cohesion: the tools that follow it do not depend on it, but it names what each of them is doing. Impureheim ([12](axiom-12-impureheim.md)) is introduced early as a "north star" to give the tool-building that follows a clear purpose, and it pays off at [23](axiom-23-pure-functions-returning-actions.md). And Typestate ([27](axiom-27-typestate.md)) is the chapter's one out-of-arc item — a niche tool placed at the end so it does not interrupt the constantly-used material that precedes it.*
+
+---
+
+← Previous: [Chapter 1](../chapter1/README.md) · Start: [Axiom 0 — Ubiquitous Language](axiom-00-ubiquitous-language.md) →

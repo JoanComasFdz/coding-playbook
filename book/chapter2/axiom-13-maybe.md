@@ -496,3 +496,7 @@ Picking one is an ADR-level call, not a principle-level one — it depends on th
 - Microsoft DevBlogs, *Explore union types in C# 15* (Bill Wagner, 2 April 2026): <https://devblogs.microsoft.com/dotnet/csharp-15-union-types/>
 - Official proposal: <https://github.com/dotnet/csharplang/blob/main/proposals/unions.md> (mirrored at <https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/unions>)
 - Andrew Lock companion writeup: <https://andrewlock.net/exploring-the-dotnet-11-preview-2-dotnet-gets-union-types/>
+
+---
+
+← Previous: [Axiom 12 — Impureheim](axiom-12-impureheim.md) · Next: [Axiom 14 — Either](axiom-14-either.md) →

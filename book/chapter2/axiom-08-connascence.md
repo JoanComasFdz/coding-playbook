@@ -397,3 +397,7 @@ The second cost is **the weakening is not free**. Lifting a magic value into a t
 <https://connascence.io>
 
 [5] **Wayne Stevens, Glenford Myers & Larry Constantine**, *Structured Design*, IBM Systems Journal, 1974. The origin of *coupling* and *cohesion* as design measures; connascence refines coupling into the graded, named taxonomy this axiom uses.
+
+---
+
+← Previous: [Axiom 7 — Cohesion](axiom-07-cohesion.md) · Next: [Axiom 9 — First-class functions](axiom-09-first-class-functions.md) →

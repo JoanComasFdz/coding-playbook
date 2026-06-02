@@ -311,3 +311,7 @@ public record Order(OrderId id, Money total, OrderStatus status) {
 
 [4] **Vladimir Khorikov**, *CSharpFunctionalExtensions* (v3.7.0, March 2026). Cross-listed from [Axiom 16](axiom-16-result.md) and [Axiom 17](axiom-17-result-combinators.md). The library's `ValueObject` base class and the recipes in Khorikov's writing on the smart-constructor pattern are the practical .NET reference the C# example here is shaped after.
 <https://github.com/vkhorikov/CSharpFunctionalExtensions>
+
+---
+
+← Previous: [Axiom 17 — Result combinators](axiom-17-result-combinators.md) · Next: [Axiom 19 — Railway](axiom-19-railway.md) →

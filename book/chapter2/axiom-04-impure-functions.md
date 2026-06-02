@@ -146,3 +146,7 @@ Two edge cases where the label looks awkward:
 <https://www.manning.com/books/grokking-simplicity>
 
 [2] **John Hughes**, *Why Functional Programming Matters*, Research Topics in Functional Programming, Addison-Wesley, 1990. Already cited in [Axiom 3](axiom-03-side-effects.md) as reference [3]; cross-listed here because Hughes' argument turns on functions being free of hidden inputs and hidden outputs — i.e., on the category this axiom names being separable from its opposite.
+
+---
+
+← Previous: [Axiom 3 — Side effects](axiom-03-side-effects.md) · Next: [Axiom 5 — Pure functions](axiom-05-pure-functions.md) →
