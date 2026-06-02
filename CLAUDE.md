@@ -45,7 +45,7 @@ One level up from a single function: how the Chapter 2 building blocks assemble 
 - **Deep modules, small interfaces** — Ousterhout's "functionality ÷ interface cost"; the counterweight to tiny-function enthusiasm.
 - **Information hiding** — Parnas's "a module hides a design decision likely to change," at the in-scope, code-shaping end (the impure shell hiding the stateful secret), not as architectural decomposition.
 
-Chapter 3 is **Plays, not new principles**: it should *apply and compose* the Chapter 2 axioms, link back to them for the durable why, and never re-teach them under a DDD name. When a Chapter 3 technique is really a Chapter 2 axiom wearing a pattern's clothes (a DDD value object *is* Axiom 17), say so and link, rather than redefining it.
+Chapter 3 is **Plays, not new principles**: it should *apply and compose* the Chapter 2 axioms, link back to them for the durable why, and never re-teach them under a DDD name. When a Chapter 3 technique is really a Chapter 2 axiom wearing a pattern's clothes (a DDD value object *is* Axiom 18), say so and link, rather than redefining it.
 
 ## The central model
 
@@ -57,7 +57,7 @@ That sentence is effectively a module's public-API contract. Three consequences 
 
 - A pure function that decides *what should happen* returns a discriminated union of actions/events (e.g. `Add | Update | Remove`); the caller executes them outside the pure core — the decision is pure, the execution is impure. State machines are just the first part with the entity's state added as input and threaded into each successful variant. Treat "return actions" and "pure state machine" as the same building block, not two.
 - Once functions return `Result`/`Option`, **compose** them with map/bind/traverse rather than nesting `if`s. Distinguish short-circuiting (monadic `Result`) from accumulating (applicative validation, for collecting multiple `ValidationError`s).
-- **Always separate the pure call from the pattern match on its result** — see [Axiom 10's "match on a named value" convention](book/chapter2/axiom-10-pattern-matching.md#convention-match-on-a-named-value-never-on-an-inline-call). Shape: `var decision = Compute(...); switch (decision) { ... }`, never `switch (Compute(...)) { ... }`. Applies to `switch` and `Match` equally. The purpose is visual: pure call on one line, impure dispatch on the next, so a reviewer sees the Impureheim sandwich's two halves at a glance.
+- **Always separate the pure call from the pattern match on its result** — see [Axiom 11's "match on a named value" convention](book/chapter2/axiom-11-pattern-matching.md#convention-match-on-a-named-value-never-on-an-inline-call). Shape: `var decision = Compute(...); switch (decision) { ... }`, never `switch (Compute(...)) { ... }`. Applies to `switch` and `Match` equally. The purpose is visual: pure call on one line, impure dispatch on the next, so a reviewer sees the Impureheim sandwich's two halves at a glance.
 
 ## Vocabulary
 
@@ -88,7 +88,7 @@ Prose density runs in three tiers: a **how-to** file is near-zero prose (mechani
 
 `book/concept-registry.md` tracks every coding concept considered and where it landed — axiomatized (✅), folded (🔁), discarded (❌), or open (🔍). It is a **map, not a log**: each section says how a concept *is* reflected in the book today, never the history of how it got there. A section should be:
 
-- **Present tense.** "Lives in Axiom 0," never "was folded into" or "the fold added." No ledger narration of what changed when.
+- **Present tense.** "Lives in Axiom 1," never "was folded into" or "the fold added." No ledger narration of what changed when.
 - **Bullets, not prose.** A one-line *what* (the concept) plus a one-line verdict, then a bulleted list — one bullet per axiom it touches, each a link with a terse note on *how* it shows up there. It reads as an index of where-and-how, not an essay.
 - **A signpost, not a re-derivation.** Say the minimum to point the reader at the right axiom; the argument lives in the axioms, so don't repeat it. Keep destination links in the bullets, not duplicated in the heading.
 
@@ -100,5 +100,5 @@ For consistency and fairness, draft each topic as: **Problem / forces → What I
 
 - Prefer extending or splitting existing Markdown files over new top-level files. Once a directory structure emerges, follow it; until then, **ask before introducing one** (ADRs conventionally collect in one place — confirm the location before creating it).
 - Mind the structure: **Chapter 1 is the SOLID critique** (the motivating preface), **Chapter 2 is the Fundamentals** (the axioms), **Chapter 3 is the Plays** (axioms composed into a designed, persisted domain). A Play must link back to every Chapter 2 axiom it rests on and must not restate the axiom's argument; guard the tactical/strategic line in Chapter 3 the way Chapter 2 guards the code/architecture line. Chapter 1 is the exception that links freely *forward* into Chapter 2 — pointing ahead to the axioms is its job.
-- **(Chapter 2.) Situate new construct axioms against the two evaluative lenses.** Whenever it reads naturally, an axiom should note what it does through [Cohesion](book/chapter2/axiom-06-cohesion.md) (Axiom 6) and [Connascence](book/chapter2/axiom-07-connascence.md) (Axiom 7) — typically a short *"Through Axiom 7's lens, this weakens a Connascence of X into Y"* aside in the intro. Keep it an aside, not the argument, and skip it where there is genuinely no angle (some carrier/composition axioms rate only a one-liner, or none).
+- **(Chapter 2.) Situate new construct axioms against the two evaluative lenses.** Whenever it reads naturally, an axiom should note what it does through [Cohesion](book/chapter2/axiom-07-cohesion.md) (Axiom 7) and [Connascence](book/chapter2/axiom-08-connascence.md) (Axiom 8) — typically a short *"Through Axiom 8's lens, this weakens a Connascence of X into Y"* aside in the intro. Keep it an aside, not the argument, and skip it where there is genuinely no angle (some carrier/composition axioms rate only a one-liner, or none).
 - **(Chapter 2.) Foreshadow, don't spoil.** Reference *earlier* axioms freely — backward links build the argument. A *later* axiom may be **foreshadowed** (a concept glimpsed at altitude, no pointer) but never **spoiled** (linked, numbered, or named). When a forward thread is worth drawing, write it as a backward link *from* the later axiom, not a forward link *to* it. (The strict axiom-numbering arc is a Chapter 2 device; Chapter 3 Plays link freely across chapters, and Chapter 1's preface is exempt — forward-referencing the axioms is its purpose.)

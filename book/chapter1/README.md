@@ -37,7 +37,7 @@ The unease I felt has already been expressed; here is what others have argued, w
 ### Per principle
 
 #### S — Single Responsibility
-- Undefined in practice; "one reason to change" drifted to "one actor" with no operational test ([Marston](https://www.tonymarston.net/php-mysql/not-so-solid-oo-principles.html)). (The idea this gropes toward — [Cohesion](../chapter2/axiom-06-cohesion.md) — is given a sharper, testable shape in Chapter 2.)
+- Undefined in practice; "one reason to change" drifted to "one actor" with no operational test ([Marston](https://www.tonymarston.net/php-mysql/not-so-solid-oo-principles.html)). (The idea this gropes toward — [Cohesion](../chapter2/axiom-07-cohesion.md) — is given a sharper, testable shape in Chapter 2.)
 - Applied rigidly, produces overly granular classes for theoretical purity ([Khoo](https://medium.com/@jeremykhoois/solid-principles-sucks-b5935b1235d7)).
 
 #### O — Open/Closed
@@ -46,7 +46,7 @@ The unease I felt has already been expressed; here is what others have argued, w
 - Arguably redundant — already implied by LSP ([Henney summary](https://yahnd.com/theater/r/vimeo/157708450/); [Dunn](https://dunnhq.com/posts/2021/solid-relevance/)).
 
 #### L — Liskov Substitution
-- Routinely misread as a *structural* rule (same interface ⇒ substitutable) when it's a *behavioral* contract ([Henney](https://www.slideshare.net/Kevlin/solid-deconstruction); [Oldwood, *KISSing SOLID Goodbye*](https://accu.org/journals/overload/22/122/oldwood_1957/)). (Behavioral contract is exactly what [honest, total signatures](../chapter2/axiom-05-honest-total-signatures.md) make visible.)
+- Routinely misread as a *structural* rule (same interface ⇒ substitutable) when it's a *behavioral* contract ([Henney](https://www.slideshare.net/Kevlin/solid-deconstruction); [Oldwood, *KISSing SOLID Goodbye*](https://accu.org/journals/overload/22/122/oldwood_1957/)). (Behavioral contract is exactly what [honest, total signatures](../chapter2/axiom-06-honest-total-signatures.md) make visible.)
 
 #### I — Interface Segregation
 - Cargo-culted into "one interface per class, even with a single implementation" ([Khoo](https://medium.com/@jeremykhoois/solid-principles-sucks-b5935b1235d7)).
@@ -55,7 +55,7 @@ The unease I felt has already been expressed; here is what others have argued, w
 #### D — Dependency Inversion
 - Routinely conflated with DI / DI frameworks; the principle ≠ the mechanism ([NDepend, *In Defense of SOLID*, noting the confusion](https://blog.ndepend.com/defense-solid-principles/)).
 - Arguably reduces to SRP + LSP — Henney argues it isn't a separate principle ([Henney summary](https://yahnd.com/theater/r/vimeo/157708450/)).
-- Terminology dated — "inversion" comes from the structured-programming era; today this *is* normal dependency direction ([Dunn](https://dunnhq.com/posts/2021/solid-relevance/)). (Where dependency direction *does* earn its keep, the [Impureheim sandwich](../chapter2/axiom-11-impureheim.md) makes it a shape, not a framework.)
+- Terminology dated — "inversion" comes from the structured-programming era; today this *is* normal dependency direction ([Dunn](https://dunnhq.com/posts/2021/solid-relevance/)). (Where dependency direction *does* earn its keep, the [Impureheim sandwich](../chapter2/axiom-12-impureheim.md) makes it a shape, not a framework.)
 
 ### Paradigm fit
 
@@ -71,13 +71,13 @@ The unease I felt has already been expressed; here is what others have argued, w
 
 *This sharpens the community critique above rather than repeating it. The reasoning is my own; the one external attribution is cited inline.*
 
-- **The structural/semantic split.** SOLID partitions cleanly. D, I, and the strategy-pattern form of O are *structural* — a convention, DI container, or linter enforces them, so they dissolve into invisible plumbing. S and L are *semantic* — about [cohesion](../chapter2/axiom-06-cohesion.md) and behavioral honesty — and nothing can mechanize them. The only live half of SOLID is S and L.
+- **The structural/semantic split.** SOLID partitions cleanly. D, I, and the strategy-pattern form of O are *structural* — a convention, DI container, or linter enforces them, so they dissolve into invisible plumbing. S and L are *semantic* — about [cohesion](../chapter2/axiom-07-cohesion.md) and behavioral honesty — and nothing can mechanize them. The only live half of SOLID is S and L.
 - **Only the un-mechanizable letters survive review — and only as symptoms, never by name.** Nobody says "Liskov violation," they say "this implementation behaves weird." Nobody says "SRP," they argue the class does too much. The principle vocabulary is dead in practice; the symptom vocabulary (blast radius, shotgun surgery, "why do I touch five files to add one thing") won.
-- **SRP survives precisely because it's undefined.** Its vagueness isn't a bug — it's the only space in SOLID where real, contextual judgment ([cohesion](../chapter2/axiom-06-cohesion.md)) happens. The other letters became settled convention; SRP stays contested because it can't be reduced to a rule.
+- **SRP survives precisely because it's undefined.** Its vagueness isn't a bug — it's the only space in SOLID where real, contextual judgment ([cohesion](../chapter2/axiom-07-cohesion.md)) happens. The other letters became settled convention; SRP stays contested because it can't be reduced to a rule.
 - **Two OCPs, and the bad one is the popular one.** Meyer's inheritance-based OCP (subclass to extend) is the fragile-base-class trap everyone actually hits. Bob's polymorphic OCP (add an implementation, never edit existing ones) is fine — but it's just "composition over inheritance" + "program to an interface" renamed. OCP is only sane *reactively*, along an axis you've already seen vary ([rule of three](https://en.wikipedia.org/wiki/Rule_of_three_(computer_programming))); applied speculatively it's just speculative generality.
 - **OCP didn't die — it migrated up the stack.** Its surviving intent ("open for extension, closed for modification") is alive as Vertical Slice Architecture: add a feature by dropping in a vertical slice without touching existing slices. The unit of closure moved from the *class* to the *slice*, where it's finally actionable.
 - **Refactoring to extract a shared concept is OCP working, not OCP breaking.** A one-time stabilizing extraction — done when the second consumer appears — buys closure for every future consumer. The health metric isn't "zero edits ever," it's *extraction frequency decaying over time* as the domain model matures. Persistent big extractions years in signal a wrong domain model and or design, not an OCP failure. Extract the *stable* domain concept (the aggregate); tolerate duplication on the *volatile* workflow.
-- **SOLID is OOP-remediation, not universal design.** Its invisibility in FP is the tell: SRP, OCP, LSP, ISP, DIP are all structural givens in FP ([functional decomposition](../chapter2/axiom-00-data-vs-behaviour.md), [higher-order functions](../chapter2/axiom-08-first-class-functions.md), parametricity, small composable functions, dependencies-as-parameters), so the vocabulary is never needed. Even Mark Seemann — a rigorous SOLID defender — argues that, taken seriously, SOLID converges on FP ([Seemann, *SOLID: the next step is Functional*](https://blog.ploeh.dk/2014/03/10/solid-the-next-step-is-functional/)): push ISP to role interfaces and you reach single-method interfaces, which *are* functions. SOLID is a diagnostic vocabulary for *OOP-as-practiced* failure modes — useful for naming smells, but not the level at which design actually happens.
+- **SOLID is OOP-remediation, not universal design.** Its invisibility in FP is the tell: SRP, OCP, LSP, ISP, DIP are all structural givens in FP ([functional decomposition](../chapter2/axiom-01-data-vs-behaviour.md), [higher-order functions](../chapter2/axiom-09-first-class-functions.md), parametricity, small composable functions, dependencies-as-parameters), so the vocabulary is never needed. Even Mark Seemann — a rigorous SOLID defender — argues that, taken seriously, SOLID converges on FP ([Seemann, *SOLID: the next step is Functional*](https://blog.ploeh.dk/2014/03/10/solid-the-next-step-is-functional/)): push ISP to role interfaces and you reach single-method interfaces, which *are* functions. SOLID is a diagnostic vocabulary for *OOP-as-practiced* failure modes — useful for naming smells, but not the level at which design actually happens.
 - **Judge SOLID by how it's practiced, not by what it was meant to be.** Almost no one applies the principles the way their authors intended, and the industry has long since settled into one particular way of working. That practiced version is the only SOLID most people ever meet — so debating what the principles *should* have meant is pointless; it only invites the reply *"you've misunderstood them."* The claim worth making is the concrete one: the version the industry actually practices isn't actionable — it doesn't help you reason about the code, only name what already went wrong. Everyone has felt that, so no one can dismiss it.
 
 ## CUPID — names the destination, not the route
@@ -89,19 +89,19 @@ But it shares SOLID's ceiling. A property is something you *recognise*, not some
 ### Composable — "plays well with others"
 
 - **Small surface area** → the future *Deep modules, small interfaces* Play (Chapter 3): module value = functionality ÷ interface cost. *Why:* a narrow API is the small surface.
-- **Intention-revealing** → [honest, total signatures](../chapter2/axiom-05-honest-total-signatures.md) + domain-named [value objects](../chapter2/axiom-17-value-objects.md); [making illegal states unrepresentable](../chapter2/axiom-21-illegal-states.md) and [discriminated unions](../chapter2/axiom-20-discriminated-unions.md) name each case where a `bool` would hide it. *Why:* the type, not a comment, reveals the intent.
-- **Minimal dependencies** → North means *external packages* (his example is dropping a logging library) — a packaging concern that sits *above* this book's altitude. Zoomed in to a single function it *rhymes* with [purity](../chapter2/axiom-04-pure-functions.md) (depends only on its arguments) and [Impureheim](../chapter2/axiom-11-impureheim.md) (dependencies handed in from the shell, never reached for). A rhyme, not the same claim — packages vs. hidden inputs.
-- The act of *composing* itself → [higher-order functions](../chapter2/axiom-09-higher-order-functions.md) and `Result` composition (map/bind/traverse). *Why:* composability is something you build, with combinators.
+- **Intention-revealing** → [honest, total signatures](../chapter2/axiom-06-honest-total-signatures.md) + domain-named [value objects](../chapter2/axiom-18-value-objects.md); [making illegal states unrepresentable](../chapter2/axiom-22-illegal-states.md) and [discriminated unions](../chapter2/axiom-21-discriminated-unions.md) name each case where a `bool` would hide it. *Why:* the type, not a comment, reveals the intent.
+- **Minimal dependencies** → North means *external packages* (his example is dropping a logging library) — a packaging concern that sits *above* this book's altitude. Zoomed in to a single function it *rhymes* with [purity](../chapter2/axiom-05-pure-functions.md) (depends only on its arguments) and [Impureheim](../chapter2/axiom-12-impureheim.md) (dependencies handed in from the shell, never reached for). A rhyme, not the same claim — packages vs. hidden inputs.
+- The act of *composing* itself → [higher-order functions](../chapter2/axiom-10-higher-order-functions.md) and `Result` composition (map/bind/traverse). *Why:* composability is something you build, with combinators.
 
 ### Unix philosophy — "does one thing well"
 
-- **Does one thing** → [Cohesion](../chapter2/axiom-06-cohesion.md), judged outside-in — which is exactly North's own distinction from inside-out SRP. *Why:* "one job" is the cohesion question, made testable.
-- **Composes via pipes** → low [Connascence](../chapter2/axiom-07-connascence.md) between units, plus the combinators above. *Why:* tools pipe cleanly only when what couples them is weak and explicit.
+- **Does one thing** → [Cohesion](../chapter2/axiom-07-cohesion.md), judged outside-in — which is exactly North's own distinction from inside-out SRP. *Why:* "one job" is the cohesion question, made testable.
+- **Composes via pipes** → low [Connascence](../chapter2/axiom-08-connascence.md) between units, plus the combinators above. *Why:* tools pipe cleanly only when what couples them is weak and explicit.
 
 ### Predictable — "does what you expect"
 
-- **Behaves as expected** → [honest, total signatures](../chapter2/axiom-05-honest-total-signatures.md). *Why:* the type tells you what can come back, so the behaviour is on the surface, not in the body.
-- **Deterministic** → [pure functions](../chapter2/axiom-04-pure-functions.md). The cleanest one-to-one in the whole set: determinism *is* referential transparency *is* purity.
+- **Behaves as expected** → [honest, total signatures](../chapter2/axiom-06-honest-total-signatures.md). *Why:* the type tells you what can come back, so the behaviour is on the surface, not in the body.
+- **Deterministic** → [pure functions](../chapter2/axiom-05-pure-functions.md). The cleanest one-to-one in the whole set: determinism *is* referential transparency *is* purity.
 - **Observable** → instrumentation, telemetry, monitoring. Operational, above this book's altitude.
 
 ### Idiomatic — "feels natural"
@@ -111,7 +111,7 @@ But it shares SOLID's ceiling. A property is something you *recognise*, not some
 
 ### Domain-based — "models the problem domain in language and structure"
 
-- **Domain-based language** → domain-named [value objects](../chapter2/axiom-17-value-objects.md) and the future FP-style *DDD tactical patterns* (Chapter 3). *Why:* `Surname`, not `string` — close the gap between the code and the conversation.
+- **Domain-based language** → domain-named [value objects](../chapter2/axiom-18-value-objects.md) and the future FP-style *DDD tactical patterns* (Chapter 3). *Why:* `Surname`, not `string` — close the gap between the code and the conversation.
 - **Domain-based structure** → Vertical Slice Architecture: directories mirror the domain, not technical layers — which is where I argued [OCP migrated](#my-read--half-architecture-half-not-actionable).
 - **Domain-based boundaries** (module = deployment unit) → architectural, above this book's altitude.
 

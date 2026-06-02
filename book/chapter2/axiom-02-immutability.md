@@ -1,11 +1,11 @@
-# Axiom 1 — Immutability
+# Axiom 2 — Immutability
 
 **Data cannot be modified after it is created.**
 
 - Model facts as values: once constructed, they never change.
 - Carry the discipline all the way down — a single mutable field anywhere makes the whole object mutable.
 
-[Axiom 0](axiom-00-data-vs-behaviour.md) already touches on immutability — its claim that data is a *value* depends on it. This axiom is the deep dive: what immutability is, how to recognise it, what it costs, and what it buys.
+[Axiom 1](axiom-01-data-vs-behaviour.md) already touches on immutability — its claim that data is a *value* depends on it. This axiom is the deep dive: what immutability is, how to recognise it, what it costs, and what it buys.
 
 ---
 
@@ -537,14 +537,14 @@ The default tool the industry reaches for — a class with private mutable field
 - Every accessor that returns an internal collection or sub-object has to clone, or callers can reach in and change it; every method that accepts one has to clone it on the way in.
 - The value a field held two seconds ago exists only in the logs you remembered to write; equality and identity drift apart, and there is no clean way to ask "what was this at 14:03?"
 
-The competing force is **ergonomics** — in-place update reads naturally ("the counter increments"), and most of the tooling (ORMs, serialisers, UI frameworks) was designed assuming setters. The axiom does not deny this force; it relocates it. Mutation is a property of the *shell* — Axiom 0's impure orchestrator — not of the data itself.
+The competing force is **ergonomics** — in-place update reads naturally ("the counter increments"), and most of the tooling (ORMs, serialisers, UI frameworks) was designed assuming setters. The axiom does not deny this force; it relocates it. Mutation is a property of the *shell* — Axiom 1's impure orchestrator — not of the data itself.
 
 ---
 
 ## Why
 
 **1. A value is a fact; facts do not change.**
-The deeper reason data should be immutable is that data represents facts about the world, and facts about the world do not change after they happen. The order *was* placed at 14:03. The customer's birthday *is* 1987-04-12. Overwriting a memory cell with new information does not change the old fact; it only loses your reference to it. This is Hickey's place-oriented critique[2] — and it is what Axiom 0 was already pointing at when it called data a *value*. Axiom 1 is just enforcing that claim.
+The deeper reason data should be immutable is that data represents facts about the world, and facts about the world do not change after they happen. The order *was* placed at 14:03. The customer's birthday *is* 1987-04-12. Overwriting a memory cell with new information does not change the old fact; it only loses your reference to it. This is Hickey's place-oriented critique[2] — and it is what Axiom 1 was already pointing at when it called data a *value*. Axiom 2 is just enforcing that claim.
 
 **2. No action at a distance.**
 The most expensive class of bugs in OO codebases comes from one piece of code mutating an object that another piece of code is still using. Immutability eliminates the class. If a function hands you a value, nothing the function later does can change what you hold; if you hand a value to a function, nothing it does can change what you still hold. Every reference is, in effect, a defensive copy you did not have to write.
@@ -601,7 +601,7 @@ How these are built — the finger trees, the amortized-versus-worst-case bounds
 
 Mutable state earns its keep in two main cases.
 
-**Inner loops where allocation dominates.** When you are inside a tight hot path — a parser tokenising megabytes per second, a renderer building a frame, a physics step iterating millions of bodies — copy-on-write loses to in-place update on the only axis that matters. This is the Mike Acton territory Axiom 0 already flagged as out-of-scope for this playbook[5], and the same caveat applies here: a *performance* argument, not a *complexity* one.
+**Inner loops where allocation dominates.** When you are inside a tight hot path — a parser tokenising megabytes per second, a renderer building a frame, a physics step iterating millions of bodies — copy-on-write loses to in-place update on the only axis that matters. This is the Mike Acton territory Axiom 1 already flagged as out-of-scope for this playbook[5], and the same caveat applies here: a *performance* argument, not a *complexity* one.
 
 **Boundary objects you do not own.** ORM entities, framework callbacks, and DTOs from generated code sometimes ship with setters you cannot remove. Wrap them: parse them into immutable value objects at the boundary, work in immutable types in the core, and project back out at the exit. The shell is allowed to be mutable; the core is not.
 
@@ -612,7 +612,7 @@ Mutable state earns its keep in two main cases.
 [1] **JLS / `java.lang.reflect`** and **`sun.misc.Unsafe`** are the canonical Java escape hatches; **`System.Reflection`** with `BindingFlags.NonPublic | BindingFlags.Instance` (and `FieldInfo.SetValue`) is the equivalent in .NET. Their existence means no JVM- or CLR-level guarantee of immutability is possible; the contract is enforced at the source level only.
 
 [2] **Rich Hickey**, *The Value of Values*, keynote at JaxConf 2012 (also delivered at GOTO Copenhagen 2012). Recording on InfoQ, published 14 August 2012:
-<https://www.infoq.com/presentations/Value-Values/>. The argument that values — immutable, location-independent — are what make concurrency and distribution tractable. Already cited in [Axiom 0](axiom-00-data-vs-behaviour.md) as reference [4]; cross-listed here because the argument is load-bearing for Axiom 1 as well.
+<https://www.infoq.com/presentations/Value-Values/>. The argument that values — immutable, location-independent — are what make concurrency and distribution tractable. Already cited in [Axiom 1](axiom-01-data-vs-behaviour.md) as reference [4]; cross-listed here because the argument is load-bearing for Axiom 2 as well.
 
 [3] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022 — Principle #3 ("Data is immutable") and the discussion of update ergonomics, allocation cost, and tooling friction in the corresponding chapter.
 <https://www.manning.com/books/data-oriented-programming>
@@ -620,7 +620,7 @@ Mutable state earns its keep in two main cases.
 [4] **Chris Okasaki**, *Purely Functional Data Structures*, Cambridge University Press, 1998. The standard reference on how to build immutable data structures (lists, queues, heaps, finger trees) with asymptotic costs comparable to their mutable counterparts — the answer to "but isn't copy-on-write slow?" for everything outside the absolute hottest loops.
 
 [5] **Mike Acton**, *Data-Oriented Design and C++*, keynote at CppCon 2014:
-<https://www.youtube.com/watch?v=rX0ItVEVjHc>. Already cited in [Axiom 0](axiom-00-data-vs-behaviour.md) as reference [6]; relevant here as the dominant counter-argument inside performance-critical inner loops.
+<https://www.youtube.com/watch?v=rX0ItVEVjHc>. Already cited in [Axiom 1](axiom-01-data-vs-behaviour.md) as reference [6]; relevant here as the dominant counter-argument inside performance-critical inner loops.
 
 [6] **Joshua Bloch**, *Effective Java*, 3rd ed., Addison-Wesley, 2018 — Item 17, "Minimize mutability". The canonical Java-specific statement of the rules listed in this axiom's *Definitions* section, with the same five-point recipe (no mutators, ensure the class cannot be extended, make all fields final, make all fields private, ensure exclusive access to any mutable components).
 

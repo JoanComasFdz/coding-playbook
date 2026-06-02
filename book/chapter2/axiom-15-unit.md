@@ -1,4 +1,4 @@
-# Axiom 14 — Unit
+# Axiom 15 — Unit
 
 **A type with a single value, for "nothing meaningful to return."**
 
@@ -6,9 +6,9 @@
 
 > Unit is a *structural* primitive — small, plain, almost invisible. It earns its keep wherever a slot that wants a type wants the answer "no information here."
 
-[Axiom 0](axiom-00-data-vs-behaviour.md) says data is a value; [Axiom 5](axiom-05-honest-total-signatures.md) says every outcome belongs in the return type; [Axiom 13](axiom-13-either.md) says distinct outcomes belong there as values. This axiom adds the smallest case: when there is *one* outcome and it carries no information, it still belongs in the return type as a value — and `Unit` is the minimum way to spell that.
+[Axiom 1](axiom-01-data-vs-behaviour.md) says data is a value; [Axiom 6](axiom-06-honest-total-signatures.md) says every outcome belongs in the return type; [Axiom 14](axiom-14-either.md) says distinct outcomes belong there as values. This axiom adds the smallest case: when there is *one* outcome and it carries no information, it still belongs in the return type as a value — and `Unit` is the minimum way to spell that.
 
-Through [Axiom 7](axiom-07-connascence.md)'s lens, `Unit` *eliminates* a [Connascence of Meaning](axiom-07-connascence.md#connascence-of-meaning-com): a function with nothing useful to say otherwise hands back a dummy — a `bool` that is always `true`, a `0`, a `null` — and the caller has to know by convention that the value means "succeeded, ignore me." `Unit` removes the thing to agree on; there is exactly one value, it carries no information, and so there is nothing left to misread.
+Through [Axiom 8](axiom-08-connascence.md)'s lens, `Unit` *eliminates* a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com): a function with nothing useful to say otherwise hands back a dummy — a `bool` that is always `true`, a `0`, a `null` — and the caller has to know by convention that the value means "succeeded, ignore me." `Unit` removes the thing to agree on; there is exactly one value, it carries no information, and so there is nothing left to misread.
 
 ---
 
@@ -22,7 +22,7 @@ A *Unit*:
 
 The third bullet is the whole point. Mainstream `void` is *not* a type — it is a marker that says "this function does not return," and the language gives `void`-returning functions a different shape from everything else. `Unit` is a type, and a function returning `Unit` is a function like any other.
 
-A signature `T -> Unit` makes one more promise worth naming explicitly: **the function always returns and always with the same answer**. There is no failure case hiding in the return type. Unit is the return type of **functions that cannot fail**; when failure is possible, that outcome must live in the return type too ([Axiom 5](axiom-05-honest-total-signatures.md)).
+A signature `T -> Unit` makes one more promise worth naming explicitly: **the function always returns and always with the same answer**. There is no failure case hiding in the return type. Unit is the return type of **functions that cannot fail**; when failure is possible, that outcome must live in the return type too ([Axiom 6](axiom-06-honest-total-signatures.md)).
 
 ---
 
@@ -88,7 +88,7 @@ Mainstream code has three ways to spell "this function has nothing meaningful to
 
 - **A dummy return value.** A `bool` that always returns `true`, an `int` that always returns `0`, a useless string. The signature now lies twice: it says "I return a `bool`" when there is nothing to say, and it tempts the caller to read the meaningless byte. The compiler cannot tell which return values are real signal and which are decorative; the next caller cannot either.
 
-- **`null` as "I did the thing, nothing to give back."** The signature says `Object` or `T`; the actual answer is "operation completed." The same `null` that means "I have nothing for you" elsewhere now means "I succeeded." Conflating those meanings is exactly what [Axiom 12](axiom-12-maybe.md) calls out — and reusing `null` to fill a different gap is the same lie in different clothing.
+- **`null` as "I did the thing, nothing to give back."** The signature says `Object` or `T`; the actual answer is "operation completed." The same `null` that means "I have nothing for you" elsewhere now means "I succeeded." Conflating those meanings is exactly what [Axiom 13](axiom-13-maybe.md) calls out — and reusing `null` to fill a different gap is the same lie in different clothing.
 
 Unit fixes all three by being a real type with a real (single) value. The function returns it; the caller can ignore it, store it, or pass it on. Every place that operates on "a function returning *something*" includes Unit-returning functions without a special case.
 
@@ -100,7 +100,7 @@ Unit fixes all three by being a real type with a real (single) value. The functi
 A function with no useful answer to give still ran. The honest way to spell "it ran" is a value the caller can receive — not a hole in the type system. `Unit` is that value: one value, one type, no information, no decisions to make about it. The fact that there is *exactly one* of it is the point — knowing you received a `Unit` carries no information beyond "you received it," which is the same information the void-returning version was trying to convey by *not* returning.
 
 **2. Uniform shape across every function.**
-Once "no meaningful return" is a type, every function in the codebase has the same shape: it takes some inputs, it returns some output. Generic code over functions ([Axiom 9](axiom-09-higher-order-functions.md)) does not need a parallel implementation for the void case. A pipeline whose stages are typed `T -> U` works whether the final `U` carries information or is `Unit`. The special-casing collapses.
+Once "no meaningful return" is a type, every function in the codebase has the same shape: it takes some inputs, it returns some output. Generic code over functions ([Axiom 10](axiom-10-higher-order-functions.md)) does not need a parallel implementation for the void case. A pipeline whose stages are typed `T -> U` works whether the final `U` carries information or is `Unit`. The special-casing collapses.
 
 **3. The single-value rule preserves honesty.**
 A `Unit` carries no payload, so there is nothing for a caller to misinterpret. Compare with the dummy-`bool` form: a caller staring at `bool DoTheThing()` is right to wonder whether the bool means anything, and may write defensive code around it. A caller staring at `Unit DoTheThing()` cannot wonder — the type itself promises there is no information.
@@ -117,13 +117,13 @@ Languages without a built-in `Unit` (mainstream C# and Java both) require you to
 
 ## When NOT to
 
-**When the function can fail.** Unit names *one* outcome carrying no information — the signature asserts the function always returns successfully. A function that can succeed or fail has *two* outcomes; both belong in the return type ([Axiom 5](axiom-05-honest-total-signatures.md), [Axiom 13](axiom-13-either.md)). Returning `Unit` from a fallible function — and throwing on the bad case, or letting the caller guess — is the same dishonesty as returning `void` while throwing: the failure case has nowhere to live.
+**When the function can fail.** Unit names *one* outcome carrying no information — the signature asserts the function always returns successfully. A function that can succeed or fail has *two* outcomes; both belong in the return type ([Axiom 6](axiom-06-honest-total-signatures.md), [Axiom 14](axiom-14-either.md)). Returning `Unit` from a fallible function — and throwing on the bad case, or letting the caller guess — is the same dishonesty as returning `void` while throwing: the failure case has nowhere to live.
 
 **At framework-defined `void` boundaries.** A `void OnButtonClicked()` handler that the framework calls is not yours to redesign; the signature is fixed and the framework discards anything you return. Use `void` there and let the next layer in lift to `Unit` if the rest of the code wants uniformity.
 
 **For an async operation with no result.** `Task` already plays the role of "the async version of `Unit`" in idiomatic C#; introducing `Task<Unit>` is noise unless you are writing generic infrastructure that cannot special-case `Task`. Java's `CompletableFuture<Void>` is the equivalent and the same rule applies.
 
-**When the function does have a useful answer.** Reaching for `Unit` to "simplify" a signature whose function does have something to report is the wrong direction — give the function its honest, total return type ([Axiom 5](axiom-05-honest-total-signatures.md)).
+**When the function does have a useful answer.** Reaching for `Unit` to "simplify" a signature whose function does have something to report is the wrong direction — give the function its honest, total return type ([Axiom 6](axiom-06-honest-total-signatures.md)).
 
 ---
 

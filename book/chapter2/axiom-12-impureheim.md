@@ -1,15 +1,15 @@
-# Axiom 11 — Impureheim
+# Axiom 12 — Impureheim
 
 **Impureheim is the shape where every effect lives in a thin impure shell at the edges, and the work that decides lives in a pure core in the middle.**
 
 - The shell reads the world, hands its values to the core, and writes the world back. The core touches nothing outside its parameters and return value.
 - The picture is a sandwich: impure → pure → impure. One bite per request, transaction, or message.
 
-[Axiom 2](axiom-02-side-effects.md) named the effects; [Axiom 3](axiom-03-impure-functions.md) named the functions that carry them; [Axiom 4](axiom-04-pure-functions.md) named their opposite; [Axiom 5](axiom-05-honest-total-signatures.md) set the bar for the signatures the core must wear. With those four pieces on the table, the shape they should compose into can finally be drawn. This axiom is *concept only* — it introduces the shape so the rest of the playbook has a destination to build toward. The pieces that fill the pure core are the subject of every axiom that follows; this is the picture they fit into.
+[Axiom 3](axiom-03-side-effects.md) named the effects; [Axiom 4](axiom-04-impure-functions.md) named the functions that carry them; [Axiom 5](axiom-05-pure-functions.md) named their opposite; [Axiom 6](axiom-06-honest-total-signatures.md) set the bar for the signatures the core must wear. With those four pieces on the table, the shape they should compose into can finally be drawn. This axiom is *concept only* — it introduces the shape so the rest of the playbook has a destination to build toward. The pieces that fill the pure core are the subject of every axiom that follows; this is the picture they fit into.
 
 This file is short on purpose. It names the shape and the reason for it — the machinery follows.
 
-Through [Axiom 7](axiom-07-connascence.md)'s lens, the sandwich improves the *locality* of a [Connascence of Execution](axiom-07-connascence.md#connascence-of-execution-coe): the gather → decide → act order that would otherwise be scattered through a call tree is forced into one visible home at the seams. It does not make the wrong order unwriteable but it puts the order where a reader sees it in one frame.
+Through [Axiom 8](axiom-08-connascence.md)'s lens, the sandwich improves the *locality* of a [Connascence of Execution](axiom-08-connascence.md#connascence-of-execution-coe): the gather → decide → act order that would otherwise be scattered through a call tree is forced into one visible home at the seams. It does not make the wrong order unwriteable but it puts the order where a reader sees it in one frame.
 
 ---
 
@@ -20,12 +20,12 @@ It says one structural thing: **for any unit of work — a request, a message, a
 A unit of work that fits the shape has three layers, in this order:
 
 - **Impure top — gather.** Read whatever the world holds right now: the row from the database, the message off the queue, the body of the HTTP request, the current time, the configuration. Each read returns a value; nothing is decided yet.
-- **Pure middle — decide.** Take those values, compute the result. Validate inputs, apply rules, derive what should change. No I/O, no clock, no logging, no `throw`s on bad input — every outcome named in the return value, in the sense of [Axiom 5](axiom-05-honest-total-signatures.md).
+- **Pure middle — decide.** Take those values, compute the result. Validate inputs, apply rules, derive what should change. No I/O, no clock, no logging, no `throw`s on bad input — every outcome named in the return value, in the sense of [Axiom 6](axiom-06-honest-total-signatures.md).
 - **Impure bottom — act.** Take the decision and carry it out. Save the row, publish the message, write the response, emit the log line. Each call has nothing to decide; it executes what the middle already chose.
 
 The shell is allowed to be empty on either end. A query handler may read inputs, decide, and return — no write. A scheduled cleanup may start from no inputs at all — decide, then write. The shape is "I/O at the edges, decisions in the middle"; the literal sandwich is the most common case, not the only one.
 
-This is an older rule promoted up a level. **Command–Query Separation** (Bertrand Meyer) asks each *method* to either return a value (a query) or change state (a command), never both. Impureheim moves that line from the method to the unit of work: the gather is all query, the act is all command, and the seam between them is a layer boundary rather than a per-method naming convention. The pure middle ([Axiom 4](axiom-04-pure-functions.md)) then sharpens the query half past what CQS asks — a CQS query may still read mutable state, where the middle reads nothing outside its parameters.
+This is an older rule promoted up a level. **Command–Query Separation** (Bertrand Meyer) asks each *method* to either return a value (a query) or change state (a command), never both. Impureheim moves that line from the method to the unit of work: the gather is all query, the act is all command, and the seam between them is a layer boundary rather than a per-method naming convention. The pure middle ([Axiom 5](axiom-05-pure-functions.md)) then sharpens the query half past what CQS asks — a CQS query may still read mutable state, where the middle reads nothing outside its parameters.
 
 The shape is recognised by the *signature* of the middle: a pure function whose parameters are the gathered values and whose return value is everything the bottom needs to act. Anything that breaks that — the middle reaching for the clock, the middle deciding to log, the middle throwing on bad input — collapses the sandwich back into a mixed function.
 
@@ -150,7 +150,7 @@ Two cases where the shape would be ceremony for its own sake:
 [1] **Mark Seemann**, *Impureim Sandwich*, blog post, 2020. Names the impure–pure–impure shape and argues that as much as possible of a unit of work should be expressed as a single pure function bracketed by I/O. The naming convention this axiom borrows ("impureim" / "impureheim") is from Seemann.
 <https://blog.ploeh.dk/2020/03/02/impureim-sandwich/>
 
-[2] **Eric Normand**, *Grokking Simplicity*, Manning Publications, 2021. Cross-listed from [Axiom 3](axiom-03-impure-functions.md) and [Axiom 4](axiom-04-pure-functions.md). The book's recurring picture — actions at the edges, calculations in the middle, data flowing between them — is the same shape this axiom names, framed for a working-engineer audience.
+[2] **Eric Normand**, *Grokking Simplicity*, Manning Publications, 2021. Cross-listed from [Axiom 4](axiom-04-impure-functions.md) and [Axiom 5](axiom-05-pure-functions.md). The book's recurring picture — actions at the edges, calculations in the middle, data flowing between them — is the same shape this axiom names, framed for a working-engineer audience.
 <https://www.manning.com/books/grokking-simplicity>
 
-[3] **Bertrand Meyer**, *Object-Oriented Software Construction* (2nd ed.), Prentice Hall, 1997 — **Command–Query Separation**. The principle that a method should either return a value or change observable state, never both. Impureheim is that rule lifted from the method to the unit of work: query (gather) and command (act) become separate layers, and the pure middle ([Axiom 4](axiom-04-pure-functions.md)) makes the query half absolute rather than conventional.
+[3] **Bertrand Meyer**, *Object-Oriented Software Construction* (2nd ed.), Prentice Hall, 1997 — **Command–Query Separation**. The principle that a method should either return a value or change observable state, never both. Impureheim is that rule lifted from the method to the unit of work: query (gather) and command (act) become separate layers, and the pure middle ([Axiom 5](axiom-05-pure-functions.md)) makes the query half absolute rather than conventional.

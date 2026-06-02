@@ -1,4 +1,4 @@
-# Axiom 0 — Data is not Behaviour
+# Axiom 1 — Data is not Behaviour
 
 **Data is inert fact. Behaviour is transformation. Keep them apart.**
 
@@ -57,7 +57,7 @@ treats it as the road not taken.
 Fusing code and data produces an entity that is harder to understand than its parts. Separating
 them lets code be reused in different contexts, tested in isolation, and tends to make systems
 less complex overall. This is the cheapest large reduction in complexity available, which is
-why it is Axiom 0.
+why it is Axiom 1.
 
 **2. Data is the durable half; behaviour is the volatile half.**
 The data model *is* the design — Brooks' fifty-year-old observation that, given the tables, the
@@ -115,7 +115,7 @@ what to do, rather than asking for its insides, remains exactly right.
 
 This axiom does not address Mike Acton's **Data-Oriented *Design***[6], which uses the same
 slogan for a *performance* argument (cache locality, memory layout) — a different problem from
-the one Axiom 0 addresses, and out of scope for this playbook (see the
+the one Axiom 1 addresses, and out of scope for this playbook (see the
 [playbook scope](../../README.md#scope)).
 
 ---

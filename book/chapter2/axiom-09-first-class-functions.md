@@ -1,12 +1,12 @@
-# Axiom 8 — First-class functions
+# Axiom 9 — First-class functions
 
 **A function is a value — it can be assigned to a variable, stored in a collection, passed as an argument, and returned as a result.**
 
 - A function value is the same kind of thing as a number or a record: created somewhere, named, moved around, called when needed.
 
-[Axiom 5](axiom-05-honest-total-signatures.md) set the criterion for a function worth keeping — every outcome named in the return, every input the type admits accepted by the body. This axiom names the property that lets two such functions be composed at all: a function is not only something a program *does* — it is a *value* the program can hold, store, move, and pass.
+[Axiom 6](axiom-06-honest-total-signatures.md) set the criterion for a function worth keeping — every outcome named in the return, every input the type admits accepted by the body. This axiom names the property that lets two such functions be composed at all: a function is not only something a program *does* — it is a *value* the program can hold, store, move, and pass.
 
-Through [Axiom 7](axiom-07-connascence.md)'s lens, this axiom weakens no connascence on its own — it is the *carrier* the later weakenings ride on. Once a function is a value, the operation that composes functions is a value too, and a dispatch once carried by a stringly-keyed `switch` (a [Connascence of Meaning](axiom-07-connascence.md#connascence-of-meaning-com)) can become a typed lookup the compiler checks. First-class functions don't make that move; they make it *available*.
+Through [Axiom 8](axiom-08-connascence.md)'s lens, this axiom weakens no connascence on its own — it is the *carrier* the later weakenings ride on. Once a function is a value, the operation that composes functions is a value too, and a dispatch once carried by a stringly-keyed `switch` (a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com)) can become a typed lookup the compiler checks. First-class functions don't make that move; they make it *available*.
 
 ---
 
@@ -134,7 +134,7 @@ Once a behaviour is a value, it lives wherever any other value can live: in a `M
 **3. Closures carry state along with the function.**
 A function value can capture variables from the scope that built it. In `Multiplier`, the returned lambda's body refers to `factor` — a value from the calling scope — and the function value remembers it for every later call, no matter where that call happens. The function value plus those captured bindings is what the language calls a **closure**. State and operation arrive at the call site together, as a single value; the function does not need to look anywhere outside itself to find the data it depends on.
 
-The captured bindings have to be values in the sense of [Axiom 4](axiom-04-pure-functions.md) — themselves immutable, produced once, not aliased to mutable shared state — or the function value silently becomes impure. Closure is a mechanism for carrying data *into* a function value; it is not a license for the function value to reach *out*.
+The captured bindings have to be values in the sense of [Axiom 5](axiom-05-pure-functions.md) — themselves immutable, produced once, not aliased to mutable shared state — or the function value silently becomes impure. Closure is a mechanism for carrying data *into* a function value; it is not a license for the function value to reach *out*.
 
 **4. It is the prerequisite for composition.**
 Until a function can be passed as a value, composing two functions means calling one from the body of the other — a hard-coded chain. Once functions are values, the *composing operation itself* becomes a function: one that takes two functions and returns the function that applies them in sequence. Composition becomes something the program can express, not just something the programmer can write out by hand.

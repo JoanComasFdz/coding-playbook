@@ -1,21 +1,21 @@
-# Axiom 3 — Impure functions
+# Axiom 4 — Impure functions
 
 **A function is impure when its execution performs, or depends on, any side effect.**
 
 - One hidden read or write is enough. The label is binary; there is no "a bit impure."
 - When the side effect is a *read* of external state, the function is also *non-deterministic*: same inputs in, different outputs out.
 
-[Axiom 2](axiom-02-side-effects.md) named the side effects; this axiom names the functions that contain them. The split matters because side effects are how an application *gathers context* from the world (a database row, a clock tick, a configuration value, an incoming message) and *delivers the outcomes it decides on* (a saved record, a published event, a log line) — they are the program's plumbing. Everything else is business logic: the rules that turn gathered context into a decision. Once you can label a function impure, you can keep the two kinds of work apart.
+[Axiom 3](axiom-03-side-effects.md) named the side effects; this axiom names the functions that contain them. The split matters because side effects are how an application *gathers context* from the world (a database row, a clock tick, a configuration value, an incoming message) and *delivers the outcomes it decides on* (a saved record, a published event, a log line) — they are the program's plumbing. Everything else is business logic: the rules that turn gathered context into a decision. Once you can label a function impure, you can keep the two kinds of work apart.
 
 ---
 
 ## Definitions
 
-It says one structural thing: **a function is impure if any single side effect from [Axiom 2](axiom-02-side-effects.md) appears anywhere reachable from its body — directly, transitively, in a constructor, in a captured reference, or behind an injected interface whose runtime implementation performs one.** When that effect is a *read* — the clock, a random source, a mutable singleton, the file system — the function is also *non-deterministic*: two calls with the same arguments can produce different results. The hidden read is the *cause*; the non-determinism is the *symptom* by which tests, parallel runs, and replays notice the impurity.
+It says one structural thing: **a function is impure if any single side effect from [Axiom 3](axiom-03-side-effects.md) appears anywhere reachable from its body — directly, transitively, in a constructor, in a captured reference, or behind an injected interface whose runtime implementation performs one.** When that effect is a *read* — the clock, a random source, a mutable singleton, the file system — the function is also *non-deterministic*: two calls with the same arguments can produce different results. The hidden read is the *cause*; the non-determinism is the *symptom* by which tests, parallel runs, and replays notice the impurity.
 
 A function is impure when any of these is true:
 
-- **A line in its body matches a category from Axiom 2** — a clock read, a logger call, a `throw`, a parameter mutation, a database hit, a singleton lookup.
+- **A line in its body matches a category from Axiom 3** — a clock read, a logger call, a `throw`, a parameter mutation, a database hit, a singleton lookup.
 - **A function it calls is impure** — impurity is deep. A function whose body is arithmetic plus a single `logger.info` is impure, and so is its caller, and so is the caller's caller.
 - **A field or reference it captures is impure** — capturing a `DbContext`, an `HttpClient`, or a `Random` taints the function as much as constructing one inline.
 
@@ -95,7 +95,7 @@ public boolean isValid(Token token) {
 </tr>
 </table>
 
-One line, one comparison, no method that screams *I touch the world*. The function is impure all the same: `DateTime.UtcNow` / `Instant.now()` is a read of the system clock from Axiom 2's *Reading the clock* category, and two calls with the same `token` will eventually disagree. The cost of recognising this case is the whole reason the category needs a name — the loud one is easy; the quiet one is what the discipline buys you.
+One line, one comparison, no method that screams *I touch the world*. The function is impure all the same: `DateTime.UtcNow` / `Instant.now()` is a read of the system clock from Axiom 3's *Reading the clock* category, and two calls with the same `token` will eventually disagree. The cost of recognising this case is the whole reason the category needs a name — the loud one is easy; the quiet one is what the discipline buys you.
 
 ---
 
@@ -145,4 +145,4 @@ Two edge cases where the label looks awkward:
 [1] **Eric Normand**, *Grokking Simplicity*, Manning Publications, 2021. Chapters 2 and 3 introduce the categories *action*, *calculation*, and *data*: an action is a function whose outcome depends on when or how often it is called (this axiom's *impure function*); a calculation is a function whose outcome depends only on its inputs. The same line drawn with different vocabulary.
 <https://www.manning.com/books/grokking-simplicity>
 
-[2] **John Hughes**, *Why Functional Programming Matters*, Research Topics in Functional Programming, Addison-Wesley, 1990. Already cited in [Axiom 2](axiom-02-side-effects.md) as reference [3]; cross-listed here because Hughes' argument turns on functions being free of hidden inputs and hidden outputs — i.e., on the category this axiom names being separable from its opposite.
+[2] **John Hughes**, *Why Functional Programming Matters*, Research Topics in Functional Programming, Addison-Wesley, 1990. Already cited in [Axiom 3](axiom-03-side-effects.md) as reference [3]; cross-listed here because Hughes' argument turns on functions being free of hidden inputs and hidden outputs — i.e., on the category this axiom names being separable from its opposite.

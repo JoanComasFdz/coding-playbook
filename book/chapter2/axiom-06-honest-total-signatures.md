@@ -1,11 +1,11 @@
-# Axiom 5 — Honest, total signatures
+# Axiom 6 — Honest, total signatures
 
 **A signature is honest when every outcome the function can produce is named in its return type, and total when it is defined for every value of its input types.**
 
 - Honesty rules out hidden outcomes: sentinel values, silent nulls, convention strings, throws-as-control-flow.
 - Totality rules out forbidden inputs: zones where the function is "undefined" and the caller is expected to know.
 
-[Axiom 4](axiom-04-pure-functions.md) named purity — the property that closes the back door between a function and the world. This axiom names a sister property that closes the front door: the signature must tell the whole truth about what the function does to *its own arguments*. Purity puts every input into the parameter list and every effect-free output into the return value; this axiom asks the next question — is *every* outcome actually represented by the return type, and is the function *actually defined* for every value the input types admit? A pure function can still lie, by returning a sentinel where the type system cannot help the caller see it, or by being silently undefined on inputs the type accepts but the body refuses.
+[Axiom 5](axiom-05-pure-functions.md) named purity — the property that closes the back door between a function and the world. This axiom names a sister property that closes the front door: the signature must tell the whole truth about what the function does to *its own arguments*. Purity puts every input into the parameter list and every effect-free output into the return value; this axiom asks the next question — is *every* outcome actually represented by the return type, and is the function *actually defined* for every value the input types admit? A pure function can still lie, by returning a sentinel where the type system cannot help the caller see it, or by being silently undefined on inputs the type accepts but the body refuses.
 
 ---
 
@@ -81,7 +81,7 @@ public User getUser(UUID id) {
 </tr>
 </table>
 
-Both functions are pure under [Axiom 4](axiom-04-pure-functions.md): no clock, no I/O, no captures. Both still lie. `FindOrderIndex` advertises `int` and delivers "an index *or* a sentinel"; `GetUser` advertises `User` and delivers "a user *or* nothing." The caller cannot tell from the signature that two outcomes exist, and the compiler cannot tell either. Every caller is responsible for remembering — and the bug is the call that forgets.
+Both functions are pure under [Axiom 5](axiom-05-pure-functions.md): no clock, no I/O, no captures. Both still lie. `FindOrderIndex` advertises `int` and delivers "an index *or* a sentinel"; `GetUser` advertises `User` and delivers "a user *or* nothing." The caller cannot tell from the signature that two outcomes exist, and the compiler cannot tell either. Every caller is responsible for remembering — and the bug is the call that forgets.
 
 A signature that names every outcome and accepts every input:
 
@@ -166,7 +166,7 @@ The competing force is **brevity in the small**. `return -1` is one character ch
 
 The cost lands later, in two places. First, **the next caller** — three months on, in a different file, copy-pasting the call from somewhere else — has no way to learn the convention from the type. The IDE shows `int`; the IDE does not show *"watch out, `-1` means not found."* Comments help once; they decay. Second, **refactoring**: when the function later needs to express a new outcome — a third case the body can produce — an honest signature forces every caller to handle it because the return type changed; a dishonest signature has nowhere to put the new outcome except by inventing another sentinel or silently folding it into the existing one. The bug ships.
 
-There is also a force in the *other* direction worth naming: not every imaginable outcome belongs in the return type. A function that can "fail" because the universe is on fire (out of memory, network cable unplugged) is not obliged to put that in its return — those are the boundary effects [Axiom 3](axiom-03-impure-functions.md) concentrates in the impure shell. Honesty asks for the outcomes the function *can produce as part of its own logic*; it does not ask for the catalogue of external catastrophes.
+There is also a force in the *other* direction worth naming: not every imaginable outcome belongs in the return type. A function that can "fail" because the universe is on fire (out of memory, network cable unplugged) is not obliged to put that in its return — those are the boundary effects [Axiom 4](axiom-04-impure-functions.md) concentrates in the impure shell. Honesty asks for the outcomes the function *can produce as part of its own logic*; it does not ask for the catalogue of external catastrophes.
 
 ---
 
@@ -182,7 +182,7 @@ A function whose return type names every outcome forces the caller to handle eve
 The class of production crashes that look like *"the input was supposed to be valid"* is exactly the class totality forbids. If the function is defined for every value the input type admits, there is no input the body has not thought about. The way to *reach* totality, when the parameter types are too permissive, is to narrow the type — push validation upstream into the construction of the value, not into the body of every function that uses it. That work does not disappear; it relocates to a place where it is done *once*, where the rules around it are obvious from the type name, and where the rest of the code is freed from rechecking.
 
 **4. Composition needs honesty.**
-A pure function whose signature lies cannot compose: chaining two functions, each of which "might return `-1`," produces code that branches more times than it does work. Honest return types compose mechanically — once outcomes are in the type, the small operations that build chains of fallible computations have a shape to operate over. A fluent API like `step1().step2().step3()` is the simplest case: it reads cleanly only when each return value is something the next call can use directly; the moment any link returns "the answer *or* `null`," the chain has to break to decode the convention. The "structure, types, and proof" that [Axiom 4](axiom-04-pure-functions.md) promised live in the pure core depend on signatures that do not lie; this axiom is the precondition.
+A pure function whose signature lies cannot compose: chaining two functions, each of which "might return `-1`," produces code that branches more times than it does work. Honest return types compose mechanically — once outcomes are in the type, the small operations that build chains of fallible computations have a shape to operate over. A fluent API like `step1().step2().step3()` is the simplest case: it reads cleanly only when each return value is something the next call can use directly; the moment any link returns "the answer *or* `null`," the chain has to break to decode the convention. The "structure, types, and proof" that [Axiom 5](axiom-05-pure-functions.md) promised live in the pure core depend on signatures that do not lie; this axiom is the precondition.
 
 ---
 
@@ -198,7 +198,7 @@ A second cost is **the upstream push for totality**. Making a function total oft
 
 Two cases where the criterion is wrong or harmful:
 
-- **At the boundary, where the function is allowed to talk to the world.** An impure function from [Axiom 3](axiom-03-impure-functions.md) can fail because the database is gone, the network blinked, or the disk is full. Those outcomes are not part of the function's *own* logic; they belong to the shell and its retry / timeout / circuit-breaker discipline, not to the signature of a domain function. Honesty applies to outcomes the function *decides on*, not to the catalogue of plumbing failures.
+- **At the boundary, where the function is allowed to talk to the world.** An impure function from [Axiom 4](axiom-04-impure-functions.md) can fail because the database is gone, the network blinked, or the disk is full. Those outcomes are not part of the function's *own* logic; they belong to the shell and its retry / timeout / circuit-breaker discipline, not to the signature of a domain function. Honesty applies to outcomes the function *decides on*, not to the catalogue of plumbing failures.
 - **When the proposed extra outcome is really input validation.** Honesty asks for outcomes the function *decides on*. "The input was malformed" is not such an outcome — it belongs to the type of the parameter, not to the return type of every function that takes one. Folding input validation into the return type re-creates the check at every call site instead of solving it once where the input is constructed.
 - **When defining the error out of existence would mask a bug.** Totalizing by *absorbing* a bad input — clamping it, swallowing it, returning a default — is right only when the broadened behaviour is one the caller genuinely wants. When the bad input can arise only from a caller's mistake (a negative count, an index that *should* have been in range), silently absorbing it hides the defect at the exact spot it could have surfaced. There the honest move is the opposite: refuse loudly and let the bug fail fast, rather than define it out of existence and let it travel downstream as a plausible-looking value.
 
@@ -212,7 +212,7 @@ Two cases where the criterion is wrong or harmful:
 [2] **Scott Wlaschin**, *Designing with Types: Making Illegal States Unrepresentable*, fsharpforfunandprofit.com, 2013. A practical demonstration of using rich return and parameter types to remove whole categories of bugs by construction — the application of this axiom across a domain model.
 <https://fsharpforfunandprofit.com/posts/designing-with-types-making-illegal-states-unrepresentable/>
 
-[3] **Robert Harper**, *Boolean Blindness*, Existential Type, 2011 (crediting Dan Licata for the term); **John A. De Goes**, *Destroy All Ifs*, degoes.net, 2015. Both name what a bare `bool` discards — that a value is one of two cases, with the cases left anonymous — and both prescribe the cure this playbook reaches for throughout: replace the boolean with a named type, a value object ([Axiom 17](axiom-17-value-objects.md)) on the return or a discriminated union ([Axiom 20](axiom-20-discriminated-unions.md)) for the cases.
+[3] **Robert Harper**, *Boolean Blindness*, Existential Type, 2011 (crediting Dan Licata for the term); **John A. De Goes**, *Destroy All Ifs*, degoes.net, 2015. Both name what a bare `bool` discards — that a value is one of two cases, with the cases left anonymous — and both prescribe the cure this playbook reaches for throughout: replace the boolean with a named type, a value object ([Axiom 18](axiom-18-value-objects.md)) on the return or a discriminated union ([Axiom 21](axiom-21-discriminated-unions.md)) for the cases.
 <https://existentialtype.wordpress.com/2011/03/15/boolean-blindness/>
 <http://degoes.net/articles/destroy-all-ifs>
 

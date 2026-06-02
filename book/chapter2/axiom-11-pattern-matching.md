@@ -1,4 +1,4 @@
-# Axiom 10 — Pattern matching
+# Axiom 11 — Pattern matching
 
 **Pattern matching is a single expression that selects a branch by inspecting the shape of a value, narrows the value's type inside the chosen branch, and binds the parts of the value the branch needs.**
 
@@ -6,9 +6,9 @@
 - When the set of possible shapes is *closed* — a sealed type hierarchy, an enum, a finite set of literals — the compiler can verify at compile time that every shape has a branch.
 - Two surfaces for the same operation: a `switch` expression in the consumer, or a `Match` method on the type — same lesson, same totality, different owner.
 
-[Axiom 0](axiom-00-data-vs-behaviour.md) drew the line: data is a passive description of what something is; behaviour is a separate operation defined over it. When the data can take one of several shapes, the natural way to define a behaviour over it is *case analysis* — one clause per shape, each clause naming the result for that shape. Pattern matching is the syntax for that clausal definition: the shape on the left, the result on the right, the value's parts bound in the same step.
+[Axiom 1](axiom-01-data-vs-behaviour.md) drew the line: data is a passive description of what something is; behaviour is a separate operation defined over it. When the data can take one of several shapes, the natural way to define a behaviour over it is *case analysis* — one clause per shape, each clause naming the result for that shape. Pattern matching is the syntax for that clausal definition: the shape on the left, the result on the right, the value's parts bound in the same step.
 
-Through [Axiom 7](axiom-07-connascence.md)'s lens, exhaustive matching is what keeps a sealed type and its consumers bound by a compiler-enforced [Connascence of Type](axiom-07-connascence.md#connascence-of-type-cot) rather than a convention: add a case to the type and every match that does not yet handle it stops compiling, so "did every consumer remember every case?" is answered by the build instead of discovered in production. It is the consumer-side complement to the discriminated unions the chapter builds next.
+Through [Axiom 8](axiom-08-connascence.md)'s lens, exhaustive matching is what keeps a sealed type and its consumers bound by a compiler-enforced [Connascence of Type](axiom-08-connascence.md#connascence-of-type-cot) rather than a convention: add a case to the type and every match that does not yet handle it stops compiling, so "did every consumer remember every case?" is answered by the build instead of discovered in production. It is the consumer-side complement to the discriminated unions the chapter builds next.
 
 ---
 
@@ -308,7 +308,7 @@ The pre-pattern formulation of the same decision is a sequence of `if (x instanc
 For a closed type — a sealed interface in Java, an abstract record hierarchy in C# — the compiler knows the full set of shapes. A match that omits a case is a compile error, not a runtime surprise. Adding a new shape to the hierarchy forces every match that consumes it to acknowledge the new case; missed call sites become a list of compile errors, not a list of bugs.
 
 **4. The dispatch lives where the decision lives.**
-The consumer that needs to branch on a shape contains the branching logic; the data type stays a passive description of *what it is*. A second consumer with a different question writes its own match; the data type is touched by neither. This is the practical payoff of [Axiom 0](axiom-00-data-vs-behaviour.md) — data is data, and the operations over it live with the consumers that need them.
+The consumer that needs to branch on a shape contains the branching logic; the data type stays a passive description of *what it is*. A second consumer with a different question writes its own match; the data type is touched by neither. This is the practical payoff of [Axiom 1](axiom-01-data-vs-behaviour.md) — data is data, and the operations over it live with the consumers that need them.
 
 **5. The dispatch can also live on the type, when that reads better.**
 A `Match` method moves the case list from the call site onto the type's surface. The case analysis is the same and the totality requirement is the same — only the *location* of the case list moves. Consumer-owned dispatch (the `switch` form, the previous bullet) lets every call site shape its own match with guards, nested patterns, or partial matches falling through to a default. Type-owned dispatch (the `Match` form) gives every consumer a single uniform call shape and lifts the case-type transcription off every arm. Pattern matching keeps both options on the table; the chapter does not pick one for you.
@@ -341,7 +341,7 @@ Two cases where another option on the trade-off curve fits better:
 
 [1] **Philip Wadler**, *Views: A Way for Pattern Matching to Cohabit with Data Abstraction*, POPL 1987. The foundational paper showing that pattern matching can coexist with information hiding — the matched value's internal representation can stay private while the match still reads its meaningful shape. Modern record and deconstruction patterns in C# and Java are direct descendants of this idea.
 
-[2] **Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides**, *Design Patterns: Elements of Reusable Object-Oriented Software*, Addison-Wesley, 1994. Cross-listed from [Axiom 8](axiom-08-first-class-functions.md) and [Axiom 9](axiom-09-higher-order-functions.md); the *Visitor* chapter remains the canonical reference for case analysis over a closed type hierarchy in an OO language without native pattern matching.
+[2] **Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides**, *Design Patterns: Elements of Reusable Object-Oriented Software*, Addison-Wesley, 1994. Cross-listed from [Axiom 9](axiom-09-first-class-functions.md) and [Axiom 10](axiom-10-higher-order-functions.md); the *Visitor* chapter remains the canonical reference for case analysis over a closed type hierarchy in an OO language without native pattern matching.
 
 [3] **OpenJDK**, *JEP 441: Pattern Matching for switch*, finalised in Java 21 (2023). The canonical reference for Java's pattern-matching syntax, exhaustiveness rules, and interaction with sealed types.
 <https://openjdk.org/jeps/441>

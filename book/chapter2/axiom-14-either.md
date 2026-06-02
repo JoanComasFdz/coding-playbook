@@ -1,4 +1,4 @@
-# Axiom 13 — Either
+# Axiom 14 — Either
 
 **A computation with two possible outcomes must surface both in the return type.**
 
@@ -6,9 +6,9 @@
 
 > Either is the *structural* primitive; named necessay to understand further axioms. Do not use this, but make an effort to understand it.
 
-[Axiom 0](axiom-00-data-vs-behaviour.md) says data is a value; [Axiom 1](axiom-01-immutability.md) says values do not change; [Axiom 12](axiom-12-maybe.md) says absence is itself a value. This axiom adds the next honest thing data does: when a computation can produce one of two distinct outcomes, *both* belong in the return type — and `Either<L, R>` is the minimum way to spell that.
+[Axiom 1](axiom-01-data-vs-behaviour.md) says data is a value; [Axiom 2](axiom-02-immutability.md) says values do not change; [Axiom 13](axiom-13-maybe.md) says absence is itself a value. This axiom adds the next honest thing data does: when a computation can produce one of two distinct outcomes, *both* belong in the return type — and `Either<L, R>` is the minimum way to spell that.
 
-Through [Axiom 7](axiom-07-connascence.md)'s lens, this axiom weakens a [Connascence of Meaning](axiom-07-connascence.md#connascence-of-meaning-com) — a tombstone or flag whose meaning the type cannot carry — into a Connascence of Type.
+Through [Axiom 8](axiom-08-connascence.md)'s lens, this axiom weakens a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com) — a tombstone or flag whose meaning the type cannot carry — into a Connascence of Type.
 
 This file is short on purpose. The rest of it is about what Either replaces — the three mainstream patterns that *pretend* a two-outcome function has one outcome.
 
@@ -80,7 +80,7 @@ void main(String[] args) {
 </tr>
 </table>
 
-The caller has to handle both sides — the toolchain refuses or warns on the switch otherwise (Java's sealed hierarchy makes it a compile error; C# 14 cannot prove the hierarchy closed, so it emits a CS8509 warning instead — the same enforcement gradient [Axiom 12](axiom-12-maybe.md) describes). Both outcomes live in the same return slot. There is no exception unwinding the stack, no sentinel value masquerading as a real one, and no `out` parameter the caller has to declare a holder for. The rest of this axiom is about why those three alternatives fail and what `Either` buys you in their place.
+The caller has to handle both sides — the toolchain refuses or warns on the switch otherwise (Java's sealed hierarchy makes it a compile error; C# 14 cannot prove the hierarchy closed, so it emits a CS8509 warning instead — the same enforcement gradient [Axiom 13](axiom-13-maybe.md) describes). Both outcomes live in the same return slot. There is no exception unwinding the stack, no sentinel value masquerading as a real one, and no `out` parameter the caller has to declare a holder for. The rest of this axiom is about why those three alternatives fail and what `Either` buys you in their place.
 
 ---
 
@@ -89,7 +89,7 @@ The caller has to handle both sides — the toolchain refuses or warns on the sw
 Two-outcome computations are everywhere: parse-or-don't, divide-or-error, lookup-or-miss, validate-or-explain. Three patterns compete in mainstream code, and all three are dishonest about the fact that there *are* two outcomes:
 
 - **Throw on the bad case, return the good case.** The signature lies — `int divide(int, int)` reads as "returns an int"; in practice it sometimes does not return at all. The caller either remembers to wrap in `try`/`catch` or eats a runtime crash, and the compiler will not remind the careless one. Exceptions also turn a normal "didn't divide" / "didn't find" / "didn't parse" into a control-flow event with a stack trace — both expensive and noisy when the "bad case" is a normal answer to the question the function was asked.
-- **Return a tombstone** (`-1` for "no index", `""` for "bad input", `new User("", "")` for "user not found"). The signature still lies — `int` says "an int"; one of the ints it can return is "I did not find your answer, but I'm handing you something int-shaped anyway." Downstream code silently operates on the sentinel, and the bug surfaces several frames away from the producer. See [Axiom 12](axiom-12-maybe.md) for the long form of why this is the worst of both worlds.
+- **Return a tombstone** (`-1` for "no index", `""` for "bad input", `new User("", "")` for "user not found"). The signature still lies — `int` says "an int"; one of the ints it can return is "I did not find your answer, but I'm handing you something int-shaped anyway." Downstream code silently operates on the sentinel, and the bug surfaces several frames away from the producer. See [Axiom 13](axiom-13-maybe.md) for the long form of why this is the worst of both worlds.
 - **Split the answer across two channels.** The C# Try-pattern is the canonical example: `bool TryParse(string s, out int result)`. The success-flag lives in the return value; the *actual answer* lives in a mutable `out` parameter. The caller has to declare a holder before the call, read the flag *before* reading the holder, and trust a convention (the holder is undefined on failure) that the type system does not enforce. The signature acknowledges that there are two outcomes — but it inverts the natural shape (the answer is the byproduct, the flag is the return) and the result is no longer a value that flows through an expression. You cannot put `TryParse(...)` on the right-hand side of `var x = ...`; you cannot chain it; you cannot pass it through `Stream.map`. Java does not have first-class `out` parameters, but the same anti-pattern shows up as a pair return through a mutable holder, or as a method that mutates one of its arguments and returns a status code.
 
 Either fixes all three by surfacing both outcomes as values in *one* return slot. The success path and the failure path are the same shape: a value the caller has to read by acknowledging which case it is. There is no exception unwinding, no sentinel masquerading as a real value, and no second channel.
@@ -121,7 +121,7 @@ What Either does *not* cost you is honesty: the return type names what the funct
 
 **When a named variant exists.** Either is the parametric primitive; when the two outcomes carry domain meaning (*success vs failure*, *parsed vs raw*, *cached vs fresh*), reach for the named type instead. Those are the subject of later axioms.
 
-**For absence.** "Value or no value" is *one* outcome and a missing one, not two outcomes of distinct kinds — that is [Axiom 12](axiom-12-maybe.md), not this one. `Either<Unit, T>` is structurally `Optional<T>` written the long way around.
+**For absence.** "Value or no value" is *one* outcome and a missing one, not two outcomes of distinct kinds — that is [Axiom 13](axiom-13-maybe.md), not this one. `Either<Unit, T>` is structurally `Optional<T>` written the long way around.
 
 **Beyond two cases.** Three or more honest outcomes call for another axiom (discriminated unions reference here). Nesting `Either` is technically possible and always wrong.
 
@@ -134,5 +134,5 @@ What Either does *not* cost you is honesty: the return type names what the funct
 [1] **Haskell** `Data.Either` (Haskell 2010 Report) and **Scala** `scala.util.Either` (right-biased since 2.12, 2016). `Either` predates the language-specific named success/failure types in both ecosystems; the convention "right = success" comes from Haskell and was inherited.
 <https://hackage.haskell.org/package/base/docs/Data-Either.html>
 
-[2] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022. Cited in [Axiom 0](axiom-00-data-vs-behaviour.md), [Axiom 1](axiom-01-immutability.md), and [Axiom 12](axiom-12-maybe.md); relevant here for the broader case that distinct outcomes belong in the data, not in the control flow.
+[2] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022. Cited in [Axiom 1](axiom-01-data-vs-behaviour.md), [Axiom 2](axiom-02-immutability.md), and [Axiom 13](axiom-13-maybe.md); relevant here for the broader case that distinct outcomes belong in the data, not in the control flow.
 <https://www.manning.com/books/data-oriented-programming>

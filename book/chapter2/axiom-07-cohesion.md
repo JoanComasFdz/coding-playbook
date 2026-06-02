@@ -1,11 +1,11 @@
-# Axiom 6 — Cohesion
+# Axiom 7 — Cohesion
 
 **A function is cohesive when it has exactly one reason to change — one input shape, one decision, one output shape. Group code together, and split it apart, by reason-to-change; never by surface similarity.**
 
 - A function with one reason to change can be described without the word "and." The moment the honest description needs an "and," the function is doing two jobs.
 - The metric is *reason-to-change*, not how alike two pieces of code look. Two functions that read identically but change for different reasons are **not** duplication; one function that reads as a unit but changes for two reasons is not cohesive.
 
-[Axiom 5](axiom-05-honest-total-signatures.md) made the signature *honest* — every outcome named, every input defined. But a signature can tell the whole truth and still promise too much: a function that validates an order *and* prices it *and* records the decision has a perfectly honest signature wrapped around three jobs. Purity (Axiom 4) and honesty (Axiom 5) constrain what a function may do to its inputs and how it must report its outcomes; this axiom constrains *how much it should decide at all*. Honest, total, **and cohesive** is the full criterion for a well-formed function — and cohesion is the one of the three the compiler cannot check for you.
+[Axiom 6](axiom-06-honest-total-signatures.md) made the signature *honest* — every outcome named, every input defined. But a signature can tell the whole truth and still promise too much: a function that validates an order *and* prices it *and* records the decision has a perfectly honest signature wrapped around three jobs. Purity (Axiom 5) and honesty (Axiom 6) constrain what a function may do to its inputs and how it must report its outcomes; this axiom constrains *how much it should decide at all*. Honest, total, **and cohesive** is the full criterion for a well-formed function — and cohesion is the one of the three the compiler cannot check for you.
 
 ---
 
@@ -66,7 +66,7 @@ public String renderLine(LineItem item, boolean isReceipt) {
 </tr>
 </table>
 
-The `bool isReceipt` is the tell. One function now carries two reasons to change: invoice rules and receipt rules share a body and an `if`. The day receipts grow a second marker, you reopen the function that also renders invoices — and the diff touches code that had no business changing. Similarity bought you a shared body and a shared blast radius. The flag is *boolean-blind* at the call site as well — `RenderLine(item, true)`: true of *what*? — the surface tell [Axiom 5](axiom-05-honest-total-signatures.md) names; but the unreadable argument is the lesser fault here, and two reasons to change sharing one body is the one that costs you.
+The `bool isReceipt` is the tell. One function now carries two reasons to change: invoice rules and receipt rules share a body and an `if`. The day receipts grow a second marker, you reopen the function that also renders invoices — and the diff touches code that had no business changing. Similarity bought you a shared body and a shared blast radius. The flag is *boolean-blind* at the call site as well — `RenderLine(item, true)`: true of *what*? — the surface tell [Axiom 6](axiom-06-honest-total-signatures.md) names; but the unreadable argument is the lesser fault here, and two reasons to change sharing one body is the one that costs you.
 
 Cohesion splits by reason-to-change, and extracts only the part that is *genuinely* one concept:
 
@@ -129,13 +129,13 @@ The discipline is to wait for the reason-to-change to reveal itself before commi
 ## Why
 
 **1. One reason to change is the unit you can hold in your head.**
-A function with one input shape, one decision, and one output shape fits in a single frame: you can read it, test it, and review it without paging in a second context. The honest signature of [Axiom 5](axiom-05-honest-total-signatures.md) tells you *what* outcomes exist; cohesion keeps the count of decisions behind those outcomes at one, so the signature stays small enough to be honest about. Two jobs in one function means two test matrices multiplied together and a review that has to reason about their interaction.
+A function with one input shape, one decision, and one output shape fits in a single frame: you can read it, test it, and review it without paging in a second context. The honest signature of [Axiom 6](axiom-06-honest-total-signatures.md) tells you *what* outcomes exist; cohesion keeps the count of decisions behind those outcomes at one, so the signature stays small enough to be honest about. Two jobs in one function means two test matrices multiplied together and a review that has to reason about their interaction.
 
 **2. Reason-to-change is a better metric than similarity.**
 Similarity asks "do these look alike?"; reason-to-change asks "will they move together?" — and only the second question predicts what a future edit will cost. Code that is genuinely one concept — it changes in one place, for one reason — earns a single home; code that merely rhymes does not, and merging it buys a shared blast radius for nothing. This is the simplicity-first move: cohesion *removes* a rule — "de-duplicate on sight" — and replaces it with a sharper one that fires less often, and more accurately, on sameness rather than resemblance.
 
 **3. A cohesive function is the unit that composes.**
-Functions that each resolve a single question snap together; functions that each resolve three resist it. When a behaviour is built from small, single-purpose pieces, you can see each contract at a glance, and a changing requirement lands on the one piece that owns that reason rather than on a tangle that owns several. That is why cohesion sits beside [Axiom 5](axiom-05-honest-total-signatures.md) at the foundation: an honest, total, single-purpose function is the cleanest building block there is.
+Functions that each resolve a single question snap together; functions that each resolve three resist it. When a behaviour is built from small, single-purpose pieces, you can see each contract at a glance, and a changing requirement lands on the one piece that owns that reason rather than on a tangle that owns several. That is why cohesion sits beside [Axiom 6](axiom-06-honest-total-signatures.md) at the foundation: an honest, total, single-purpose function is the cleanest building block there is.
 
 **4. Group-by-reason scales — but the axiom stops at the function.**
 The same metric, pointed at a directory instead of a function, says "code that changes together belongs together" — which is what feature-folder and vertical-slice layouts are reaching for. That is a real and good instinct, but it is *topology*, and this is a coding playbook: the axiom claims only the function-level form and notes the rest as out of scope.
