@@ -172,20 +172,11 @@ Several SOLID letters already land elsewhere, usually sharper at code level —
 
 ## CUPID
 
-🔍 **Open** — *Idiomatic*'s home, and whether CUPID earns depth beyond a name-drop.
+🔍 **Open** — mapped property-by-property in [Chapter 1](chapter1/README.md); the only thing still open is whether the three above-altitude parts (Observable, Idiomatic, minimal-dependencies-as-packaging) ever earn a home — a hypothetical Ch4/5.
 
-Dan North's reaction to SOLID: five **properties** (gradients), not rules. [Chapter 1](chapter1/README.md) name-drops it in one paragraph ("revisited later"). Four of five are already covered here:
-- **Composable** ≈ combinators / Railway.
-- **Predictable** ≈ purity + honest signatures. (His *observability* sub-point is operational → out of scope.)
-- **Unix philosophy** ≈ [Cohesion](chapter2/axiom-06-cohesion.md) (one job, judged from the *outside*).
-- **Domain-based** ≈ value objects / [Ubiquitous language](#ubiquitous-language).
-- **Idiomatic** — the ONLY pillar with no analog here. "Code should feel familiar; follow language + local team idioms." Rhymes with the contextual choices (`AsNoTracking`, jOOQ) — those *are* idiom picks.
+Dan North's reaction to SOLID: five **properties** (gradients you *move toward*), not rules. The short of it — **CUPID names the destination, the axioms are the route** — with the full per-property map into the axioms and Plays carried in [Chapter 1](chapter1/README.md), not repeated here.
 
-Still open:
-- Whether **Idiomatic** earns its own (late) axiom or is just a contextual-choices / ADR note.
-- A deeper CUPID treatment, if one is warranted — it lives *later* (an epilogue, or here in the registry), not in Chapter 1.
-
-Source: Dan North, "CUPID — for joyful coding" (2022), dannorth.net.
+Source: Dan North, "CUPID — for joyful coding" (2022), dannorth.net; cupid.dev property pages.
 
 ---
 
