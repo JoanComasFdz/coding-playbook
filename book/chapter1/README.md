@@ -123,7 +123,9 @@ When reading and writing code we must have the tools, the precise vocabulary to 
 
 SOLID does not give us that. The tell is right there: SOLID is invisible in functional code. It can only be applied where objects own mutable state and behaviour at once. And even when applied, half of it is pure architecture and the other is not actionable.
 
-So the question I want answered isn't "how do I obey five principles?" It's:
+CUPID comes closer — it's an ally, pointing *toward* a destination,  nut it stops at the same ceiling: it can't hand you the route. Both leave me able to *name* what I'm looking at, never to *generate* it.
+
+So the question I want answered isn't "how do I obey five principles, or chase five properties?" It's:
 
 **What are the building blocks that give me the precise vocabulary and metrics to reason about the code?**
 
