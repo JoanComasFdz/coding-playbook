@@ -1,16 +1,29 @@
-# Chapter 1 — SOLID Names the Symptom
+# Chapter 1 — SOLID Principles don't cut it anymore
+> How many times have you done a code review where you or your partner said "This code is not applying Liskov Substitution"?
 
-*Scope: criticism of SOLID as it's actually practiced in industry — cargo-culted, dogmatic, `IFoo`-per-class — not the principles charitably interpreted by their authors. This chapter is the hook for the whole book; the building blocks it points toward live in [Chapter 2 — Fundamentals](../chapter2/README.md).*
+> How many times have you been coding and though: "Oh I need to follow the Open/Close principle here" ?
 
-## The hook
+> How many times have you been coding and though: "Hm.. i am not sure I should apply Dependency Inversion here" ?
+
+> How many times have you done a code review where the main discussion was if a class was doing too much or not?
 
 For years SOLID was the vocabulary I reached for whenever I had to justify a design. It sounded like a method: five letters, learn them, apply them, get good code. But somewhere along the way I noticed I could *recite* SOLID without it ever changing a single decision I made at the keyboard. When I tried to use it forward — to *generate* a design rather than grade one — it gave me nothing actionable. "Single responsibility" never told me where to draw the line; "open/closed" never told me which axis would vary.
 
-What I was left with was a set of words for *naming things that had already gone wrong*. SOLID stopped being something I could act on and became something I could point at — after the fact. That is a real and useful thing for a vocabulary to be. It is just not a design framework, and I had been treating it as one. This chapter is me working out why, and where I went looking instead.
+What I was left with was a set of words for *naming things that had already gone wrong*. SOLID stopped being something I could act on and became something I could point at — after the fact. That is a real and useful thing for a vocabulary to be. It is just not a way to reason about the code, and I had been treating it as one.
 
-## It's not just me — the community signal
+This chapter is me working out why, and focusing on SOLID as it's actually practiced in industry — cargo-culted, dogmatic, `IFoo`-per-class — not the principles charitably interpreted by their authors. 
 
-Before my own read, the receipts. The unease I felt is well-trodden ground; here is what others have argued, with sources, so you can follow each thread yourself. (Third-person attribution below is deliberate — these are *their* claims, not mine.)
+Strip away the theory and what the industry actually settled on is a small, fixed architecture — a project skeleton you just follow:
+
+- an interface for every class — `IFoo` beside every `Foo`;
+- a DI container to wire them;
+- those interfaces injected through the constructor.
+
+It is really just **D** and **I** turned into plumbing; **O** and **L** survive only as the *excuse* for the interface seam (you *could* swap the implementation, any one *would* substitute), never as something you actually do. Principles meant to guide judgement became *boilerplate* you set up once and stop thinking about — which is the problem in miniature: **a template you apply by reflex is the opposite of reasoning about a design**.
+
+## The online sentiment
+
+The unease I felt has already been expressed; here is what others have argued, with sources, so you can follow each thread yourself.
 
 ### General
 
@@ -54,18 +67,18 @@ Before my own read, the receipts. The unease I felt is well-trodden ground; here
 - **CUPID** — Composable, Unix philosophy, Predictable, Idiomatic, Domain-based. Properties on a spectrum, not rules ([cupid.dev](https://cupid.dev/); [North, *CUPID — for joyful coding*](https://dannorth.net/2022/02/10/cupid-for-joyful-coding/)).
 - **Patterns over principles** — treat SOLID as context-dependent patterns to apply when symptoms appear, not rules to follow always ([Henney, *SOLID Deconstruction*](https://www.slideshare.net/Kevlin/solid-deconstruction)).
 
-## My read — SOLID as diagnostic vocabulary, not a design framework
+## My read — half architecture, half not actionable
 
-*This sharpens the community critique above rather than repeating it. Unsourced — these are my own arguments.*
+*This sharpens the community critique above rather than repeating it. The reasoning is my own; the one external attribution is cited inline.*
 
 - **The structural/semantic split.** SOLID partitions cleanly. D, I, and the strategy-pattern form of O are *structural* — a convention, DI container, or linter enforces them, so they dissolve into invisible plumbing. S and L are *semantic* — about [cohesion](../chapter2/axiom-06-cohesion.md) and behavioral honesty — and nothing can mechanize them. The only live half of SOLID is S and L.
 - **Only the un-mechanizable letters survive review — and only as symptoms, never by name.** Nobody says "Liskov violation," they say "this implementation behaves weird." Nobody says "SRP," they argue the class does too much. The principle vocabulary is dead in practice; the symptom vocabulary (blast radius, shotgun surgery, "why do I touch five files to add one thing") won.
 - **SRP survives precisely because it's undefined.** Its vagueness isn't a bug — it's the only space in SOLID where real, contextual judgment ([cohesion](../chapter2/axiom-06-cohesion.md)) happens. The other letters became settled convention; SRP stays contested because it can't be reduced to a rule.
-- **Two OCPs, and the bad one is the popular one.** Meyer's inheritance-based OCP (subclass to extend) is the fragile-base-class trap everyone actually hits. Bob's polymorphic OCP (add an implementation, never edit existing ones) is fine — but it's just "composition over inheritance" + "program to an interface" renamed. OCP is only sane *reactively*, along an axis you've already seen vary (rule of three); applied speculatively it's just speculative generality with a badge on.
-- **OCP didn't die — it migrated up the stack.** Its surviving intent ("open for extension, closed for modification") is alive as VSA: add a feature by dropping in a vertical slice without touching existing slices. The unit of closure moved from the *class* to the *slice*, where it's finally actionable.
-- **Refactoring to extract a shared concept is OCP working, not OCP breaking.** A one-time stabilizing extraction — done when the second consumer appears — buys closure for every future consumer. The health metric isn't "zero edits ever," it's *extraction frequency decaying over time* as the domain model matures. Persistent big extractions years in signal a wrong domain model, not an OCP failure. Extract the *stable* domain concept (the aggregate); tolerate duplication on the *volatile* workflow.
-- **SOLID is OOP-remediation, not universal design.** Its invisibility in FP is the tell: SRP, OCP, LSP, ISP, DIP are all structural givens in FP ([functional decomposition](../chapter2/axiom-00-data-vs-behaviour.md), [higher-order functions](../chapter2/axiom-08-first-class-functions.md), parametricity, small composable functions, dependencies-as-parameters), so the vocabulary is never needed. Even Mark Seemann, a rigorous defender, concedes SOLID taken seriously converges on FP. SOLID is a diagnostic vocabulary for *OOP-as-practiced* failure modes — useful for naming smells, but not the level at which design actually happens.
-- **Attack SOLID-as-practiced, not SOLID-in-principle.** "The cargo-culted industry version is broken" is unanswerable — everyone has seen it. "SOLID itself is wrong" invites the strawman defense ("you misunderstand the principles"). The former is the honest claim *and* the stronger one.
+- **Two OCPs, and the bad one is the popular one.** Meyer's inheritance-based OCP (subclass to extend) is the fragile-base-class trap everyone actually hits. Bob's polymorphic OCP (add an implementation, never edit existing ones) is fine — but it's just "composition over inheritance" + "program to an interface" renamed. OCP is only sane *reactively*, along an axis you've already seen vary ([rule of three](https://en.wikipedia.org/wiki/Rule_of_three_(computer_programming))); applied speculatively it's just speculative generality.
+- **OCP didn't die — it migrated up the stack.** Its surviving intent ("open for extension, closed for modification") is alive as Vertical Slice Architecture: add a feature by dropping in a vertical slice without touching existing slices. The unit of closure moved from the *class* to the *slice*, where it's finally actionable.
+- **Refactoring to extract a shared concept is OCP working, not OCP breaking.** A one-time stabilizing extraction — done when the second consumer appears — buys closure for every future consumer. The health metric isn't "zero edits ever," it's *extraction frequency decaying over time* as the domain model matures. Persistent big extractions years in signal a wrong domain model and or design, not an OCP failure. Extract the *stable* domain concept (the aggregate); tolerate duplication on the *volatile* workflow.
+- **SOLID is OOP-remediation, not universal design.** Its invisibility in FP is the tell: SRP, OCP, LSP, ISP, DIP are all structural givens in FP ([functional decomposition](../chapter2/axiom-00-data-vs-behaviour.md), [higher-order functions](../chapter2/axiom-08-first-class-functions.md), parametricity, small composable functions, dependencies-as-parameters), so the vocabulary is never needed. Even Mark Seemann — a rigorous SOLID defender — argues that, taken seriously, SOLID converges on FP ([Seemann, *SOLID: the next step is Functional*](https://blog.ploeh.dk/2014/03/10/solid-the-next-step-is-functional/)): push ISP to role interfaces and you reach single-method interfaces, which *are* functions. SOLID is a diagnostic vocabulary for *OOP-as-practiced* failure modes — useful for naming smells, but not the level at which design actually happens.
+- **Judge SOLID by how it's practiced, not by what it was meant to be.** Almost no one applies the principles the way their authors intended, and the industry has long since settled into one particular way of working. That practiced version is the only SOLID most people ever meet — so debating what the principles *should* have meant is pointless; it only invites the reply *"you've misunderstood them."* The claim worth making is the concrete one: the version the industry actually practices isn't actionable — it doesn't help you reason about the code, only name what already went wrong. Everyone has felt that, so no one can dismiss it.
 
 ## CUPID — revisited later
 
@@ -73,10 +86,15 @@ The most promising replacement I keep circling back to is Dan North's **CUPID** 
 
 ## So what do I reason with instead?
 
-Here is the loop this chapter opened, closed. SOLID is a fine diagnostic vocabulary — it names smells after they appear — but a vocabulary that can only name symptoms after the fact is the wrong altitude for *designing* anything. Symptoms imply there is a level *below* them, where the actual building blocks live: the place a smell either can or cannot occur in the first place.
+When reading and writing code we must have the tools, the precise vocabulary to evaluate each line, each data point and each function, in several dimensions. To argue about trade-offs and to describe them properly.
 
-The tell is right there in my own read: SOLID is invisible in functional code. It only bites where objects own mutable state and behaviour at once — that is the soil every one of its failure modes grows in. Pull those apart and most of SOLID stops being something you remediate and starts being something the compiler simply enforces up front.
+SOLID does not give us that. The tell is right there: SOLID is invisible in functional code. It can only be applied where objects own mutable state and behaviour at once. And even when applied, half of it is pure architecture and the other is not actionable.
 
-So the question I want answered isn't "how do I obey five principles?" It's: **if my design vocabulary can only name problems after the fact, what would building blocks look like that make those problems unrepresentable up front — enforced by the type system, not by my discipline at review time?** That is the whole of Chapter 2.
+So the question I want answered isn't "how do I obey five principles?" It's:
 
-It starts at the soil: [Axiom 0 — Data vs Behaviour](../chapter2/axiom-00-data-vs-behaviour.md) separates the two things OOP fuses, and from there the axioms build up — [honest, total signatures](../chapter2/axiom-05-honest-total-signatures.md) so a type can't lie about what it does, [closed sets over open hierarchies](../chapter2/axiom-20-discriminated-unions.md) and [making illegal states unrepresentable](../chapter2/axiom-21-illegal-states.md) so the bad case never compiles. Read the [full index](../chapter2/README.md), or just start at the beginning.
+**What are the building blocks that give me the precise vocabulary and metrics to reason about the code?**
+
+And once I have them:
+
+**How can I enforced those in the code itself, so I do not rely on anyone's discipline at review time?**
+

@@ -1,6 +1,6 @@
 # Do the axioms apply to current TypeScript?
 
-*An evaluation of Chapter 1's axioms (0–26) against current TypeScript (≈ 5.x, `strict` on). Analysis only — the playbook's named targets remain C# and Java per [CLAUDE.md](CLAUDE.md); nothing in `book/` is changed by this document.*
+*An evaluation of Chapter 2's axioms (0–26) against current TypeScript (≈ 5.x, `strict` on). Analysis only — the playbook's named targets remain C# and Java per [CLAUDE.md](CLAUDE.md); nothing in `book/` is changed by this document.*
 
 *Written 2026-06-01.*
 
