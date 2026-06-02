@@ -7,6 +7,8 @@
 
 [Axiom 5](axiom-05-pure-functions.md) named purity — the property that closes the back door between a function and the world. This axiom names a sister property that closes the front door: the signature must tell the whole truth about what the function does to *its own arguments*. Purity puts every input into the parameter list and every effect-free output into the return value; this axiom asks the next question — is *every* outcome actually represented by the return type, and is the function *actually defined* for every value the input types admit? A pure function can still lie, by returning a sentinel where the type system cannot help the caller see it, or by being silently undefined on inputs the type accepts but the body refuses.
 
+Naming every outcome is also where [Axiom 0](axiom-00-ubiquitous-language.md) first gets teeth: a return type that spells out *what* happened — `NotFound`, `InsufficientFunds` — in the domain's words, where a bare `bool` or a sentinel leaves the outcome nameless.
+
 ---
 
 ## Definitions

@@ -7,6 +7,8 @@
 
 [Axiom 6](axiom-06-honest-total-signatures.md) named two ways to reach a total signature — widen the output, or *narrow the input*. The narrowing path needed a type whose values were guaranteed valid by construction; `NonZeroInt` was the placeholder. This axiom is the toolkit for building those types. A value object is a small immutable record ([Axiom 2](axiom-02-immutability.md)) whose construction *is* the parse step — raw input checked once on the way in, producing either a value the rest of the code can trust or a `Failure` ([Axiom 16](axiom-16-result.md)) explaining why it couldn't.
 
+This is also where [Axiom 0](axiom-00-ubiquitous-language.md)'s naming discipline gets teeth at the level of a single noun: the domain's word — `Username`, `Money`, `EmailAddress` — becomes a type the compiler enforces, not a bare `string` any other string can impersonate.
+
 Through [Axiom 8](axiom-08-connascence.md)'s lens, this axiom weakens a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com) — every call site re-checking what a bare string *means* — into a Connascence of Type, retiring the same-typed [Connascence of Position](axiom-08-connascence.md#connascence-of-position-cop) behind swapped arguments along the way.
 
 ---

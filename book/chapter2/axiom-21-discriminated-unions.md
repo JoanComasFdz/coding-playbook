@@ -10,6 +10,8 @@
 
 Through [Axiom 8](axiom-08-connascence.md)'s lens, this axiom weakens a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com) — magic codes and boolean flags every consumer decodes by convention — into a Connascence of Type the compiler exhausts.
 
+Each variant is also [Axiom 0](axiom-00-ubiquitous-language.md) at the level of a case: `Approved`, `Declined`, `RequiresVerification` are the domain's own words, each a type the compiler tracks, in place of a magic code the consumer decodes.
+
 ---
 
 ## Definitions
