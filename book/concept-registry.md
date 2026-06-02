@@ -116,6 +116,14 @@ Source: Dan North, "CUPID — for joyful coding" (2022), dannorth.net; cupid.dev
 
 ---
 
+## Entity identity & typed IDs — [🔁 FOLDED]
+
+The complement of the value object's equality-by-value: a type identified by a key field, and the typed ID that carries it.
+
+- [Axiom 18 — Value objects](chapter2/axiom-18-value-objects.md#identity-and-typed-ids) — the home: the typed ID as the smallest value object, equality-by-key as the mirror of equality-by-value, and why identity must live in a field once immutable values dissolve [Connascence of Identity](chapter2/axiom-08-connascence.md#connascence-of-identity-coi). The full DDD *Entity* pattern — identity lifecycle, reconstitution — composes this in the Chapter 3 Plays.
+
+---
+
 ## State Machines — [✅ AXIOMATIZED]
 
 - [Axiom 24 — State machines](chapter2/axiom-24-state-machines.md)

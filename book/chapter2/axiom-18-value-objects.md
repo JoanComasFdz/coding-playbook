@@ -220,6 +220,60 @@ A function whose parameter is `Username` instead of `string` is honest in a way 
 
 ---
 
+## Identity and typed IDs
+
+The definitions above drew the line at equality-by-value, and the *When NOT to* below marks its far side: a `Customer` is not a value object, because two customers who share every field are still two customers. That far side has its own smallest primitive, and it is built from the very same machinery — dialled all the way down to one field.
+
+**The typed ID is a value object with the validation removed.** An `OrderId` wraps a single `Guid`; a `CustomerId` wraps another. Same shape as the value objects above — hidden constructor, equality-by-value, immutable — but the invariant is trivial or absent: any `Guid` is a fine `OrderId`, so the factory may not even return a `Result`. The point is not validation; it is *type-distinction*. This is Wlaschin's "single-case union"[2] at its purest — a one-case wrapper that carries no rule, only a name. And it pays the same dividend as Why #3 above: a `Refund(CustomerId, OrderId)` signature cannot take its arguments in the wrong order, because `CustomerId` and `OrderId` are different types. The swapped-argument bug that two bare `Guid`s would compile away is gone — the compiler retires that [Connascence of Position](axiom-08-connascence.md#connascence-of-position-cop) the same way it did for `Username` and `EmailAddress`.
+
+**Equality-by-key is the complement of equality-by-value.** A value object is equal by its full contents; an identity-bearing thing is equal by a single *key field*. Two snapshots of the same order — one before shipping, one after — differ in nearly every field and are still the *same order*, because their `OrderId` matches. Two orders with byte-for-byte identical contents but different `OrderId`s are *different orders*. That is the exact mirror of the equality-by-value rule from the Definitions: where a value object asks *"is all the data the same?"*, an identified thing asks *"is the key the same?"* — and it is precisely why a value object needs no ID (its data *is* its identity) while an identified thing needs one (its data is not).
+
+**Why the ID has to be carried in the data — the immutability bridge.** This is the load-bearing point, and it follows from a decision made three axioms back. [Axiom 8](axiom-08-connascence.md) named [Connascence of Identity](axiom-08-connascence.md#connascence-of-identity-coi) the strongest binding on its scale — two holders depending on referencing *the same instance* — and noted that this playbook's immutable-value model is built to *dissolve* it: an immutable value has no mutable cell to alias, so two holders of "equal" values can never silently diverge, because there is nothing to mutate. But dissolving reference-identity has a consequence. Once a reference no longer carries identity, the question *"which thing is this?"* can no longer ride on the object reference the way it does in a mutable, reference-tracked model. Identity has to go *somewhere* — and the only honest place left is *inside the data*, as an explicit key field. So the typed ID is not decoration: it is where identity lives once we have taken it off the reference. A value object needs no ID because it has no identity to carry; an identity-bearing thing — one that persists and changes across a lifetime while staying the same thing — needs an explicit one for exactly that reason.
+
+<table>
+<tr><th>C#</th><th>Java</th></tr>
+<tr>
+<td>
+
+```csharp
+public readonly record struct OrderId(Guid Value)
+{
+    public static OrderId New() => new(Guid.NewGuid());
+}
+
+// Equal by Value (the key), not by the rest of the contents.
+public sealed record Order(OrderId Id, Money Total, OrderStatus Status)
+{
+    public bool Equals(Order? other) => other is not null && Id == other.Id;
+    public override int GetHashCode() => Id.GetHashCode();
+}
+```
+
+</td>
+<td>
+
+```java
+public record OrderId(UUID value) {
+    public static OrderId newId() { return new OrderId(UUID.randomUUID()); }
+}
+
+// Equal by id (the key), not by the rest of the contents.
+public record Order(OrderId id, Money total, OrderStatus status) {
+    @Override public boolean equals(Object o) {
+        return o instanceof Order other && id.equals(other.id);
+    }
+    @Override public int hashCode() { return id.hashCode(); }
+}
+```
+
+</td>
+</tr>
+</table>
+
+`OrderId` is the value object's machinery with the rule subtracted; `Order` is the same immutable record, but its equality is overridden to read the key alone. Two `Order` values with the same `Id` are the same order regardless of how their `Total` or `Status` has moved; two with different `Id`s are different orders however alike their contents.
+
+---
+
 ## Trade-offs
 
 **Boilerplate.** A value object is irreducibly more code than a primitive. C# softens this with positional records and expression-bodied factories; Java is more verbose, particularly the `equals` / `hashCode` / `toString` triple a `final class` requires. The cost is real and proportional to the number of domain types; the answer is to make value objects only for the rules that *exist*, not for every conceivable primitive.
@@ -238,7 +292,7 @@ A function whose parameter is `Username` instead of `string` is honest in a way 
 
 **At the I/O boundary, where primitives are mandatory.** The function that reads a JSON body, the one that writes a database row, the one that constructs an outgoing HTTP request — these speak the wire format, which is primitives. The conversion is the boundary's job ([Axiom 12](axiom-12-impureheim.md)); the value object lives one layer in. Pushing value objects *into* the JSON deserialiser is not the point of this axiom.
 
-**Entities with identity.** A `Customer` whose two instances are different even when their data is identical — because they refer to different rows, different aggregates, different things in the world — is not a value object. Two `EmailAddress("a@b.com")` are the same email; two `Customer` instances representing two customers who happen to share a name are not the same customer. Equality-by-value is the wrong relation for identity-bearing types; force-fitting it produces subtle bugs. Value objects are for the *attributes* of those entities, not the entities themselves.
+**Entities with identity.** A `Customer` whose two instances are different even when their data is identical — because they refer to different rows, different aggregates, different things in the world — is not a value object. Two `EmailAddress("a@b.com")` are the same email; two `Customer` instances representing two customers who happen to share a name are not the same customer. Equality-by-value is the wrong relation for identity-bearing types; force-fitting it produces subtle bugs. Value objects are for the *attributes* of those entities, not the entities themselves — and the entities get their own smallest primitive, the typed ID, with equality by key rather than by contents (see *Identity and typed IDs* above).
 
 **Single-use throwaways.** A short script, a one-off migration, a one-page tool whose lifetime is measured in days. The cost of writing the value object is fixed; the benefit accrues with reuse and with the number of callers that would otherwise re-check. A program with three call sites and a one-week lifetime does not amortise the cost.
 
