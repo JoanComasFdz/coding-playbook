@@ -55,7 +55,7 @@ The unease I felt has already been expressed; here is what others have argued, w
 #### D — Dependency Inversion
 - Routinely conflated with DI / DI frameworks; the principle ≠ the mechanism ([NDepend, *In Defense of SOLID*, noting the confusion](https://blog.ndepend.com/defense-solid-principles/)).
 - Arguably reduces to SRP + LSP — Henney argues it isn't a separate principle ([Henney summary](https://yahnd.com/theater/r/vimeo/157708450/)).
-- Terminology dated — "inversion" comes from the structured-programming era; today this *is* normal dependency direction ([Dunn](https://dunnhq.com/posts/2021/solid-relevance/)). (Where dependency direction *does* earn its keep, the [Impureim sandwich](../chapter2/axiom-11-impureheim.md) makes it a shape, not a framework.)
+- Terminology dated — "inversion" comes from the structured-programming era; today this *is* normal dependency direction ([Dunn](https://dunnhq.com/posts/2021/solid-relevance/)). (Where dependency direction *does* earn its keep, the [Impureheim sandwich](../chapter2/axiom-11-impureheim.md) makes it a shape, not a framework.)
 
 ### Paradigm fit
 
