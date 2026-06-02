@@ -330,7 +330,7 @@ String name = findById(42).name();
 </tr>
 </table>
 
-Same gesture, two different verdicts. Java refuses the program: `Optional<User>` does not have a `name()` method, and the only way to reach the inner `User` is through methosds like `orElse`, `ifPresent`, or pattern matching — all of which surface the empty case. C# warns: `T?` and `T` are the same type at runtime, so the dereference is structurally allowed; only flow analysis flags it. A project that promotes the warning to a build failure (`TreatWarningsAsErrors` or scoped equivalents) recovers most of Java's guarantee; one that leaves it as a warning recovers very little.
+Same gesture, two different verdicts. Java refuses the program: `Optional<User>` does not have a `name()` method, and the only way to reach the inner `User` is through methods like `orElse`, `ifPresent`, or pattern matching — all of which surface the empty case. C# warns: `T?` and `T` are the same type at runtime, so the dereference is structurally allowed; only flow analysis flags it. A project that promotes the warning to a build failure (`TreatWarningsAsErrors` or scoped equivalents) recovers most of Java's guarantee; one that leaves it as a warning recovers very little.
 
 ### Handling both cases
 
@@ -342,7 +342,8 @@ Once the signature is honest, the next question is: how do you actually write th
 <td>
 
 ```csharp
-string name = FindById(42) switch
+var found = FindById(42);
+string name = found switch
 {
     User u => u.Name,
     null   => "(unknown)"

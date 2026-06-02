@@ -4,7 +4,7 @@
 
 - Model both outcomes as values in a single return slot — no thrown exception, no tombstone, no `out` parameter splitting the answer across two channels.
 
-> Either is the *structural* primitive; named necessay to understand further axioms. Do not use this, but make an effort to understand it.
+> Either is the *structural* primitive, named here because later axioms build on the vocabulary. Do not use this, but make an effort to understand it.
 
 [Axiom 1](axiom-01-data-vs-behaviour.md) says data is a value; [Axiom 2](axiom-02-immutability.md) says values do not change; [Axiom 13](axiom-13-maybe.md) says absence is itself a value. This axiom adds the next honest thing data does: when a computation can produce one of two distinct outcomes, *both* belong in the return type — and `Either<L, R>` is the minimum way to spell that.
 
@@ -123,7 +123,7 @@ What Either does *not* cost you is honesty: the return type names what the funct
 
 **For absence.** "Value or no value" is *one* outcome and a missing one, not two outcomes of distinct kinds — that is [Axiom 13](axiom-13-maybe.md), not this one. `Either<Unit, T>` is structurally `Optional<T>` written the long way around.
 
-**Beyond two cases.** Three or more honest outcomes call for another axiom (discriminated unions reference here). Nesting `Either` is technically possible and always wrong.
+**Beyond two cases.** Three or more honest outcomes call for a discriminated union, a construct a later axiom develops. Nesting `Either` is technically possible and always wrong.
 
 **Hot paths where allocation matters.** The C# Try-pattern (`bool TryParse(string s, out T result)`) is allocation-free and is the standard for the int/double/`Guid` parsers in `System.*` exactly because the surrounding code is hot. The honesty trade is real — the `out` is undefined on failure, the compiler will not enforce the flag check — but in inner loops it earns its keep. Wrap once at the boundary into an Either-shaped value when the result leaves the hot path.
 

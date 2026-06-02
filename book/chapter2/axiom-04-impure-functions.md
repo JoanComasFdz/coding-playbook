@@ -23,7 +23,7 @@ This axiom rejects the mainstream default: treating "function" as a single categ
 
 A `void` return type is the loudest tell — a function that returns nothing must be observable elsewhere — but it is not the only one. A value-returning function can carry effects too; the return value distracts from the writes happening on the side. 
 
-Languages like C# and Java do not have a way to express in the signature of a function if it contains effects, unfortunately. so recognising impurity is therefore a *reading* discipline applied to the whole body, not a check against the signature.
+Languages like C# and Java do not have a way to express in the signature of a function if it contains effects, unfortunately. So recognising impurity is therefore a *reading* discipline applied to the whole body, not a check against the signature.
 
 ---
 

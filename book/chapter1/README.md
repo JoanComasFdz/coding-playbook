@@ -1,9 +1,9 @@
 # Chapter 1 — SOLID Principles don't cut it anymore
 > How many times have you done a code review where you or your partner said "This code is not applying Liskov Substitution"?
 
-> How many times have you been coding and though: "Oh I need to follow the Open/Close principle here" ?
+> How many times have you been coding and thought: "Oh I need to follow the Open/Close principle here" ?
 
-> How many times have you been coding and though: "Hm.. i am not sure I should apply Dependency Inversion here" ?
+> How many times have you been coding and thought: "Hm.. I am not sure I should apply Dependency Inversion here" ?
 
 > How many times have you done a code review where the main discussion was if a class was doing too much or not?
 
@@ -77,7 +77,7 @@ The unease I felt has already been expressed; here is what others have argued, w
 - **Two OCPs, and the bad one is the popular one.** Meyer's inheritance-based OCP (subclass to extend) is the fragile-base-class trap everyone actually hits. Bob's polymorphic OCP (add an implementation, never edit existing ones) is fine — but it's just "composition over inheritance" + "program to an interface" renamed. OCP is only sane *reactively*, along an axis you've already seen vary ([rule of three](https://en.wikipedia.org/wiki/Rule_of_three_(computer_programming))); applied speculatively it's just speculative generality.
 - **OCP didn't die — it migrated up the stack.** Its surviving intent ("open for extension, closed for modification") is alive as Vertical Slice Architecture: add a feature by dropping in a vertical slice without touching existing slices. The unit of closure moved from the *class* to the *slice*, where it's finally actionable.
 - **Refactoring to extract a shared concept is OCP working, not OCP breaking.** A one-time stabilizing extraction — done when the second consumer appears — buys closure for every future consumer. The health metric isn't "zero edits ever," it's *extraction frequency decaying over time* as the domain model matures. Persistent big extractions years in signal a wrong domain model and or design, not an OCP failure. Extract the *stable* domain concept (the aggregate); tolerate duplication on the *volatile* workflow.
-- **SOLID is OOP-remediation, not universal design.** Its invisibility in FP is the tell: SRP, OCP, LSP, ISP, DIP are all structural givens in FP ([functional decomposition](../chapter2/axiom-01-data-vs-behaviour.md), [higher-order functions](../chapter2/axiom-09-first-class-functions.md), parametricity, small composable functions, dependencies-as-parameters), so the vocabulary is never needed. Even Mark Seemann — a rigorous SOLID defender — argues that, taken seriously, SOLID converges on FP ([Seemann, *SOLID: the next step is Functional*](https://blog.ploeh.dk/2014/03/10/solid-the-next-step-is-functional/)): push ISP to role interfaces and you reach single-method interfaces, which *are* functions. SOLID is a diagnostic vocabulary for *OOP-as-practiced* failure modes — useful for naming smells, but not the level at which design actually happens.
+- **SOLID is OOP-remediation, not universal design.** Its invisibility in FP is the tell: SRP, OCP, LSP, ISP, DIP are all structural givens in FP ([functional decomposition](../chapter2/axiom-01-data-vs-behaviour.md), [first-class functions](../chapter2/axiom-09-first-class-functions.md), parametricity, small composable functions, dependencies-as-parameters), so the vocabulary is never needed. Even Mark Seemann — a rigorous SOLID defender — argues that, taken seriously, SOLID converges on FP ([Seemann, *SOLID: the next step is Functional*](https://blog.ploeh.dk/2014/03/10/solid-the-next-step-is-functional/)): push ISP to role interfaces and you reach single-method interfaces, which *are* functions. SOLID is a diagnostic vocabulary for *OOP-as-practiced* failure modes — useful for naming smells, but not the level at which design actually happens.
 - **Judge SOLID by how it's practiced, not by what it was meant to be.** Almost no one applies the principles the way their authors intended, and the industry has long since settled into one particular way of working. That practiced version is the only SOLID most people ever meet — so debating what the principles *should* have meant is pointless; it only invites the reply *"you've misunderstood them."* The claim worth making is the concrete one: the version the industry actually practices isn't actionable — it doesn't help you reason about the code, only name what already went wrong. Everyone has felt that, so no one can dismiss it.
 
 ## CUPID — names the destination, not the route
@@ -95,7 +95,7 @@ But it shares SOLID's ceiling. A property is something you *recognise*, not some
 
 ### Unix philosophy — "does one thing well"
 
-- **Does one thing** → [Cohesion](../chapter2/axiom-07-cohesion.md), judged outside-in — which is exactly North's own distinction from inside-out SRP. *Why:* "one job" is the cohesion question, made testable.
+- **Does one thing** → [Cohesion](../chapter2/axiom-07-cohesion.md), judged outside-in — the same move North's Unix-philosophy property makes away from inside-out SRP. *Why:* "one job" is the cohesion question, made testable.
 - **Composes via pipes** → low [Connascence](../chapter2/axiom-08-connascence.md) between units, plus the combinators above. *Why:* tools pipe cleanly only when what couples them is weak and explicit.
 
 ### Predictable — "does what you expect"
@@ -123,7 +123,7 @@ When reading and writing code we must have the tools, the precise vocabulary to 
 
 SOLID does not give us that. The tell is right there: SOLID is invisible in functional code. It can only be applied where objects own mutable state and behaviour at once. And even when applied, half of it is pure architecture and the other is not actionable.
 
-CUPID comes closer — it's an ally, pointing *toward* a destination,  nut it stops at the same ceiling: it can't hand you the route. Both leave me able to *name* what I'm looking at, never to *generate* it.
+CUPID comes closer — it's an ally, pointing *toward* a destination, but it stops at the same ceiling: it can't hand you the route. Both leave me able to *name* what I'm looking at, never to *generate* it.
 
 So the question I want answered isn't "how do I obey five principles, or chase five properties?" It's:
 
@@ -131,5 +131,5 @@ So the question I want answered isn't "how do I obey five principles, or chase f
 
 And once I have them:
 
-**How can I enforced those in the code itself, so I do not rely on anyone's discipline at review time?**
+**How can I enforce those in the code itself, so I do not rely on anyone's discipline at review time?**
 

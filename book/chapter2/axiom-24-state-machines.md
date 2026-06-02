@@ -13,7 +13,7 @@
 
 Through [Axiom 8](axiom-08-connascence.md)'s lens, this axiom weakens a [Connascence of Execution](axiom-08-connascence.md#connascence-of-execution-coe) — the legal order of transitions, otherwise scattered across methods and enforced at runtime — into a Connascence of Type.
 
-> Most classes that have more than 1 data field (not depencies) area ctually hiding an implicit state machine behind several disconnected data points. This axiom should be use as the default way to represent state when there is more than 1 data field for state.
+> Most classes that have more than 1 data field (not dependencies) are actually hiding an implicit state machine behind several disconnected data points. This axiom should be used as the default way to represent state when there is more than 1 data field for state.
 
 ---
 

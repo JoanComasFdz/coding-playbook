@@ -214,7 +214,7 @@ Two cases where the criterion is wrong or harmful:
 [2] **Scott Wlaschin**, *Designing with Types: Making Illegal States Unrepresentable*, fsharpforfunandprofit.com, 2013. A practical demonstration of using rich return and parameter types to remove whole categories of bugs by construction — the application of this axiom across a domain model.
 <https://fsharpforfunandprofit.com/posts/designing-with-types-making-illegal-states-unrepresentable/>
 
-[3] **Robert Harper**, *Boolean Blindness*, Existential Type, 2011 (crediting Dan Licata for the term); **John A. De Goes**, *Destroy All Ifs*, degoes.net, 2015. Both name what a bare `bool` discards — that a value is one of two cases, with the cases left anonymous — and both prescribe the cure this playbook reaches for throughout: replace the boolean with a named type, a value object ([Axiom 18](axiom-18-value-objects.md)) on the return or a discriminated union ([Axiom 21](axiom-21-discriminated-unions.md)) for the cases.
+[3] **Robert Harper**, *Boolean Blindness*, Existential Type, 2011 (crediting Dan Licata for the term); **John A. De Goes**, *Destroy All Ifs*, degoes.net, 2015. Both name what a bare `bool` discards — that a value is one of two cases, with the cases left anonymous — and both prescribe the cure this playbook reaches for throughout: replace the boolean with a named type — a value object on the return, or a discriminated union for the cases.
 <https://existentialtype.wordpress.com/2011/03/15/boolean-blindness/>
 <http://degoes.net/articles/destroy-all-ifs>
 

@@ -78,7 +78,8 @@ public void Import(IEnumerable<string[]> rows, BatchContext ctx)
     foreach (var row in rows)
     {
         rowIndex++;
-        switch (ValidateRow(row))
+        var validation = ValidateRow(row);
+        switch (validation)
         {
             case Success<Customer, string>(var customer):
                 customers.Insert(customer);
@@ -114,7 +115,8 @@ public void importRows(Iterable<String[]> rows, BatchContext ctx) {
     int rowIndex = 0;
     for (String[] row : rows) {
         rowIndex++;
-        switch (validateRow(row)) {
+        var validation = validateRow(row);
+        switch (validation) {
             case Success<Customer, String> s ->
                 customers.insert(s.value());
             case Failure<Customer, String> f ->

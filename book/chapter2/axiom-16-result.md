@@ -108,7 +108,7 @@ Both failure modes — "user not found" and "wrong password" — live in the ret
 
 ## The first synthesis
 
-Thirteen axioms in, Result is the first place all the pieces fit into one diagram. The sketch above shows the shape of the type; the worked example below shows the shape those thirteen axioms together push the *code* into.
+Thirteen axioms converge here: Result is the first place all the pieces fit into one diagram. The sketch above shows the shape of the type; the worked example below shows the shape those thirteen axioms together push the *code* into.
 
 A login endpoint, end to end — `Result` definitions from the example above are reused as-is:
 
