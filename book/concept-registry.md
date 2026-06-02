@@ -148,9 +148,12 @@ The complement of the value object's equality-by-value: a type identified by a k
 
 ---
 
-## Encode ordering in types (temporal coupling) — [✅ AXIOMATIZED]
+## Encode ordering in types (temporal coupling, sequential coupling) — [✅ AXIOMATIZED]
 
-- [Axiom 27 — Typestate](chapter2/axiom-27-typestate.md) — ordering encoded in the type, so an out-of-sequence call won't compile.
+Order-dependence between calls — *authenticate before fetch*, *open before read*. **Temporal coupling** (Hunt & Thomas) and **sequential coupling** name one smell twice; both are [Connascence of Execution](chapter2/axiom-08-connascence.md#connascence-of-execution-coe), **not** Connascence of *Timing* (the concurrency/race form, out of scope).
+
+- [Axiom 27 — Typestate](chapter2/axiom-27-typestate.md) — ordering encoded in the type, so an out-of-sequence call won't compile; names "temporal coupling" outright (Hunt & Thomas, *Breaking Temporal Coupling*, ref [2] there).
+- [Axiom 8 — Connascence](chapter2/axiom-08-connascence.md#connascence-of-execution-coe) — the lens: Connascence of Execution, the strongest form, which typestate weakens to Connascence of Type.
 
 ---
 
@@ -245,6 +248,51 @@ Crash immediately on a programmer error (a bug); return a value for an *expected
 
 ---
 
+## Arrow Anti-Pattern / Pyramid of Doom — [🔁 FOLDED]
+
+Deeply nested `if`/`try` blocks marching rightward — each success opens another indent. The *nested* twin of [Return early](#return-early-guard-clauses--folded); once every step returns `Result`, both give way to composition.
+
+- [Axiom 19 — Railway](chapter2/axiom-19-railway.md) — the staircase of nested success-checks becomes one straight track.
+- [Axiom 17 — Result combinators](chapter2/axiom-17-result-combinators.md) — the nested unwrap → check → rewrap collapses into `map`/`bind`.
+- [Axiom 11 — Pattern matching](chapter2/axiom-11-pattern-matching.md) — match one named value instead of stacking conditionals.
+
+**Source:** Jeff Atwood, *Flattening Arrow Code* ("The Arrow Anti-Pattern"), Coding Horror (2006).
+
+---
+
+## Return early (guard clauses) — [🔁 FOLDED]
+
+Handle the exceptional case first and bail, leaving the happy path un-indented. The *flattened* twin of [Arrow / Pyramid of Doom](#arrow-anti-pattern--pyramid-of-doom--folded).
+
+- [Axiom 19 — Railway](chapter2/axiom-19-railway.md) / [Axiom 17 — Result combinators](chapter2/axiom-17-result-combinators.md) — already the **named foil** in both: the `if (result.IsFailure) return result; …` ladder is the right shape for a single non-uniform step and noise once several run back-to-back — which is exactly when the railway/combinators name the dance once.
+- [Axiom 12 — Impureheim](chapter2/axiom-12-impureheim.md) — gather-and-bail at the top of the sandwich: validate, return early, keep the core's body straight.
+
+**Source:** Martin Fowler, *Refactoring* (1999) — "Replace Nested Conditional with Guard Clauses."
+
+---
+
+## Swallowing Errors — [🔁 FOLDED]
+
+Discarding a failure instead of handling it — an empty `catch {}`, an ignored `Result`, `?.`/`??` flattening several "missing" cases into one. The **inverse** of [*Define errors out of existence*](#define-errors-out-of-existence-ousterhout--folded): that move makes the bad case *impossible*; swallowing makes a real one *invisible*.
+
+- [Axiom 16 — Result](chapter2/axiom-16-result.md) — a `Result` the caller must consume can't be silently dropped the way a thrown exception or a bare `bool` can.
+- [Axiom 6 — Honest/total signatures](chapter2/axiom-06-honest-total-signatures.md) — swallowing yields a *dishonest* signature claiming a success it never had; its *When NOT to* already warns that absorbing a caller-bug input masks the defect.
+- [Axiom 13 — Maybe](chapter2/axiom-13-maybe.md) — the named `user?.Manager?.Email ?? ""` case: three different "missing" cases quietly collapsed into one.
+
+---
+
+## Explicit over implicit — [🔁 FOLDED]
+
+Prefer what reader and compiler can see — named types, declared effects, passed-in dependencies — over hidden magic. Mostly a restatement of Chapter 2's honesty program, not a separate principle.
+
+- [Axiom 6 — Honest/total signatures](chapter2/axiom-06-honest-total-signatures.md) — the signature tells the whole truth about inputs and outputs; no out-of-band nulls or exceptions.
+- [Axiom 3 — Side effects](chapter2/axiom-03-side-effects.md) — effects are declared and pushed to the shell, never smuggled into a pure-looking call.
+- Composition root — dependencies arrive as explicit values/parameters, not reached for through static singletons or ambient context.
+
+**Source:** Tim Peters, *The Zen of Python* (PEP 20) — "Explicit is better than implicit."
+
+---
+
 ## DRY — the real (knowledge) definition — [🔁 FOLDED]
 
 Don't Repeat Yourself governs *knowledge*, not code text: one authoritative home per piece of knowledge.
@@ -252,6 +300,18 @@ Don't Repeat Yourself governs *knowledge*, not code text: one authoritative home
 - [Axiom 7 — Cohesion](chapter2/axiom-07-cohesion.md) — reason-to-change *is* DRY made operational; it names Hunt & Thomas's original knowledge definition (ref [5] there) and corrects the dedupe-on-sight misreading.
 
 **Source:** Andrew Hunt & David Thomas, *The Pragmatic Programmer* (1999).
+
+---
+
+## Speculative generality — YAGNI / premature optimization / premature generalization — [🔁 FOLDED]
+
+Building for a future that hasn't arrived — a feature (**YAGNI**), a faster path (**premature optimization**), or an abstraction (**premature generalization**). One restraint seen from three angles; all three are facets of **simplicity-first**, the north star, not code-shape axioms of their own.
+
+- **Simplicity-first north star** — YAGNI and premature optimization stay at *principle* grain (the non-negotiable "as simple as possible" tier), carried as restraint rather than folded into a single axiom. Knuth's "premature optimization is the root of all evil" and XP's "You Aren't Gonna Need It" name the same discipline.
+- [Axiom 7 — Cohesion](chapter2/axiom-07-cohesion.md) — premature generalization is the concrete fold: the *rule of three* holds the line, and Sandi Metz's *The Wrong Abstraction* (ref [1] there) is why a too-early abstraction costs more than the duplication it removes.
+- [Chapter 1](chapter1/README.md) — already names "speculative generality" as the bad, speculative reading of OCP applied ahead of a seen axis of change.
+
+**Source:** Donald Knuth, *Structured Programming with go to Statements* (1974); Kent Beck / Ron Jeffries, Extreme Programming (YAGNI); Fowler & Beck, *Refactoring* (1999) — the "Speculative Generality" smell.
 
 ---
 
@@ -490,11 +550,32 @@ The *strategic* half — decomposition at architectural altitude — stays out o
 
 ---
 
+## Leaky abstraction — [🔁 FOLDED]
+
+An abstraction whose underlying detail shows through — the caller must know what it claims to hide (Spolsky: "all non-trivial abstractions are, to some degree, leaky"). The *failure mode* of the two open Chapter 3 module Plays, with a function-grain echo.
+
+- Chapter 3 *Deep modules, small interfaces* & *Information hiding* Plays — a leak is the secret escaping: a shallow module, or a small interface that doesn't truly cover its implementation. The named anti-pattern those Plays design against (scoped in the [Chapter 3 README](chapter3/README.md)).
+- [Axiom 6 — Honest/total signatures](chapter2/axiom-06-honest-total-signatures.md) — at function grain a leaky signature is a *dishonest* one: it hides a failure or precondition the caller still has to know.
+
+**Source:** Joel Spolsky, *The Law of Leaky Abstractions* (2002).
+
+---
+
 ## CQRS [ARCHITECTURE - OUT OF SCOPE]
 
 🔍 **Open** — record the boundary only.
 
 Note (from research): CQRS is system topology = **out of scope** (it's a *consumer* of the building blocks, not one). Its code-level sibling is **CQS** (see the Command–Query Separation entry above) — a method returns a value *xor* changes state — and that one is now folded into [Axiom 12 — Impureheim](chapter2/axiom-12-impureheim.md) (and named in [Axiom 5](chapter2/axiom-05-pure-functions.md) and [Axiom 23](chapter2/axiom-23-pure-functions-returning-actions.md)). Keep this section only to *record the boundary*, not to write an axiom.
+
+---
+
+## Boy Scout Rule — [SKIP — out of the code-shape lane]
+
+"Always leave the code cleaner than you found it" — opportunistic, incremental cleanup as you pass through.
+
+**Verdict:** skipped as out of scope, not as wrong. It is a *working habit over time*, not a property of code shape; the book's lane is *how to write the code*, and this is *how to work on it*. The improvements it prescribes are already governed by the axioms — the habit of applying them is not itself a code-shaping rule the playbook can carry.
+
+**Source:** Robert C. Martin, *Clean Code* (2009) — "The Boy Scout Rule."
 
 ---
 
