@@ -1,4 +1,4 @@
-# Chapter 1
+# Chapter 2
 
 This chapter introduces all foundational principles that will shape the rest of the playbook.
 
