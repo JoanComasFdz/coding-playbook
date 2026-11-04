@@ -1,4 +1,4 @@
-# Chapter 1 — SOLID Principles don't cut it anymore
+# Chapter 1 — SOLID doesn't cut it, and CUPID stops short
 
 > How many times has a code review ended with "this code breaks Liskov Substitution"?
 
@@ -46,7 +46,7 @@ I am not the first to feel this. Here is what others have argued, with sources, 
 
 - It requires predicting the future: which part of the code will vary next ([Khoo](https://medium.com/@jeremykhoois/solid-principles-sucks-b5935b1235d7)).
 - "Extend by inheritance" caused the 90s inheritance overdose we are still recovering from ([Dunn](https://dunnhq.com/posts/2021/solid-relevance/)).
-- Arguably redundant, because LSP already implies it ([Henney summary](https://yahnd.com/theater/r/vimeo/157708450/); [Dunn](https://dunnhq.com/posts/2021/solid-relevance/)).
+- Arguably redundant, because LSP already implies it ([Henney, *SOLID Deconstruction*, NDC London 2016](https://av.tib.eu/media/48932); [Dunn](https://dunnhq.com/posts/2021/solid-relevance/)).
 
 #### L — Liskov Substitution
 
@@ -60,7 +60,7 @@ I am not the first to feel this. Here is what others have argued, with sources, 
 #### D — Dependency Inversion
 
 - Constantly confused with DI and DI frameworks. The principle is not the mechanism ([NDepend, *In Defense of SOLID*, noting the confusion](https://blog.ndepend.com/defense-solid-principles/)).
-- Henney argues it reduces to SRP + LSP, so it is not a separate principle ([Henney summary](https://yahnd.com/theater/r/vimeo/157708450/)).
+- Henney argues it reduces to SRP + LSP, so it is not a separate principle ([Henney, *SOLID Deconstruction*, NDC London 2016](https://av.tib.eu/media/48932)).
 - The name is dated. "Inversion" comes from the structured-programming era; today it is just the normal direction of dependencies ([Dunn](https://dunnhq.com/posts/2021/solid-relevance/)). Where dependency direction does matter, the [Impureheim sandwich](../chapter2/axiom-12-impureheim.md) turns it into a code shape, not a framework.
 
 ### Paradigm fit
@@ -109,6 +109,8 @@ This matters for the rest of the book: a pure core, tested with plain values, do
 - In code review, people rarely say "Liskov violation". They say "this implementation behaves weird".
 - In code review, people rarely say "SRP". They argue that the class does too much.
 - The principle names are rarely used in practice. The symptom names won: blast radius, shotgun surgery, "why do I touch five files to add one thing?".
+
+That answers the questions at the top of this chapter. The first three almost never happen. The fourth happens in almost every review.
 
 ### SRP survives because it is undefined
 
@@ -243,41 +245,31 @@ Jeremy Miller is no CUPID sceptic. He dismissed it at first, then made himself t
 
 ### Mapping each property to the book
 
-Every property maps to something I already reason with, or will in a later chapter.
+Every property maps to something I already reason with, or to a level above this book.
 
-#### Composable — "plays well with others"
+| Property | Where it lands | Why |
+|---|---|---|
+| **Composable:** small surface area | The future *Deep modules, small interfaces* Play (Chapter 3) | A module's value is its functionality divided by the cost of its interface |
+| **Composable:** intention-revealing | [Honest signatures](../chapter2/axiom-06-honest-total-signatures.md), [value objects](../chapter2/axiom-18-value-objects.md), [illegal states unrepresentable](../chapter2/axiom-22-illegal-states.md), [discriminated unions](../chapter2/axiom-21-discriminated-unions.md) | The type, not a comment, reveals the intent |
+| **Composable:** minimal dependencies | Above this book (see the note below) | North means external packages, a packaging concern |
+| **Composable:** composing itself | [Higher-order functions](../chapter2/axiom-10-higher-order-functions.md) and `Result` composition (map/bind/traverse) | Composability is built, with combinators |
+| **Unix philosophy:** does one thing | [Cohesion](../chapter2/axiom-07-cohesion.md) | "One thing" from the caller's view: what the function takes, decides and returns |
+| **Unix philosophy:** composes via pipes | [Connascence](../chapter2/axiom-08-connascence.md), plus the combinators above | Pieces connect cleanly only when what couples them is weak and explicit |
+| **Predictable:** behaves as expected | [Honest signatures](../chapter2/axiom-06-honest-total-signatures.md) | What can come back is visible in the signature, not hidden in the body |
+| **Predictable:** deterministic | [Pure functions](../chapter2/axiom-05-pure-functions.md) | A pure function is deterministic by definition |
+| **Predictable:** observable | Above this book | Operational: telemetry, monitoring |
+| **Idiomatic:** language and team idioms | ADRs, as contextual choices (see the note below) | What feels natural depends on the reader, not on the code |
+| **Domain-based:** language | [Value objects](../chapter2/axiom-18-value-objects.md) and the [DDD tactical patterns](../chapter3/01-DDD-tactical-patterns.md) Play | `Surname`, not `string`: close the gap between code and conversation |
+| **Domain-based:** structure | The [Vertical slices](../chapter3/02-vertical-slices.md) Play | Folders mirror the domain, not technical layers. Also where [OCP moved to](#ocp-did-not-die-it-moved-up-the-stack) |
+| **Domain-based:** boundaries | Above this book | Module = deployment unit is architecture |
 
-- **Small surface area** → the future *Deep modules, small interfaces* Play (Chapter 3): a module's value is its functionality divided by the cost of its interface. A narrow API *is* the small surface.
-- **Intention-revealing** → [honest, total signatures](../chapter2/axiom-06-honest-total-signatures.md) and domain-named [value objects](../chapter2/axiom-18-value-objects.md). [Making illegal states unrepresentable](../chapter2/axiom-22-illegal-states.md) and [discriminated unions](../chapter2/axiom-21-discriminated-unions.md) name each case where a `bool` would hide it. The type, not a comment, reveals the intent.
-- **Minimal dependencies** → North means *external packages* (his example is dropping a logging library). That is a packaging concern, above this book's level. At the level of a single function it is *similar to*, but not the same as:
-  - [purity](../chapter2/axiom-05-pure-functions.md): the function depends only on its arguments;
-  - [Impureheim](../chapter2/axiom-12-impureheim.md): dependencies are handed in from the shell, never fetched.
-- **Composing itself** → [higher-order functions](../chapter2/axiom-10-higher-order-functions.md) and `Result` composition (map/bind/traverse). Composability is something you build, with combinators.
+Two properties need more than a table cell:
 
-#### Unix philosophy — "does one thing well"
-
-- **Does one thing** → [Cohesion](../chapter2/axiom-07-cohesion.md). North describes "one thing" from the caller's point of view, not from the code's internals the way SRP does. Axiom 7 does the same: the checks are about what the function takes, decides and returns. "One job" is the cohesion question, made checkable.
-- **Composes via pipes** → low [Connascence](../chapter2/axiom-08-connascence.md) between units, plus the combinators above. Pieces connect cleanly only when what couples them is weak and explicit.
-
-#### Predictable — "does what you expect"
-
-- **Behaves as expected** → [honest, total signatures](../chapter2/axiom-06-honest-total-signatures.md). The type tells you what can come back, so the behaviour is visible in the signature, not hidden in the body.
-- **Deterministic** → [pure functions](../chapter2/axiom-05-pure-functions.md). The cleanest match in the set: a pure function is deterministic by definition.
-- **Observable** → instrumentation, telemetry, monitoring. Operational, above this book's level.
-
-#### Idiomatic — "feels natural"
-
-- **Language and team idioms** → not an axiom but a *contextual choice*: dated, reversible, team-dependent. That belongs in ADRs (`AsNoTracking` and jOOQ are idiom choices, and North himself sends local idioms to ADRs). What feels natural depends on the reader, not on the code.
-- **The honest tension**: my axioms sometimes go *against* the local idiom. For example, `Result<int, string>` instead of the idiomatic `bool TryParse(string, out int)`.
+- **Minimal dependencies.** At the level of a single function, it is *similar to*, but not the same as, two axioms: [purity](../chapter2/axiom-05-pure-functions.md) (the function depends only on its arguments) and [Impureheim](../chapter2/axiom-12-impureheim.md) (dependencies are handed in from the shell, never fetched).
+- **Idiomatic.** My axioms sometimes go *against* the local idiom: `Result<int, string>` instead of the idiomatic `bool TryParse(string, out int)`.
   - I trade idiom for honesty (simplicity first: honest before familiar).
   - I pay the idiom back in the mechanics: records, `switch` expressions, pattern matching, LINQ.
-  - Idiomatic still matters. It just sits one level above the building blocks.
-
-#### Domain-based — "models the problem domain in language and structure"
-
-- **Domain-based language** → domain-named [value objects](../chapter2/axiom-18-value-objects.md) and the future FP-style *DDD tactical patterns* (Chapter 3). `Surname`, not `string`: close the gap between the code and the conversation.
-- **Domain-based structure** → the [Vertical slices](../chapter3/02-vertical-slices.md) Play (Chapter 3): folders mirror the domain, not technical layers. That is also where I argued [OCP moved to](#ocp-did-not-die-it-moved-up-the-stack).
-- **Domain-based boundaries** (module = deployment unit) → architecture, above this book's level.
+  - North himself sends local idioms to ADRs. Idiomatic still matters; it just sits one level above the building blocks.
 
 ### The critique of CUPID that does exist
 
@@ -295,6 +287,7 @@ The book is stacked by level: Chapter 1 is the motivation, Chapter 2 the buildin
 - Observable
 - Idiomatic
 - Minimal dependencies, in the packaging sense
+- Domain-based boundaries
 
 They are not unmapped because they do not matter. They are unmapped because they live above the level of code. Everything that *is* at the level of code is already a building block in the next chapter.
 
