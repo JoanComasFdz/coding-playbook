@@ -16,15 +16,15 @@ One name per concept, one concept per name. The code speaks the domain's words, 
 
 ### 1. [Data vs Behavior](axiom-01-data-vs-behaviour.md)
 
-Data is a fact; behavior is an operation. We keep the two separate.
+Data is a fact; behavior is an operation. We keep the two separate. This is the founding premise.
 
-***Leads to Immutability:*** *The founding premise. Once data is a fact rather than an object that owns and mutates its own state, the first thing you want from a fact is that it stays put.*
+***Leads to Immutability:*** *Once data is a fact rather than an object that owns and mutates its own state, the first thing you want from a fact is that it stays put.*
 
 ### 2. [Immutability](axiom-02-immutability.md)
 
 Data that can't change after creation.
 
-***Leads to Side effects:*** *Removes one class of bug: state changing under you. Another comes from code that reaches outside itself, so next we name that.*
+***Leads to Side effects:*** *Immutability removes one class of bug: state changing under you. Another comes from code that reaches outside itself, so next we name that.*
 
 ### 3. [Side effects](axiom-03-side-effects.md)
 
@@ -72,7 +72,7 @@ Functions stored, passed, returned.
 
 Functions over functions.
 
-***Leads to Pattern matching:*** *That's the machinery the container types will need (map/flatMap are higher-order functions). But before introducing them, we need a clean way to take their values apart.*
+***Leads to Pattern matching:*** *Higher-order functions are the machinery the container types will need (map/flatMap are higher-order functions). But before introducing them, we need a clean way to take their values apart.*
 
 ### 11. [Pattern matching](axiom-11-pattern-matching.md)
 
@@ -82,9 +82,9 @@ Branch on a value's shape.
 
 ### 12. [Impureheim](axiom-12-impureheim.md)
 
-Effects at the edges, pure logic in the middle. A concept, not a construct.
+Effects at the edges, pure logic in the middle. The north star: a concept, not a construct.
 
-***Leads to Maybe:*** *The north star. That pure core is only worth having if we have good types to fill it, starting with the simplest.*
+***Leads to Maybe:*** *The pure core is only worth having if we have good types to fill it, starting with the simplest.*
 
 ### 13. [Maybe](axiom-13-maybe.md)
 
@@ -144,7 +144,7 @@ Three or more outcomes, consumed with the pattern matching from [11](axiom-11-pa
 
 Model a thing with several states as one record per state, not one record full of nullable fields. Each field lives only on the state where it is valid.
 
-***Leads to Pure functions returning actions:*** *That was data at rest. When the pure core decides what should *happen*, model its output the same way: as a DU of actions.*
+***Leads to Pure functions returning actions:*** *Illegal states unrepresentable was about data at rest. When the pure core decides what should happen, model its output the same way: as a DU of actions.*
 
 ### 23. [Pure functions returning actions](axiom-23-pure-functions-returning-actions.md)
 
@@ -156,7 +156,7 @@ The pure core decides, the impure shell executes. This delivers the sandwich fro
 
 Centralized state, transitions as DUs, decisions as pure functions returning actions. Everything composes.
 
-***Leads to Session Context:*** *The shell so far was one-shot: load, decide, persist, return. Many programs aren't. Before we can describe what their longer-lived shells *do*, we need to name what they *hold*.*
+***Leads to Session Context:*** *The shell so far was one-shot: load, decide, persist, return. Many programs aren't. Before we can describe what their longer-lived shells do, we need to name what they hold.*
 
 ### 25. [Session Context](axiom-25-session-context.md)
 
@@ -168,7 +168,7 @@ Per-session mutable state held by the shell: accumulators, signals, flags, callb
 
 The long-running shell: read the current state, run the effect that state demands, wait for an event, call the state machine's transition, repeat. Its lineage is the interpreter's fetch-decode-execute loop.
 
-***Leads to Typestate:*** *With the stateful shell, the structural toolkit is complete. One niche escalation closes the chapter: when the legal *order* of calls is part of the contract, give each state its own type so a wrong-order call cannot be written.*
+***Leads to Typestate:*** *With the stateful shell, the structural toolkit is complete. One niche escalation closes the chapter: when the legal order of calls is part of the contract, give each state its own type so a wrong-order call cannot be written.*
 
 ### 27. [Typestate](axiom-27-typestate.md)
 
@@ -178,11 +178,11 @@ Encode call order in the type system: each state is its own type, and each trans
 
 ## Where the order bends
 
-Most *Leads to* lines are strict dependencies: the next axiom needs the previous one. Four are deliberately not:
+Most *Leads to* lines are strict dependencies: the next axiom needs the previous one. Four axioms are deliberately placed out of that order:
 
-- **Ubiquitous Language ([0](axiom-00-ubiquitous-language.md))** opens the chapter because it is the discipline the rest enforce. Nothing structurally depends on it, but every type, signature and case that follows is where one of the domain's names gets compiled in.
+- **Ubiquitous Language ([0](axiom-00-ubiquitous-language.md))** opens the chapter because it is the discipline the rest enforce. Nothing structurally depends on it, but every type, signature and case that follows is where one of the domain's names ends up in the code.
 - **Connascence ([8](axiom-08-connascence.md))** is an evaluative lens set beside Cohesion. The tools after it do not depend on it, but it names what each of them is doing.
-- **Impureheim ([12](axiom-12-impureheim.md))** comes early as the north star, so the tool-building that follows has a clear purpose. It pays off at [23](axiom-23-pure-functions-returning-actions.md).
+- **Impureheim ([12](axiom-12-impureheim.md))** comes early as the north star, so the tool-building that follows has a clear purpose. It is delivered in [23](axiom-23-pure-functions-returning-actions.md).
 - **Typestate ([27](axiom-27-typestate.md))** is the one item outside the arc. It is a niche tool, placed last so it does not interrupt the everyday material before it.
 
 ---
