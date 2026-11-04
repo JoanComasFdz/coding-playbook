@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A personal **Coding Playbook** by the author — a curated set of building blocks, concise how-tos, and dated decisions for writing simple, honest, robust code in high-level general-purpose languages (C# and Java are the named targets).
 
-The book is organized in three chapters. **Chapter 1 — the SOLID critique** is the motivating hook: it argues that SOLID names real smells but can't be *acted on* to generate design, and ends on the question the rest of the book answers — so what do I reason with instead? It sits *before* the code altitudes as motivation, not as a third altitude. The two code altitudes are Chapters 2 and 3. **Chapter 2 — Fundamentals** is the anatomy of a module and its functions: the axioms (data vs behaviour, immutability, purity, honest signatures, `Result`, value objects, …). **Chapter 3 — Plays** is one level up: how those axioms compose into a designed, persisted domain — FP-style DDD tactical patterns, immutable-data persistence, deep modules. Each chapter has its own scope rules below; the voice, the three-kinds-of-why model, the registry, and the per-topic template apply to all three.
+The book is organized in three chapters. **Chapter 1 — the SOLID critique** is the motivating hook: it argues that SOLID names real smells but can't be *acted on* to generate design, and ends on the question the rest of the book answers — so what do I reason with instead? It sits *before* the code altitudes as motivation, not as a third altitude. The two code altitudes are Chapters 2 and 3. **Chapter 2 — Fundamentals** is the anatomy of a module and its functions: the axioms (data vs behavior, immutability, purity, honest signatures, `Result`, value objects, …). **Chapter 3 — Plays** is one level up: how those axioms compose into a designed, persisted domain — FP-style DDD tactical patterns, immutable-data persistence, deep modules. Each chapter has its own scope rules below; the voice, the three-kinds-of-why model, the registry, and the per-topic template apply to all three.
 
 It is **documentation, not software**. There is no build system, no test suite, and no runnable code at present. Content lives (or will live) as Markdown files. The `.gitignore` is a stock .NET template — its presence does not imply a .NET project; treat it as boilerplate until actual code appears.
 
@@ -40,7 +40,7 @@ A few edge concerns are explicitly **in** scope at this level *because they shap
 
 One level up from a single function: how the Chapter 2 building blocks assemble into a *designed module* and reach the outside world. This chapter is allowed material Chapter 2 deliberately excludes:
 
-- **FP-style DDD tactical patterns** — aggregates, entities, value objects, repositories, domain events — modelled the book's way: behaviour as pure functions and deciders over immutable data, not methods on mutable entities (see *The central model*). The "rich domain model" / Tell-Don't-Ask orthodoxy is the road not taken — presented as a trade-off, never attacked.
+- **FP-style DDD tactical patterns** — aggregates, entities, value objects, repositories, domain events — modeled the book's way: behavior as pure functions and deciders over immutable data, not methods on mutable entities (see *The central model*). The "rich domain model" / Tell-Don't-Ask orthodoxy is the road not taken — presented as a trade-off, never attacked.
 - **Vertical slices** — grouping code by feature instead of by technical layer, within one deployable: Cohesion and Connascence applied to the folder layout. Not service decomposition, which is system topology.
 - **Immutable-data persistence** — reading and writing immutable records without an identity-tracking ORM: EF `AsNoTracking()` (and Dapper) for C#, jOOQ for Java. The concrete realization of the impure shell's gather/act steps.
 - **Deep modules, small interfaces** — Ousterhout's "functionality ÷ interface cost"; the counterweight to tiny-function enthusiasm.
@@ -62,7 +62,7 @@ That sentence is effectively a module's public-API contract. Three consequences 
 
 ## Vocabulary
 
-Use these terms consistently — they are the playbook's building blocks: data vs behaviour, immutable records, `Option`/`Maybe`, `Result`/`Either`, discriminated unions, pattern matching, total/honest signatures, pure vs impure functions, first-class & higher-order functions, the **Impureheim sandwich**, value objects with smart constructors, **parse don't validate**, **make illegal states unrepresentable**, the **Decider**, composition/combinators.
+Use these terms consistently — they are the playbook's building blocks: data vs behavior, immutable records, `Option`/`Maybe`, `Result`/`Either`, discriminated unions, pattern matching, total/honest signatures, pure vs impure functions, first-class & higher-order functions, the **Impureheim sandwich**, value objects with smart constructors, **parse don't validate**, **make illegal states unrepresentable**, the **Decider**, composition/combinators.
 
 Chapter 3 adds its own tactical vocabulary — aggregate, entity, repository, deep module, information hiding — each introduced by linking back to the Chapter 2 axiom it composes, never as a fresh definition.
 
@@ -73,6 +73,7 @@ The intended reader is a working engineer in a high-level OO language. When draf
 - North star is **simplicity first** — "as simple as possible, as honest as possible, as robust as possible," in that order. Let it settle ties: prefer the simpler formulation, then the more honest, then the more robust only when it costs nothing above the first two.
 - The playbook is opinionated and first-person. Match that register; don't neutralize it into generic best-practices prose.
 - Say "this book", never "the book", when the text refers to itself.
+- **US spelling.** Convert a file to US spelling when it is rewritten. Never change quotes (they keep their original spelling) or link targets (file names such as `axiom-01-data-vs-behaviour.md` stay as they are).
 - **Never attack a discipline, language, framework, or architecture.** Present alternatives as points on a trade-off curve, never as targets. Every strong opinion is "what I do today, and why," with an explicit "when not to."
 - Favor examples in C# or Java unless told otherwise. Immutable-record persistence leans on EF `AsNoTracking()` (possibly Dapper) for C#, jOOQ for Java.
 

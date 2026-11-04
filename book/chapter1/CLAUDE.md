@@ -22,10 +22,6 @@ The chapter defines two criteria that later chapters are judged against. Don't w
 - **First-person experience stays as written.** Universal claims about other people ("nobody", "everyone", "the whole industry") are hedged to my experience or tied to a linked source.
 - **Quote only what was checked against the original.** If a point is only known through a summary, paraphrase it and link it; don't quote it. (Currently: Beck and Feathers are paraphrased. The two Henney claims rest on a summary of his talk.)
 
-## Spelling
-
-US spelling. Quotes keep their original spelling (North's "centre").
-
 ## Length
 
 Shorter is good, but it isn't the only goal. Don't cut nuance, evidence or the credit section just to reduce word count.
