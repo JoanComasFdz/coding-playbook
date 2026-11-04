@@ -19,7 +19,7 @@ What I had left was a set of words to name things **after** they had gone wrong.
 
 This chapter explains why. I criticise SOLID on two levels:
 
-- **In practice.** Almost nobody applies SOLID the way its authors intended. The industry settled on one way of working, and that is the only SOLID most people ever meet. When that version is criticised, the usual reply is "you're doing it wrong". Maybe. But it is not one critic doing it wrong, it is the whole industry, for decades. At that point the misreading *is* the principle as it exists, so that is what I judge.
+- **In practice.** In most codebases I have worked on or reviewed, and in most of the write-ups below, SOLID means one way of working, and it is not what its authors intended. That is the only SOLID most people ever meet. When that version is criticised, the usual reply is "you're doing it wrong". Maybe. But it is not one critic doing it wrong, it is a large part of the industry, for decades. At that point the misreading *is* the principle as it exists, so that is what I judge.
 - **In theory.** Even read charitably, SOLID wraps universal concerns (cohesion, coupling) in OOP-specific mechanisms. It helps you name a problem after the fact. It does not help you design.
 
 ## What others have said
@@ -85,30 +85,34 @@ In most codebases, SOLID turned into a fixed project skeleton you just follow:
 - a DI container to wire them;
 - those interfaces injected through the constructor.
 
-That is just **D** and **I** turned into plumbing. **O** and **L** survive only as the excuse for the interface: you *could* swap the implementation, any other one *would* substitute. In practice, nobody does.
+That is just **D** and **I** turned into plumbing. **O** and **L** survive only as the excuse for the interface: you *could* swap the implementation, any other one *would* substitute. In production code, nobody does. The only second implementation is the mock in the tests.
 
 Principles meant to guide judgement became boilerplate you set up once and stop thinking about. The problem is not that it is mechanical. It is that **the mechanism encodes nothing**: an `IFoo` next to its only `Foo` tells a reviewer nothing about the code.
 
 ### Why it became that
 
-Nobody arrived at this skeleton by reading SOLID. Two other forces built it:
+Most teams did not arrive at this skeleton by reading SOLID. Two other forces built it:
 
 - **Unit tests based on mocks.** To replace a dependency with a mock, you need an interface. So every class gets one, even when there is only one implementation.
 - **Framework defaults.** ASP.NET Core ships with a DI container, and Spring is built around one. Templates and tutorials wire everything through constructors from day one.
 
 SOLID became the vocabulary used to *justify* this setup after the fact. "Why does `Foo` have an `IFoo`?" "Dependency Inversion." The real answer is usually "so the test can mock it".
 
+This is a known and debated pattern. DHH calls it *test-induced design damage*: code "warped out of shape solely to accomodate testing objectives" ([DHH](https://dhh.dk/2014/test-induced-design-damage.html)). Seemann calls an interface with a single implementation a code smell ([Seemann, *Interfaces are not abstractions*](https://blog.ploeh.dk/2010/12/02/Interfacesarenotabstractions/)). On the other side, Feathers and Beck argue that code that is hard to test usually points to a real design problem ([Fowler, *Is TDD Dead?*](https://martinfowler.com/articles/is-tdd-dead/)).
+
+Both are right, and the difference is the one in [Enforce decisions, not ceremony](#enforce-decisions-not-ceremony). Letting tests shape the design is good when the change carries information: splitting the pure decision from the I/O makes code easier to test *and* shows the reader where the side effects are. It is damage when the change exists only so the test can intervene: an `IFoo` whose only other implementation is a mock.
+
 This matters for the rest of the book: a pure core, tested with plain values, does not need mocks. Without mocks, most of that interface layer loses its reason to exist.
 
 ### The letters survive only as symptoms, never by name
 
-- Nobody says "Liskov violation". They say "this implementation behaves weird".
-- Nobody says "SRP". They argue that the class does too much.
-- The principle names are dead in practice. The symptom names won: blast radius, shotgun surgery, "why do I touch five files to add one thing?".
+- In code review, people rarely say "Liskov violation". They say "this implementation behaves weird".
+- In code review, people rarely say "SRP". They argue that the class does too much.
+- The principle names are rarely used in practice. The symptom names won: blast radius, shotgun surgery, "why do I touch five files to add one thing?".
 
 ### SRP survives because it is undefined
 
-Its vagueness is not a bug. It is the only place in SOLID where real judgement about [cohesion](../chapter2/axiom-07-cohesion.md) happens. The other letters became settled convention. SRP is still debated because it cannot be turned into a rule.
+Its vagueness is not a bug. It is the main place in SOLID where real judgement about [cohesion](../chapter2/axiom-07-cohesion.md) happens. The other letters became settled convention. SRP is still debated because it cannot be turned into a rule.
 
 But vague judgement has a cost: two reviewers rarely draw the class boundary in the same place.
 
@@ -136,7 +140,7 @@ Now read SOLID charitably, the way its authors meant it. It still does not give 
 ### SOLID splits in two
 
 - **D, I, and the strategy-pattern form of O are structural.** A convention, a DI container or a linter can enforce them.
-- **S and L are semantic.** They are about [cohesion](../chapter2/axiom-07-cohesion.md) and honest behaviour. No tool can enforce them.
+- **S and L are semantic.** They are about [cohesion](../chapter2/axiom-07-cohesion.md) and honest behaviour. No tool can fully enforce them.
 
 This split explains what happened in practice. The structural letters were easy to mechanise, so they became ceremony: an `IFoo` next to its only `Foo` is enforced, but it encodes no design decision. The semantic letters could not be mechanised at all, so they stayed vague. Neither half became something you can act on.
 
@@ -156,7 +160,7 @@ SOLID-as-practiced enforces the first kind. This book enforces the second.
 
 ### There are two OCPs, and the popular one is the bad one
 
-- **Meyer's OCP** (extend by subclassing) leads straight into the fragile-base-class trap.
+- **Meyer's OCP** (extend by subclassing) tends to lead into the fragile-base-class trap.
 - **Uncle Bob's OCP** (add a new implementation, never edit existing ones) is fine. But it is just "composition over inheritance" plus "program to an interface" with a new name.
 - OCP only makes sense **after the fact**, along an axis you have already seen change (the [rule of three](https://en.wikipedia.org/wiki/Rule_of_three_(computer_programming))). Applied in advance, it is speculative generality.
 
@@ -173,7 +177,7 @@ Its intent, "open for extension, closed for modification", lives on in Vertical 
 
 ### LSP is a behavioural contract the types do not show
 
-Read correctly, LSP is about behaviour: a subtype must keep the promises of its parent. But in a typical OO signature those promises are invisible. A method can throw, return `null` or have side effects without saying so. So LSP can only be checked by reading every implementation.
+Read correctly, LSP is about behaviour: a subtype must keep the promises of its parent. But in a typical OO signature those promises are invisible. A method can throw, return `null` or have side effects without saying so. So LSP is checked by reading every implementation, or by tests that each one must pass.
 
 [Honest, total signatures](../chapter2/axiom-06-honest-total-signatures.md) move the promise into the type, where the compiler checks it.
 
@@ -199,7 +203,7 @@ So SOLID is useful to name OOP smells, but it is not the level where design happ
 
 The alternative I keep coming back to is Dan North's **CUPID**: five *properties* (Composable, Unix philosophy, Predictable, Idiomatic, Domain-based) on a spectrum ([North, *CUPID — for joyful coding*](https://dannorth.net/2022/02/10/cupid-for-joyful-coding/)).
 
-CUPID is about goals: "move toward this", not "comply or not". That is already a step up. **SOLID as practiced is useless for creating a design; CUPID is an ally.**
+CUPID is about goals: "move toward this", not "comply or not". That is already a step up. **SOLID as practiced does not help you create a design; CUPID is an ally.**
 
 But it hits the same ceiling. A property is something you *recognise*, not something you *do*. CUPID describes the **destination**, never the **route**. When you read each property, you end up reaching for the building blocks of the next two chapters to actually get there. **CUPID describes what good code looks like; the axioms are how you get there.**
 
@@ -212,7 +216,7 @@ I am not reading a flaw into CUPID. North chose properties over principles on pu
 
 A lens helps you assess code. It does not write it for you. North says the same about each property. For example, the things that make code Composable are "neither necessary nor sufficient to make any guarantees … useful heuristics", because "more is not necessarily better; it is all trade-offs" ([cupid.dev](https://cupid.dev/properties/composable/)).
 
-To be fair: North also says there is "always a clear *direction* of travel". So "names the destination, not the route" is my phrasing, not his. He sees the open route as a feature. I see it as the ceiling. That is the only point where we disagree.
+To be fair: North also says there is "always a clear *direction* of travel". So "names the destination, not the route" is my phrasing, not his. He sees the open route as a feature. I see it as the ceiling. That is the main point where we disagree.
 
 ### Others reach the same conclusion
 
@@ -241,7 +245,7 @@ Every property maps to something I already reason with, or will in a later chapt
 #### Predictable — "does what you expect"
 
 - **Behaves as expected** → [honest, total signatures](../chapter2/axiom-06-honest-total-signatures.md). The type tells you what can come back, so the behaviour is visible in the signature, not hidden in the body.
-- **Deterministic** → [pure functions](../chapter2/axiom-05-pure-functions.md). The cleanest match in the whole set: deterministic means referentially transparent means pure.
+- **Deterministic** → [pure functions](../chapter2/axiom-05-pure-functions.md). The cleanest match in the set: a pure function is deterministic by definition.
 - **Observable** → instrumentation, telemetry, monitoring. Operational, above this book's level.
 
 #### Idiomatic — "feels natural"
@@ -265,7 +269,7 @@ There is less direct criticism of CUPID than you would expect. Most write-ups ju
 - Before the properties, North proposed "fits in my head" as his replacement for Single Responsibility: "you can only reason about something if it fits in your head" ([North, *the back story*](https://dannorth.net/blog/cupid-the-back-story/)).
 - The reply on Hacker News: "any developer who wants to defend their code will simply claim a given spaghetti incident easily fit in *their* head" ([HN](https://news.ycombinator.com/item?id=26531079)).
 
-That is the whole point in one line. A heuristic you can *recognise* but not *enforce* settles no argument. The best-known critique of CUPID is not about a property. It is about the missing mechanism behind one.
+That is the whole point in one line. A heuristic you can *recognise* but not *enforce* settles no argument. The sharpest critique of CUPID I have found is not about a property. It is about the missing mechanism behind one.
 
 ### What CUPID leaves above this book
 
@@ -283,7 +287,7 @@ When reading and writing code, we need tools: a precise vocabulary to evaluate e
 
 SOLID does not give us that:
 
-- In practice, it became ceremony that a whole industry applies by reflex, and the letters survive only as names for symptoms.
+- In practice, it became ceremony that much of the industry applies by reflex, and the letters survive only as names for symptoms.
 - In theory, it wraps universal concerns in OOP-specific mechanisms. Half of it is structure that can be enforced but says nothing; the other half is judgement that cannot be enforced at all.
 
 CUPID comes closer. It is an ally that points toward a destination, but it stops at the same ceiling: it cannot give you the route.
