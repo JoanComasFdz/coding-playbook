@@ -179,16 +179,19 @@ Read correctly, LSP is about behaviour: a subtype must keep the promises of its 
 
 ### SOLID wraps universal concerns in OOP mechanisms
 
-You rarely hear about SOLID in functional code. That is because most of the mechanisms SOLID corrects do not exist there:
+You rarely hear about SOLID in functional code. Part of the reason is that most of the mechanisms SOLID corrects come from objects that bundle mutable state with behaviour. In FP, [data and behaviour are separate](../chapter2/axiom-01-data-vs-behaviour.md), so those mechanisms are gone. The concerns underneath are not.
 
-- No inheritance to abuse, so subclass-based OCP and fragile base classes disappear.
-- Functions are [first-class](../chapter2/axiom-09-first-class-functions.md), so a single-method interface is just a function. OCP's strategy pattern and ISP come for free.
-- [Data and behaviour are separate](../chapter2/axiom-01-data-vs-behaviour.md), so there are no objects mixing mutable state with methods.
-- Dependencies are passed as parameters, so DIP needs no container.
+| Letter | What it corrects in OOP | In FP | What remains |
+|---|---|---|---|
+| **S** | Classes collecting unrelated methods around shared state | Functions over separate data; no state to gather around | Modules can still mix reasons to change → [Cohesion](../chapter2/axiom-07-cohesion.md) |
+| **O** | Changing behaviour by editing or subclassing | Pass a [function](../chapter2/axiom-09-first-class-functions.md); no base class to inherit | Knowing which part will vary, still only after the fact |
+| **L** | Subclasses breaking their parent's promises | No subclasses, but interfaces and type classes still have laws | Laws can still be broken → [honest signatures](../chapter2/axiom-06-honest-total-signatures.md) and tests |
+| **I** | Fat interfaces forcing unused methods on clients | A function parameter asks for exactly one operation | Fat parameters: passing a whole record when one field is needed |
+| **D** | Policy code creating or reaching for its details | Dependencies are passed in as values or functions | Direction still matters → the [Impureheim sandwich](../chapter2/axiom-12-impureheim.md) gives it a shape, no container needed |
 
 Even Mark Seemann, a careful defender of SOLID, argues that SOLID taken seriously leads to FP: push ISP to role interfaces and you end up with single-method interfaces, which *are* functions ([Seemann, *SOLID: the next step is Functional*](https://blog.ploeh.dk/2014/03/10/solid-the-next-step-is-functional/)).
 
-But the concerns *underneath* do not disappear. A pure FP codebase can still have modules with poor cohesion and functions coupled in fragile ways. Those concerns are universal. They deserve tools that work in any paradigm: [Cohesion](../chapter2/axiom-07-cohesion.md) gives concrete checks inside a unit, and [Connascence](../chapter2/axiom-08-connascence.md) gives a scale for the binding between units.
+The last column is the point. Those concerns are universal, and a pure FP codebase can fail at every one of them. They deserve tools that work in any paradigm: Cohesion gives concrete checks inside a unit, and [Connascence](../chapter2/axiom-08-connascence.md) gives a scale for the binding between units.
 
 So SOLID is useful to name OOP smells, but it is not the level where design happens.
 
