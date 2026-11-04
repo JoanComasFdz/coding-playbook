@@ -199,6 +199,21 @@ The last column is the point. Those concerns are universal, and a pure FP codeba
 
 So SOLID is useful to name OOP smells, but it is not the level where design happens.
 
+## What SOLID got right
+
+Criticism is only fair if it also says what works. SOLID got a lot right:
+
+- **It asked the right questions.** Every concern in the "What remains" column above is a SOLID concern: one reason to change, safe substitution, small interfaces, dependency direction. This book keeps all of them. My critique is about how SOLID answers them, not about what it asks.
+- **It made design something teams talk about.** For many teams, the five letters were the first shared words for design. Even a vague vocabulary starts the conversation.
+- **It pushed back on inheritance.** Uncle Bob's version of OCP, and LSP, steered people toward composition and interfaces, away from deep class hierarchies.
+- **DIP at real boundaries is sound.** Policy should not depend on details. The [Impureheim sandwich](../chapter2/axiom-12-impureheim.md) keeps exactly that rule. It just gets there with a code shape instead of a container.
+
+### When SOLID still fits
+
+- **Real substitution.** Plugin systems, libraries and frameworks where an interface has several real implementations. There, OCP, LSP and ISP apply directly, and the interface carries information. It passes the "remove it and ask what the reader lost" test.
+- **Large class-based codebases.** When the code is built around classes and changing paradigm is not an option, SOLID's vocabulary matches the code. Naming a smell is better than not naming it.
+- **As a starting point.** For someone new to design, SOLID is a reasonable first set of questions, as long as nobody treats it as a method.
+
 ## CUPID — names the destination, not the route
 
 The alternative I keep coming back to is Dan North's **CUPID**: five *properties* (Composable, Unix philosophy, Predictable, Idiomatic, Domain-based) on a spectrum ([North, *CUPID — for joyful coding*](https://dannorth.net/2022/02/10/cupid-for-joyful-coding/)).
