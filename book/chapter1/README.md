@@ -110,6 +110,19 @@ This matters for the rest of the book: a pure core, tested with plain values, do
 
 Its vagueness is not a bug. It is the only place in SOLID where real judgement about [cohesion](../chapter2/axiom-07-cohesion.md) happens. The other letters became settled convention. SRP is still debated because it cannot be turned into a rule.
 
+But vague judgement has a cost: two reviewers rarely draw the class boundary in the same place.
+
+### Cohesion keeps the judgement and gives it something to point at
+
+Cohesion cannot be checked by a tool either. Replacing SRP with it would just swap one vague word for another, unless it comes with something concrete. It does:
+
+- **A smaller unit.** It applies to a function, not a class. "One reason to change" is far easier to agree on for ten lines than for a whole class.
+- **Concrete checks.** One input shape, one decision, one output shape. If the honest description needs the word "and", it does two jobs. A `bool` or enum that switches the body is the visible symptom.
+- **A clear metric.** Group and split code by reason to change, never by how similar it looks.
+- **A partner for the outside.** [Connascence](../chapter2/axiom-08-connascence.md) names the kind of binding *between* units and ranks it, from what the compiler enforces to what only a convention keeps.
+
+Cohesion will not make two reviewers always agree. It makes them agree far more often, and when they disagree, they disagree about something specific: which input, which decision, which output.
+
 ### A rule everyone misreads is not actionable
 
 - If most of an industry has misapplied a set of principles for 25 years, that is no longer about the readers. It says something about the principles: they are not specific enough to be applied correctly.
@@ -175,7 +188,7 @@ You rarely hear about SOLID in functional code. That is because most of the mech
 
 Even Mark Seemann, a careful defender of SOLID, argues that SOLID taken seriously leads to FP: push ISP to role interfaces and you end up with single-method interfaces, which *are* functions ([Seemann, *SOLID: the next step is Functional*](https://blog.ploeh.dk/2014/03/10/solid-the-next-step-is-functional/)).
 
-But the concerns *underneath* do not disappear. A pure FP codebase can still have modules with poor cohesion and functions coupled in fragile ways. Those concerns are universal. They deserve tools that work in any paradigm and come with a scale you can argue with: [Cohesion](../chapter2/axiom-07-cohesion.md) and [Connascence](../chapter2/axiom-08-connascence.md).
+But the concerns *underneath* do not disappear. A pure FP codebase can still have modules with poor cohesion and functions coupled in fragile ways. Those concerns are universal. They deserve tools that work in any paradigm: [Cohesion](../chapter2/axiom-07-cohesion.md) gives concrete checks inside a unit, and [Connascence](../chapter2/axiom-08-connascence.md) gives a scale for the binding between units.
 
 So SOLID is useful to name OOP smells, but it is not the level where design happens.
 
@@ -219,7 +232,7 @@ Every property maps to something I already reason with, or will in a later chapt
 
 #### Unix philosophy — "does one thing well"
 
-- **Does one thing** → [Cohesion](../chapter2/axiom-07-cohesion.md), judged from the outside in. That is the same move North makes away from SRP, which judges from the inside out. "One job" is the cohesion question, made testable.
+- **Does one thing** → [Cohesion](../chapter2/axiom-07-cohesion.md). North describes "one thing" from the caller's point of view, not from the code's internals the way SRP does. Axiom 7 does the same: the checks are about what the function takes, decides and returns. "One job" is the cohesion question, made checkable.
 - **Composes via pipes** → low [Connascence](../chapter2/axiom-08-connascence.md) between units, plus the combinators above. Pieces connect cleanly only when what couples them is weak and explicit.
 
 #### Predictable — "does what you expect"
