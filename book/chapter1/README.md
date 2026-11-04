@@ -22,7 +22,7 @@ This chapter explains why. I criticise SOLID on two levels:
 - **In practice.** In most codebases I have worked on or reviewed, and in most of the write-ups below, SOLID means one way of working, and it is not what its authors intended. That is the only SOLID most people ever meet. When that version is criticised, the usual reply is "you're doing it wrong". Maybe. But it is not one critic doing it wrong, it is a large part of the industry, for decades. At that point the misreading *is* the principle as it exists, so that is what I judge.
 - **In theory.** Even read charitably, SOLID wraps universal concerns (cohesion, coupling) in OOP-specific mechanisms. It helps you name a problem after the fact. It does not help you design.
 
-## What others have said
+## The evidence: what others have said
 
 I am not the first to feel this. Here is what others have argued, with sources, so you can follow each thread yourself.
 
@@ -75,7 +75,7 @@ I am not the first to feel this. Here is what others have argued, with sources, 
 
 ## My read, part 1 — SOLID in practice
 
-This builds on the critique above instead of repeating it. The reasoning is my own; external sources are cited inline.
+This builds on [the evidence](#the-evidence-what-others-have-said) instead of repeating it. Where a point picks up one of those sources, I say so. The reasoning is my own.
 
 ### What SOLID became
 
@@ -84,6 +84,8 @@ In most codebases, SOLID turned into a fixed project skeleton you just follow:
 - an interface for every class: `IFoo` next to every `Foo`;
 - a DI container to wire them;
 - those interfaces injected through the constructor.
+
+Khoo and Mortenson, above, describe the result: lots of tiny classes and interfaces, and the "one interface per class" habit Khoo pins on ISP.
 
 That is just **D** and **I** turned into plumbing. **O** and **L** survive only as the excuse for the interface: you *could* swap the implementation, any other one *would* substitute. In production code, nobody does. The only second implementation is the mock in the tests.
 
@@ -96,7 +98,7 @@ Most teams did not arrive at this skeleton by reading SOLID. Two other forces bu
 - **Unit tests based on mocks.** To replace a dependency with a mock, you need an interface. So every class gets one, even when there is only one implementation.
 - **Framework defaults.** ASP.NET Core ships with a DI container, and Spring is built around one. Templates and tutorials wire everything through constructors from day one.
 
-SOLID became the vocabulary used to *justify* this setup after the fact. "Why does `Foo` have an `IFoo`?" "Dependency Inversion." The real answer is usually "so the test can mock it".
+SOLID became the vocabulary used to *justify* this setup after the fact. "Why does `Foo` have an `IFoo`?" "Dependency Inversion." The real answer is usually "so the test can mock it". That reply is the confusion NDepend notes above: DIP the principle mistaken for DI the mechanism.
 
 This is a known and debated pattern. DHH calls it *test-induced design damage*: code "warped out of shape solely to accomodate testing objectives" ([DHH](https://dhh.dk/2014/test-induced-design-damage.html)). Seemann calls an interface with a single implementation a code smell ([Seemann, *Interfaces are not abstractions*](https://blog.ploeh.dk/2010/12/02/Interfacesarenotabstractions/)). On the other side, Feathers and Beck argue that code that is hard to test usually points to a real design problem ([Fowler, *Is TDD Dead?*](https://martinfowler.com/articles/is-tdd-dead/)).
 
@@ -114,7 +116,7 @@ That answers the questions at the top of this chapter. The first three almost ne
 
 ### SRP survives because it is undefined
 
-Its vagueness is not a bug. It is the main place in SOLID where real judgement about [cohesion](../chapter2/axiom-07-cohesion.md) happens. The other letters became settled convention. SRP is still debated because it cannot be turned into a rule.
+Marston, above, says SRP has no working definition. I agree, and I think that is exactly why it survives. Its vagueness is not a bug. It is the main place in SOLID where real judgement about [cohesion](../chapter2/axiom-07-cohesion.md) happens. The other letters became settled convention. SRP is still debated because it cannot be turned into a rule.
 
 But vague judgement has a cost: two reviewers rarely draw the class boundary in the same place.
 
@@ -131,7 +133,7 @@ Cohesion will not make two reviewers always agree. It makes them agree far more 
 
 ### A rule everyone misreads is not actionable
 
-- If most of an industry has misapplied a set of principles for 25 years, that is no longer about the readers. It says something about the principles: they are not specific enough to be applied correctly.
+- Marston, above, says the definitions are open to almost any interpretation. This is the consequence: if most of an industry has misapplied a set of principles for 25 years, that is no longer about the readers. It says something about the principles: they are not specific enough to be applied correctly.
 - An actionable rule is hard to misread. Two reviewers applying it to the same code should reach the same verdict.
 - By that test, **SOLID as practiced is not actionable.** It does not help you reason about code. It only names what already went wrong.
 
@@ -162,9 +164,9 @@ SOLID-as-practiced enforces the first kind. This book enforces the second.
 
 ### There are two OCPs, and the popular one is the bad one
 
-- **Meyer's OCP** (extend by subclassing) tends to lead into the fragile-base-class trap.
+- **Meyer's OCP** (extend by subclassing) tends to lead into the fragile-base-class trap. This is Dunn's "inheritance overdose" above.
 - **Uncle Bob's OCP** (add a new implementation, never edit existing ones) is fine. But it is just "composition over inheritance" plus "program to an interface" with a new name.
-- OCP only makes sense **after the fact**, along an axis you have already seen change (the [rule of three](https://en.wikipedia.org/wiki/Rule_of_three_(computer_programming))). Applied in advance, it is speculative generality.
+- Khoo, above, says OCP requires predicting the future. It does, if you apply it in advance. OCP only makes sense **after the fact**, along an axis you have already seen change (the [rule of three](https://en.wikipedia.org/wiki/Rule_of_three_(computer_programming))). Applied in advance, it is speculative generality.
 
 ### OCP did not die, it moved up the stack
 
@@ -181,13 +183,13 @@ The unit that stays closed moved from the *class* to the *slice*, and there it b
 
 ### LSP is a behavioural contract the types do not show
 
-Read correctly, LSP is about behaviour: a subtype must keep the promises of its parent. But in a typical OO signature those promises are invisible. A method can throw, return `null` or have side effects without saying so. So LSP is checked by reading every implementation, or by tests that each one must pass.
+Henney and Oldwood, above, point out that LSP is often misread as a structural rule. Read correctly, LSP is about behaviour: a subtype must keep the promises of its parent. But in a typical OO signature those promises are invisible. A method can throw, return `null` or have side effects without saying so. So LSP is checked by reading every implementation, or by tests that each one must pass.
 
 [Honest, total signatures](../chapter2/axiom-06-honest-total-signatures.md) move the promise into the type, where the compiler checks it.
 
 ### SOLID wraps universal concerns in OOP mechanisms
 
-You rarely hear about SOLID in functional code. Part of the reason is that most of the mechanisms SOLID corrects come from objects that bundle mutable state with behaviour. In FP, [data and behaviour are separate](../chapter2/axiom-01-data-vs-behaviour.md), so those mechanisms are gone. The concerns underneath are not.
+You rarely hear about SOLID in functional code, and Mikulski, above, notes it does not transfer well. Part of the reason is that most of the mechanisms SOLID corrects come from objects that bundle mutable state with behaviour. In FP, [data and behaviour are separate](../chapter2/axiom-01-data-vs-behaviour.md), so those mechanisms are gone. The concerns underneath are not.
 
 | Letter | What it corrects in OOP | In FP | What remains |
 |---|---|---|---|
@@ -220,7 +222,7 @@ Criticism is only fair if it also says what works. SOLID got a lot right:
 
 ## CUPID — names the destination, not the route
 
-The alternative I keep coming back to is Dan North's **CUPID**: five *properties* (Composable, Unix philosophy, Predictable, Idiomatic, Domain-based) on a spectrum ([North, *CUPID — for joyful coding*](https://dannorth.net/2022/02/10/cupid-for-joyful-coding/)).
+The alternative I keep coming back to, and the first one listed in the evidence, is Dan North's **CUPID**: five *properties* (Composable, Unix philosophy, Predictable, Idiomatic, Domain-based) on a spectrum ([North, *CUPID — for joyful coding*](https://dannorth.net/2022/02/10/cupid-for-joyful-coding/)).
 
 CUPID is about goals: "move toward this", not "comply or not". That is already a step up. **SOLID as practiced does not help you create a design; CUPID is an ally.**
 
