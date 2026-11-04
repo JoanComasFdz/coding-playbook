@@ -1,74 +1,44 @@
 # Axiom 0 — Ubiquitous Language
 
-**One name per concept, one concept per name — the same word in the conversation and in the code.**
+**One name per concept, one concept per name: the same word in the conversation and in the code.**
 
-- Give each domain concept exactly one name, taken from the domain, and use it unchanged everywhere it appears: types, functions, parameters, fields, tests, and the sentence you say out loud about it.
-- Never two names for one concept (synonyms), never one name for two concepts (homonyms).
+- Give each domain concept exactly one name, taken from the domain. Use it unchanged everywhere: types, functions, parameters, fields, tests, and the sentence you say out loud about it.
+- Never two names for one concept (synonyms). Never one name for two concepts (homonyms).
 
-It builds nothing on its own. Most of the rest of the book is a way of taking one of these names and making the compiler hold you to it.
+This axiom builds nothing on its own. Most of the rest of this book is a way of taking one of these names and making the compiler hold you to it.
 
 ---
 
 ## Definitions
 
-> The vocabulary the people who discuss the domain and the code that implements it share — one word per concept, that word unchanged from the whiteboard to the type name.
+> A vocabulary shared by the people who discuss the domain and the code that implements it: one word per concept, unchanged from the whiteboard to the type name.
 
-The term comes from Domain-Driven Design[1]. This axiom takes only its **code-shaping** half: it is about the *words in the source* — what you call a type, a function, a parameter, a variable — not about team ritual or system decomposition (see *When NOT to*).
+The term comes from Domain-Driven Design [1]. This axiom takes only the half that shapes code: the *words in the source*, meaning what you call a type, a function, a parameter or a variable. It is not about team rituals or how to split a system (see *When NOT to*).
 
-Three claims hide in "one term, one thing, everywhere":
+"One term, one thing, everywhere" holds three claims:
 
-- **One term per concept.** The thing the domain calls a *shipment* is `Shipment` in code — not `Order` in the API, `txn` in the table, and `data` in the function that moves it.
-- **One concept per term.** A word means exactly one thing. `Order` that means both *a purchase* and *a sort direction* is two concepts wearing one name; split them.
-- **Everywhere.** The word is the same at every layer the concept surfaces — the type, every function that takes or returns it, the variable that holds it, the test that exercises it, and the conversation about it. A reader should not be able to tell whether two engineers are discussing the code or the domain.
-
----
-
-## Problem / forces
-
-Naming is the hard part of programming, and the cost of getting it wrong is paid on every read, forever.
-
-The default is drift. The domain expert says *shipment*; the REST layer says *order*; the database says `txn`; the method is `Process`; the variable is `data`. Each renaming is a translation step — a place where a reader has to re-map "what they said" onto "what the code calls it," and a place where a misunderstanding becomes a defect. **Synonyms** scatter one concept across the codebase under several aliases, so a change to the concept means finding all of them. **Homonyms** fuse two concepts under one word, so a change meant for one silently lands on the other.
-
-The forces pulling toward drift are always present and always cheap:
-
-- Technical and CRUD vocabulary (`Manager`, `Helper`, `Service`, `process`, `handle`, `data`, `item`, `tmp`) is generic, always available, and means nothing in particular — so it never has to be argued about.
-- The domain's own word is sometimes longer, sometimes contested, and sometimes not yet understood well enough to name.
-- Frameworks and tutorials supply their own nouns, and those leak into the model.
-
-The competing pull this axiom does *not* deny: plumbing that has no domain meaning should not be dressed in business words (see *When NOT to*).
+- **One term per concept.** What the domain calls a *shipment* is `Shipment` in the code. Not `Order` in the API, `txn` in the table and `data` in the function that moves it.
+- **One concept per term.** A word means exactly one thing. An `Order` that means both *a purchase* and *a sort direction* is two concepts with one name. Split them.
+- **Everywhere.** The word is the same wherever the concept appears: the type, every function that takes or returns it, the variable that holds it, the test that checks it, and the conversation about it. Listening to two engineers, you should not be able to tell whether they are talking about the code or the domain.
 
 ---
 
-## Why
-
-**1. The name is the documentation that cannot go stale.**
-A `Shipment` that means *shipment* everywhere needs no comment to explain it, and no comment that can rot out of sync with it. Precise domain names are the cheapest, most durable documentation there is — and they live exactly where the reader already is.
-
-**2. One word collapses the translation layers.**
-Every alias for a concept is a seam between two vocabularies, and seams are where misreadings live. Naming the concept once, the same way at every layer, removes those seams. When two parts of a system must agree on what a word *means* and that agreement lives only in people's heads, it is the most fragile coupling there is; a single shared, exact name is the cheapest cure — it turns an agreement-by-convention into an agreement the code can show you.
-
-**3. It is the enabler — the rest of the book gives these names teeth.**
-On its own, a good name is only a convention; nothing stops the next person from ignoring it. Almost every other axiom is a way of taking one of these names and making it un-bypassable: a *type* that **is** a domain concept rather than a bare `string`; a *signature* that **names** every outcome it can produce instead of hiding them; a *value* whose construction guarantees the word is earned; a closed set of *cases*, each named, instead of an untyped flag. The discipline supplies the words. The mechanisms that follow are where each word gets compiled in. Read that way, this axiom is not the weakest in the book for lacking enforcement — it is the one the others exist to enforce.
-
-**4. It is generative, not a grade.**
-You do not spot a naming problem after the design is finished, the way you spot a smell. You answer *"what does the domain call this?"* as you type the name — before any structure exists. It is a question you can act on at the keyboard, which is the whole bar this book holds a building block to.
-
----
-
-## C#/Java example
+## Example
 
 The same function, in framework words and in the domain's words:
 
 ```csharp
-// ❌ technical / CRUD vocabulary — every name is a translation step
+// ❌ technical / CRUD vocabulary: every name is a translation step
 bool Process(Dictionary<string, object> data, int type) { … }
 
-// ✅ the domain's words — the signature reads like the sentence you'd say
+// ✅ the domain's words: the signature reads like the sentence you'd say
 ShippingLabel PrintLabel(Shipment shipment, Carrier carrier) { … }
 ```
 
+A synonym scatter, and its fix:
+
 ```java
-// ❌ a synonym scatter: one concept, three names across three files
+// ❌ one concept, three names across three files
 class Debtor  { … }   // billing
 class Payer   { … }   // invoicing
 class Account { … }   // ledger   — all the same "customer who owes money"
@@ -77,7 +47,7 @@ class Account { … }   // ledger   — all the same "customer who owes money"
 class Debtor { … }
 ```
 
-And the homonym, split apart:
+A homonym, split apart:
 
 ```csharp
 // ❌ one word, two concepts
@@ -89,32 +59,76 @@ enum SortDirection { Ascending, Descending }
 record PurchaseOrder(CustomerId Buyer, …);
 ```
 
-None of this is enforced by the compiler yet — `Process` compiles as happily as `PrintLabel`. That is the point of the axioms that follow: they are how a chosen name stops being optional.
+The compiler enforces none of this yet: `Process` compiles as happily as `PrintLabel`. That is what the axioms that follow are for. They are how a chosen name stops being optional.
+
+---
+
+## Problem / forces
+
+Naming is one of the hard parts of programming [2], and a bad name costs you on every read, forever.
+
+Left alone, names drift. The domain expert says *shipment*, the REST layer says *order*, the database says `txn`, the method is `Process` and the variable is `data`. Each rename is a translation step: a place where the reader has to map "what they said" onto "what the code calls it", and a place where a misunderstanding becomes a bug.
+
+- **Synonyms** scatter one concept across the codebase under several names. Changing the concept means finding all of them.
+- **Homonyms** merge two concepts under one word. A change meant for one silently lands on the other.
+
+The forces pulling toward drift are always there, and always cheap:
+
+- Technical vocabulary (`Manager`, `Helper`, `Service`, `process`, `handle`, `data`, `item`, `tmp`) is generic and always available. It means nothing in particular, so nobody has to argue about it.
+- The domain's own word is sometimes longer, sometimes disputed, and sometimes not yet understood well enough to name.
+- Frameworks and tutorials bring their own nouns, and those leak into the model.
+
+One pull in the other direction is valid: plumbing with no domain meaning should not be dressed up in business words (see *When NOT to*).
+
+---
+
+## Why
+
+**1. The name is documentation that cannot go out of date.**
+A `Shipment` that means *shipment* everywhere needs no comment to explain it, and so has no comment that can drift out of sync. Precise domain names are cheap, durable documentation, and they sit exactly where the reader already is.
+
+**2. One word removes the translation layers.**
+Every alias for a concept is a seam between two vocabularies, and seams are where misreadings happen. Naming the concept once, the same way everywhere, removes those seams.
+
+When two parts of a system must agree on what a word *means*, and that agreement lives only in people's heads, it is one of the most fragile kinds of coupling. A single, exact, shared name is the cheapest fix: the agreement moves out of people's heads and into the code, where you can see it.
+
+**3. It is the starting point; the rest of this book enforces it.**
+On its own, a good name is only a convention. Nothing stops the next person from ignoring it. Almost every later axiom takes one of these names and makes it impossible to bypass:
+
+- a *type* that **is** a domain concept, instead of a bare `string`;
+- a *signature* that **names** every outcome it can produce, instead of hiding them;
+- a *value* whose construction guarantees it deserves its name;
+- a closed set of named *cases*, instead of an untyped flag.
+
+This axiom supplies the words; the mechanisms that follow turn each word into code. So this is not the weakest axiom in this book because nothing enforces it. It is the one the others exist to enforce.
+
+**4. You act on it while you write, not after.**
+You don't find a naming problem after the design is done, the way you find a smell. You ask *"what does the domain call this?"* as you type the name, before any structure exists. It is a question you can act on at the keyboard, which is what [Chapter 1](../chapter1/README.md) asks of every building block.
 
 ---
 
 ## Trade-offs
 
-- **You pay in name length and in learning.** The domain's word is sometimes longer or more awkward than `data` — you take it anyway, because a precise long name beats a short lie. And you have to actually learn the domain's vocabulary, which is work the generic word lets you skip.
-- **The right word is a moving target.** As the domain is understood better, the right name changes, and a rename ripples across every site. Modern tooling makes the mechanical rename cheap; agreeing on the new word is the part that is not.
-- **It is the one axiom the compiler cannot check.** Nothing flags "this is the wrong domain word" or "you have used two words for one concept." Choosing the right name stays a human judgment — made at the keyboard and confirmed at review. The mechanisms in the rest of the book make a *chosen* name un-bypassable; they cannot tell you it was the right name.
+- **You pay in name length and in learning.** The domain's word is sometimes longer or more awkward than `data`. You use it anyway, because a precise long name beats a short lie. And you have to actually learn the domain's vocabulary, which the generic word lets you skip.
+- **The right word changes.** As the domain is better understood, the right name changes, and a rename touches every place it appears. Tooling makes the mechanical rename cheap. Agreeing on the new word is the hard part.
+- **The compiler cannot check it.** Nothing flags "this is the wrong domain word" or "you used two words for one concept". Choosing the right name stays a human judgment, made at the keyboard and confirmed in review. The rest of this book makes a *chosen* name impossible to bypass. It cannot tell you it was the right name.
 
 ---
 
 ## When NOT to
 
-- **Outside the domain core.** Code with no domain meaning — a generic cache, a retry wrapper, a `Pipeline<T>` — should speak the language of *its* layer (infrastructure), not be forced into business words. The rule is "speak the language of the layer you are in"; it just happens that most code in this book lives in the domain layer.
-- **One language per model, not one global dictionary.** The same word can legitimately mean different things in *billing* and in *shipping*. Forcing a single global meaning across an entire system is the *strategic* form of this idea — bounded contexts and the maps between them — and that is system decomposition, out of scope here. This axiom governs the names *inside one model's code*, not the translation between models.
-- **Don't manufacture jargon.** *Ubiquitous* means *shared with the people who know the domain*, not *dressed up to sound domain-y*. If the experts say "cancel," the type is `Cancel`, not `TerminationRequest`.
+- **Outside the domain core.** Code with no domain meaning (a generic cache, a retry wrapper, a `Pipeline<T>`) should use the language of *its* layer, infrastructure, not business words. The rule is "speak the language of the layer you are in". Most code in this book just happens to live in the domain layer.
+- **One language per model, not one global dictionary.** The same word can legitimately mean different things in *billing* and in *shipping*. Forcing one meaning across a whole system is the *strategic* form of this idea (bounded contexts and the maps between them). That is system decomposition, out of scope here. This axiom covers the names *inside one model's code*, not the translation between models.
+- **Don't invent jargon.** *Ubiquitous* means *shared with the people who know the domain*, not *dressed up to sound domain-like*. If the experts say "cancel", the type is `Cancel`, not `TerminationRequest`.
 
 ---
 
 ## References
 
-[1] **Eric Evans**, *Domain-Driven Design: Tackling Complexity in the Heart of Software*, Addison-Wesley (2003) — coined *Ubiquitous Language*: a language structured around the domain model and used by all team members, in speech and in code, to connect the model to the implementation. This axiom keeps only that code-shaping half; the strategic apparatus around it (bounded contexts, context maps) is out of scope (see the [playbook scope](../../README.md#scope)).
+[1] **Eric Evans**, *Domain-Driven Design: Tackling Complexity in the Heart of Software*, Addison-Wesley (2003). Coined *Ubiquitous Language*: a language built around the domain model and used by the whole team, in speech and in code, to connect the model to the implementation. This axiom keeps only the half that shapes code. The strategic parts (bounded contexts, context maps) are out of scope (see the [playbook scope](../../README.md#scope)).
 
-[2] **Phil Karlton**, widely attributed: *"There are only two hard things in Computer Science: cache invalidation and naming things."* The folklore acknowledgement that naming is a first-order problem, not a finishing touch.
+[2] **Phil Karlton**, widely attributed: *"There are only two hard things in Computer Science: cache invalidation and naming things."* The folklore admission that naming is a first-order problem, not a finishing touch.
 
 ---
 
-← [Chapter 2 Contents](README.md) · Next: [Axiom 1 — Data is not Behaviour](axiom-01-data-vs-behaviour.md) →
+← [Chapter 2 Contents](README.md) · Next: [Axiom 1 — Data is not Behavior](axiom-01-data-vs-behaviour.md) →
