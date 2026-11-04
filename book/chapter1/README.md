@@ -87,7 +87,7 @@ In most codebases, SOLID turned into a fixed project skeleton you just follow:
 
 That is just **D** and **I** turned into plumbing. **O** and **L** survive only as the excuse for the interface: you *could* swap the implementation, any other one *would* substitute. In practice, nobody does.
 
-Principles meant to guide judgement became boilerplate you set up once and stop thinking about. **A template you apply by reflex is the opposite of reasoning about a design.**
+Principles meant to guide judgement became boilerplate you set up once and stop thinking about. The problem is not that it is mechanical. It is that **the mechanism encodes nothing**: an `IFoo` next to its only `Foo` tells a reviewer nothing about the code.
 
 ### Why it became that
 
@@ -127,7 +127,19 @@ Now read SOLID charitably, the way its authors meant it. It still does not give 
 
 This split explains what happened in practice. The structural letters were easy to mechanise, so they became ceremony: an `IFoo` next to its only `Foo` is enforced, but it encodes no design decision. The semantic letters could not be mechanised at all, so they stayed vague. Neither half became something you can act on.
 
-Enforcing rules in code is not the problem. The rest of this book wants exactly that. The problem is enforcing ceremony instead of decisions. A `Result` return type is enforced by the compiler *and* says something about the code. An `IFoo` says nothing.
+### Enforce decisions, not ceremony
+
+Enforcing rules in the code is not the problem. The rest of this book wants exactly that. The problem is *what* gets enforced.
+
+- **Ceremony** is structure that is enforced but carries no information.
+- **A decision** is structure that is enforced *and* tells the reader something true about the code.
+
+The test: **remove it, and ask what the reader lost.**
+
+- Remove the `IFoo` next to its only `Foo`: nothing. There was one implementation before and there is one now.
+- Remove the `Result` return type: the reader no longer knows the call can fail, or how.
+
+SOLID-as-practiced enforces the first kind. This book enforces the second.
 
 ### There are two OCPs, and the popular one is the bad one
 
@@ -268,7 +280,7 @@ So the question is not "how do I obey five principles, or chase five properties?
 
 And once I have them:
 
-**How can I enforce them in the code itself, so I do not depend on anyone's discipline at review time?**
+**How can I enforce them in the code itself, so I do not depend on anyone's discipline at review time?** Enforce decisions, not ceremony.
 
 ---
 
