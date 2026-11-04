@@ -6,7 +6,7 @@ These are deliberate choices. Don't "fix" them in a review.
 
 - **Evidence first, then my read.** "The evidence: what others have said" comes before my own argument on purpose: the reader first learns what current authors think, then what I think. Don't move it to the end or merge it into my read.
 - **My read links back instead of restating.** When my read builds on a source, it says so in a short clause ("Khoo, above, says…"). Overlap between the two sections is intended. Keep it as a back-reference; don't delete either side.
-- **Two labelled levels.** My read is split into *in practice* (the main target) and *in theory* (read charitably). Every argument sits under the level it belongs to. Don't mix them.
+- **Two labeled levels.** My read is split into *in practice* (the main target) and *in theory* (read charitably). Every argument sits under the level it belongs to. Don't mix them.
 - **"What SOLID got right" stays.** The credit section is what makes the critique fair. Don't cut it to save length.
 - **The running example repeats on purpose.** The `IFoo` next to its only `Foo` comes back in several sections. It is the chapter's running example: the reader sees one case judged from several angles. Don't swap it for new examples or cut the repetitions.
 
