@@ -138,7 +138,7 @@ Similarity asks "do these look alike?"; reason-to-change asks "will they move to
 Functions that each resolve a single question snap together; functions that each resolve three resist it. When a behaviour is built from small, single-purpose pieces, you can see each contract at a glance, and a changing requirement lands on the one piece that owns that reason rather than on a tangle that owns several. That is why cohesion sits beside [Axiom 6](axiom-06-honest-total-signatures.md) at the foundation: an honest, total, single-purpose function is the cleanest building block there is.
 
 **4. Group-by-reason scales — but the axiom stops at the function.**
-The same metric, pointed at a directory instead of a function, says "code that changes together belongs together" — which is what feature-folder and vertical-slice layouts are reaching for. That is a real and good instinct, but it is *topology*, and this is a coding playbook: the axiom claims only the function-level form and notes the rest as out of scope.
+The same metric, pointed at a directory instead of a function, says "code that changes together belongs together" — which is what feature-folder and vertical-slice layouts are reaching for. That is a real and good instinct, and it belongs one level up, where functions are composed into modules. This axiom claims only the function-level form.
 
 ---
 
