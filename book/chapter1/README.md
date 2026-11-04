@@ -102,7 +102,7 @@ Most teams did not arrive at this skeleton by reading SOLID. Two other forces bu
 
 SOLID became the vocabulary used to *justify* this setup after the fact. "Why does `Foo` have an `IFoo`?" "Dependency Inversion." The real answer is usually "so the test can mock it". That reply is the confusion NDepend notes above: DIP the principle mistaken for DI the mechanism.
 
-This is a known and debated pattern. DHH calls it *test-induced design damage*: code "warped out of shape solely to accomodate testing objectives" ([DHH](https://dhh.dk/2014/test-induced-design-damage.html)). Seemann calls an interface with a single implementation a code smell ([Seemann, *Interfaces are not abstractions*](https://blog.ploeh.dk/2010/12/02/Interfacesarenotabstractions/)). On the other side, Feathers and Beck argue that code that is hard to test usually points to a real design problem ([Fowler, *Is TDD Dead?*](https://martinfowler.com/articles/is-tdd-dead/)).
+This is a known and debated pattern. DHH calls it *test-induced design damage*: code "warped out of shape solely to accomodate testing objectives" ([DHH](https://dhh.dk/2014/test-induced-design-damage.html)). Mark Seemann calls an interface with a single implementation a code smell ([Seemann, *Interfaces are not abstractions*](https://blog.ploeh.dk/2010/12/02/Interfacesarenotabstractions/)). On the other side, Feathers and Beck argue that code that is hard to test usually points to a real design problem ([Fowler, *Is TDD Dead?*](https://martinfowler.com/articles/is-tdd-dead/)).
 
 Both are right, and the difference is the one in [Enforce decisions, not ceremony](#enforce-decisions-not-ceremony). Letting tests shape the design is good when the change carries information: splitting the pure decision from the I/O makes code easier to test *and* shows the reader where the side effects are. It is damage when the change exists only so the test can intervene: an `IFoo` whose only other implementation is a mock.
 
@@ -180,7 +180,7 @@ The unit that stays closed moved from the *class* to the *slice*, and there it b
 
 - Extract once the axis of change is clear: by the third occurrence, following the rule of three. That one change makes the code closed for every future consumer.
 - The health metric is not "zero edits ever". It is **extractions becoming rarer over time** as the domain model matures.
-- If you still need big extractions years in, your domain model or design is wrong. That is not an OCP failure.
+- If you still need big extractions years in, your domain model or design is probably wrong. That is not an OCP failure.
 - Extract the *stable* domain concept (the aggregate). Tolerate duplication in the *volatile* workflow.
 
 ### LSP is a behavioral contract the types do not show
@@ -201,7 +201,7 @@ You rarely hear about SOLID in functional code, and Mikulski, above, notes it do
 | **I** | Fat interfaces forcing unused methods on clients | A function parameter asks for exactly one operation | Fat parameters: passing a whole record when one field is needed |
 | **D** | Policy code creating or reaching for its details | Dependencies are passed in as values or functions | Direction still matters → the [Impureheim sandwich](../chapter2/axiom-12-impureheim.md) gives it a shape, no container needed |
 
-Even Mark Seemann, a careful defender of SOLID, argues that SOLID taken seriously leads to FP: push ISP to role interfaces and you end up with single-method interfaces, which *are* functions ([Seemann, *SOLID: the next step is Functional*](https://blog.ploeh.dk/2014/03/10/solid-the-next-step-is-functional/)).
+Even Seemann, a careful defender of SOLID, argues that SOLID taken seriously leads to FP: push ISP to role interfaces and you end up with single-method interfaces, which *are* functions ([Seemann, *SOLID: the next step is Functional*](https://blog.ploeh.dk/2014/03/10/solid-the-next-step-is-functional/)).
 
 The last column is the point. Those concerns are universal, and a pure FP codebase can fail at every one of them. They deserve tools that work in any paradigm: Cohesion gives concrete checks inside a unit, and [Connascence](../chapter2/axiom-08-connascence.md) gives a scale for the binding between units.
 
@@ -286,7 +286,7 @@ That is the whole point in one line. A heuristic you can *recognize* but not *en
 
 ### What CUPID leaves above this book
 
-This book is stacked by level: Chapter 1 is the motivation, Chapter 2 the building blocks, Chapter 3 the plays. The parts of CUPID that do not map into Chapters 2 and 3 all point the same way: **up**.
+This book is stacked by level: Chapter 1 is the motivation, Chapter 2 the building blocks, Chapter 3 the Plays. The parts of CUPID that do not map into Chapters 2 and 3 all point the same way: **up**.
 
 - Observable
 - Minimal dependencies, in the packaging sense
@@ -300,7 +300,7 @@ When reading and writing code, we need tools: a precise vocabulary to evaluate e
 
 SOLID does not give us that:
 
-- In practice, it became ceremony that much of the industry applies by reflex, and the letters survive only as names for symptoms.
+- In practice, it became ceremony that much of the industry applies by reflex, and the letters survive mostly as names for symptoms.
 - In theory, it wraps universal concerns in OOP-specific mechanisms. Half of it is structure that can be enforced but says nothing; the other half is judgment that tools cannot enforce.
 
 CUPID comes closer. It is an ally that points toward a destination, but it stops at the same ceiling: it cannot give you the route.
