@@ -17,19 +17,10 @@ Then I noticed that I could recite SOLID, but it never changed a single decision
 
 What I had left was a set of words to name things **after** they had gone wrong. That is useful. But it is not a way to reason about code, and I had been using it as one.
 
-This chapter explains why. I focus on SOLID **as the industry practices it**: cargo-culted, dogmatic, an `IFoo` for every class. Not on the principles as their authors meant them.
+This chapter explains why. I criticise SOLID on two levels:
 
-## What SOLID became in practice
-
-In most codebases, SOLID turned into a fixed project skeleton you just follow:
-
-- an interface for every class: `IFoo` next to every `Foo`;
-- a DI container to wire them;
-- those interfaces injected through the constructor.
-
-That is just **D** and **I** turned into plumbing. **O** and **L** survive only as the excuse for the interface: you *could* swap the implementation, any other one *would* substitute. In practice, nobody does.
-
-Principles meant to guide judgement became boilerplate you set up once and stop thinking about. That is the whole problem in miniature: **a template you apply by reflex is the opposite of reasoning about a design.**
+- **In practice.** Almost nobody applies SOLID the way its authors intended. The industry settled on one way of working, and that is the only SOLID most people ever meet. When that version is criticised, the usual reply is "you're doing it wrong". Maybe. But it is not one critic doing it wrong, it is the whole industry, for decades. At that point the misreading *is* the principle as it exists, so that is what I judge.
+- **In theory.** Even read charitably, SOLID wraps universal concerns (cohesion, coupling) in OOP-specific mechanisms. It helps you name a problem after the fact. It does not help you design.
 
 ## What others have said
 
@@ -82,17 +73,34 @@ I am not the first to feel this. Here is what others have argued, with sources, 
 - **CUPID**: Composable, Unix philosophy, Predictable, Idiomatic, Domain-based. Properties on a spectrum, not rules ([cupid.dev](https://cupid.dev/); [North, *CUPID — for joyful coding*](https://dannorth.net/2022/02/10/cupid-for-joyful-coding/)).
 - **Patterns over principles**: treat SOLID as patterns you apply when you see the symptoms, not rules you always follow ([Henney, *SOLID Deconstruction*](https://www.slideshare.net/Kevlin/solid-deconstruction)).
 
-## My read — half architecture, half not actionable
+## My read, part 1 — SOLID in practice
 
-This builds on the critique above instead of repeating it. The reasoning is my own; the one external source is cited inline.
+This builds on the critique above instead of repeating it. The reasoning is my own; external sources are cited inline.
 
-### SOLID splits in two
+### What SOLID became
 
-- **D, I, and the strategy-pattern form of O are structural.** A convention, a DI container or a linter enforces them. They become invisible plumbing.
-- **S and L are semantic.** They are about [cohesion](../chapter2/axiom-07-cohesion.md) and honest behaviour. No tool can enforce them.
-- So the only part of SOLID still alive is **S and L**.
+In most codebases, SOLID turned into a fixed project skeleton you just follow:
 
-### Even S and L survive only as symptoms, never by name
+- an interface for every class: `IFoo` next to every `Foo`;
+- a DI container to wire them;
+- those interfaces injected through the constructor.
+
+That is just **D** and **I** turned into plumbing. **O** and **L** survive only as the excuse for the interface: you *could* swap the implementation, any other one *would* substitute. In practice, nobody does.
+
+Principles meant to guide judgement became boilerplate you set up once and stop thinking about. **A template you apply by reflex is the opposite of reasoning about a design.**
+
+### Why it became that
+
+Nobody arrived at this skeleton by reading SOLID. Two other forces built it:
+
+- **Unit tests based on mocks.** To replace a dependency with a mock, you need an interface. So every class gets one, even when there is only one implementation.
+- **Framework defaults.** ASP.NET Core ships with a DI container, and Spring is built around one. Templates and tutorials wire everything through constructors from day one.
+
+SOLID became the vocabulary used to *justify* this setup after the fact. "Why does `Foo` have an `IFoo`?" "Dependency Inversion." The real answer is usually "so the test can mock it".
+
+This matters for the rest of the book: a pure core, tested with plain values, does not need mocks. Without mocks, most of that interface layer loses its reason to exist.
+
+### The letters survive only as symptoms, never by name
 
 - Nobody says "Liskov violation". They say "this implementation behaves weird".
 - Nobody says "SRP". They argue that the class does too much.
@@ -101,6 +109,25 @@ This builds on the critique above instead of repeating it. The reasoning is my o
 ### SRP survives because it is undefined
 
 Its vagueness is not a bug. It is the only place in SOLID where real judgement about [cohesion](../chapter2/axiom-07-cohesion.md) happens. The other letters became settled convention. SRP is still debated because it cannot be turned into a rule.
+
+### A rule everyone misreads is not actionable
+
+- If most of an industry has misapplied a set of principles for 25 years, that is no longer about the readers. It says something about the principles: they are not specific enough to be applied correctly.
+- An actionable rule is hard to misread. Two reviewers applying it to the same code should reach the same verdict.
+- By that test, **SOLID as practiced is not actionable.** It does not help you reason about code. It only names what already went wrong.
+
+## My read, part 2 — SOLID in theory
+
+Now read SOLID charitably, the way its authors meant it. It still does not give you a way to design.
+
+### SOLID splits in two
+
+- **D, I, and the strategy-pattern form of O are structural.** A convention, a DI container or a linter can enforce them.
+- **S and L are semantic.** They are about [cohesion](../chapter2/axiom-07-cohesion.md) and honest behaviour. No tool can enforce them.
+
+This split explains what happened in practice. The structural letters were easy to mechanise, so they became ceremony: an `IFoo` next to its only `Foo` is enforced, but it encodes no design decision. The semantic letters could not be mechanised at all, so they stayed vague. Neither half became something you can act on.
+
+Enforcing rules in code is not the problem. The rest of this book wants exactly that. The problem is enforcing ceremony instead of decisions. A `Result` return type is enforced by the compiler *and* says something about the code. An `IFoo` says nothing.
 
 ### There are two OCPs, and the popular one is the bad one
 
@@ -119,25 +146,26 @@ Its intent, "open for extension, closed for modification", lives on in Vertical 
 - If you still need big extractions years in, your domain model or design is wrong. That is not an OCP failure.
 - Extract the *stable* domain concept (the aggregate). Tolerate duplication in the *volatile* workflow.
 
-### SOLID fixes OOP problems; it is not universal design
+### LSP is a behavioural contract the types do not show
 
-You never hear about SOLID in functional code, and that is the tell. In FP, every letter is a given:
+Read correctly, LSP is about behaviour: a subtype must keep the promises of its parent. But in a typical OO signature those promises are invisible. A method can throw, return `null` or have side effects without saying so. So LSP can only be checked by reading every implementation.
 
-- SRP comes from [functional decomposition](../chapter2/axiom-01-data-vs-behaviour.md).
-- OCP comes from [first-class functions](../chapter2/axiom-09-first-class-functions.md).
-- LSP comes from parametricity.
-- ISP comes from small, composable functions.
-- DIP comes from passing dependencies as parameters.
+[Honest, total signatures](../chapter2/axiom-06-honest-total-signatures.md) move the promise into the type, where the compiler checks it.
+
+### SOLID wraps universal concerns in OOP mechanisms
+
+You rarely hear about SOLID in functional code. That is because most of the mechanisms SOLID corrects do not exist there:
+
+- No inheritance to abuse, so subclass-based OCP and fragile base classes disappear.
+- Functions are [first-class](../chapter2/axiom-09-first-class-functions.md), so a single-method interface is just a function. OCP's strategy pattern and ISP come for free.
+- [Data and behaviour are separate](../chapter2/axiom-01-data-vs-behaviour.md), so there are no objects mixing mutable state with methods.
+- Dependencies are passed as parameters, so DIP needs no container.
 
 Even Mark Seemann, a careful defender of SOLID, argues that SOLID taken seriously leads to FP: push ISP to role interfaces and you end up with single-method interfaces, which *are* functions ([Seemann, *SOLID: the next step is Functional*](https://blog.ploeh.dk/2014/03/10/solid-the-next-step-is-functional/)).
 
-So SOLID is a vocabulary to name the failures of OOP *as practiced*. Useful for naming smells, but not the level where design happens.
+But the concerns *underneath* do not disappear. A pure FP codebase can still have modules with poor cohesion and functions coupled in fragile ways. Those concerns are universal. They deserve tools that work in any paradigm and come with a scale you can argue with: [Cohesion](../chapter2/axiom-07-cohesion.md) and [Connascence](../chapter2/axiom-08-connascence.md).
 
-### Judge SOLID by how it is practiced, not by what it meant
-
-- Almost nobody applies the principles the way their authors intended. The industry settled on one way of working, and that is the only SOLID most people ever meet.
-- Arguing about what the principles *should* mean is pointless. It only invites the reply "you misunderstood them".
-- The claim worth making is concrete: **SOLID as practiced is not actionable.** It does not help you reason about code. It only names what already went wrong. Everyone has felt this, so nobody can dismiss it.
+So SOLID is useful to name OOP smells, but it is not the level where design happens.
 
 ## CUPID — names the destination, not the route
 
@@ -227,8 +255,8 @@ When reading and writing code, we need tools: a precise vocabulary to evaluate e
 
 SOLID does not give us that:
 
-- It is invisible in functional code. It only applies where objects own mutable state and behaviour at the same time.
-- Even where it applies, half of it is architecture and the other half is not actionable.
+- In practice, it became ceremony that a whole industry applies by reflex, and the letters survive only as names for symptoms.
+- In theory, it wraps universal concerns in OOP-specific mechanisms. Half of it is structure that can be enforced but says nothing; the other half is judgement that cannot be enforced at all.
 
 CUPID comes closer. It is an ally that points toward a destination, but it stops at the same ceiling: it cannot give you the route.
 

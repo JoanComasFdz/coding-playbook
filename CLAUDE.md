@@ -28,7 +28,12 @@ If a draft drifts toward "how to architect a system," pull it back to "how to wr
 
 ### Chapter 1 — the SOLID critique: the motivating hook
 
-The preface, and unlike anything that follows it. Its job is to motivate the rest of the book: SOLID names real smells but can't be *acted on* to generate design, so what do I reason with instead? It is opinionated and first-person like the rest, but it is the **one place forward-references are allowed** — it may point ahead to vocabulary the axioms define later, because pointing ahead is its whole purpose; this is the single relaxation of the foreshadow-don't-spoil rule that governs Chapter 2. The discipline that does carry over: attack **SOLID-as-practiced, never SOLID-in-principle**. The target is what the acronym becomes in the hands of working teams, never the original intent behind it.
+The preface, and unlike anything that follows it. Its job is to motivate the rest of the book: SOLID names real smells but can't be *acted on* to generate design, so what do I reason with instead? It is opinionated and first-person like the rest, but it is the **one place forward-references are allowed** — it may point ahead to vocabulary the axioms define later, because pointing ahead is its whole purpose; this is the single relaxation of the foreshadow-don't-spoil rule that governs Chapter 2. The discipline that does carry over: critique SOLID on **two explicit, labelled levels**, so the reader always knows which one an argument is on.
+
+- **In practice** — the main target: what the acronym becomes in the hands of working teams. The "you're doing it wrong" defence is answered, not dodged: when a whole industry misreads a principle for decades, that misreading *is* the principle as it exists.
+- **In theory** — critiqued only charitably: even read as its authors meant it, SOLID wraps universal concerns (cohesion, coupling) in OOP-specific mechanisms, and it names problems after the fact instead of generating design.
+
+No strawmen on either level.
 
 ### Chapter 2 — Fundamentals: the anatomy of a module and its functions
 
