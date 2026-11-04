@@ -1,145 +1,246 @@
 # Chapter 1 — SOLID Principles don't cut it anymore
-> How many times have you done a code review where you or your partner said "This code is not applying Liskov Substitution"?
 
-> How many times have you been coding and thought: "Oh I need to follow the Open/Close principle here" ?
+> How many times has a code review ended with "this code breaks Liskov Substitution"?
 
-> How many times have you been coding and thought: "Hm.. I am not sure I should apply Dependency Inversion here" ?
+> How many times have you stopped while coding and thought "I need Open/Closed here"?
 
-> How many times have you done a code review where the main discussion was if a class was doing too much or not?
+> How many times have you wondered "should I apply Dependency Inversion here?"
 
-For years SOLID was the vocabulary I reached for whenever I had to justify a design. It sounded like a method: five letters, learn them, apply them, get good code. But somewhere along the way I noticed I could *recite* SOLID without it ever changing a single decision I made at the keyboard. When I tried to use it forward — to *generate* a design rather than grade one — it gave me nothing actionable. "Single responsibility" never told me where to draw the line; "open/closed" never told me which axis would vary.
+> How many times was a code review really an argument about whether a class does too much?
 
-What I was left with was a set of words for *naming things that had already gone wrong*. SOLID stopped being something I could act on and became something I could point at — after the fact. That is a real and useful thing for a vocabulary to be. It is just not a way to reason about the code, and I had been treating it as one.
+For years, SOLID was my go-to vocabulary to justify a design. It looked like a method: learn five letters, apply them, get good code.
 
-This chapter is me working out why, and focusing on SOLID as it's actually practiced in industry — cargo-culted, dogmatic, `IFoo`-per-class — not the principles charitably interpreted by their authors. 
+Then I noticed that I could recite SOLID, but it never changed a single decision I made at the keyboard. When I tried to use it to *create* a design, instead of judging one, it gave me nothing to act on:
 
-Strip away the theory and what the industry actually settled on is a small, fixed architecture — a project skeleton you just follow:
+- "Single responsibility" never told me where to draw the line.
+- "Open/closed" never told me which part of the code would change.
 
-- an interface for every class — `IFoo` beside every `Foo`;
+What I had left was a set of words to name things **after** they had gone wrong. That is useful. But it is not a way to reason about code, and I had been using it as one.
+
+This chapter explains why. I focus on SOLID **as the industry practices it**: cargo-culted, dogmatic, an `IFoo` for every class. Not on the principles as their authors meant them.
+
+## What SOLID became in practice
+
+In most codebases, SOLID turned into a fixed project skeleton you just follow:
+
+- an interface for every class: `IFoo` next to every `Foo`;
 - a DI container to wire them;
 - those interfaces injected through the constructor.
 
-It is really just **D** and **I** turned into plumbing; **O** and **L** survive only as the *excuse* for the interface seam (you *could* swap the implementation, any one *would* substitute), never as something you actually do. Principles meant to guide judgement became *boilerplate* you set up once and stop thinking about — which is the problem in miniature: **a template you apply by reflex is the opposite of reasoning about a design**.
+That is just **D** and **I** turned into plumbing. **O** and **L** survive only as the excuse for the interface: you *could* swap the implementation, any other one *would* substitute. In practice, nobody does.
 
-## The online sentiment
+Principles meant to guide judgement became boilerplate you set up once and stop thinking about. That is the whole problem in miniature: **a template you apply by reflex is the opposite of reasoning about a design.**
 
-The unease I felt has already been expressed; here is what others have argued, with sources, so you can follow each thread yourself.
+## What others have said
+
+I am not the first to feel this. Here is what others have argued, with sources, so you can follow each thread yourself.
 
 ### General
 
-- "Principles" is the wrong word — they're contextual patterns or properties, not universal rules ([Henney, *SOLID Deconstruction*](https://www.slideshare.net/Kevlin/solid-deconstruction); [North, *Why Every Element of SOLID Is Wrong*](https://speakerdeck.com/tastapod/why-every-element-of-solid-is-wrong)).
-- Applied rigidly, SOLID produces over-abstracted, hard-to-navigate codebases — proliferation of tiny classes and interfaces ([Khoo, *Challenging the Gospel*](https://medium.com/@jeremykhoois/solid-principles-sucks-b5935b1235d7); [Mortenson, *SOLID — 25 Years Later*](https://dev.to/chriswritesstuff/solid-30-years-later-g79)).
-- Open to vast amounts of interpretation and misinterpretation; the original definitions aren't operationally precise ([Marston, *Not-so-SOLID OO Principles*](https://www.tonymarston.net/php-mysql/not-so-solid-oo-principles.html)).
-- No concrete problem/solution demonstrations — show the bug, the fix, the side effects ([Marston](https://www.tonymarston.net/php-mysql/not-so-solid-oo-principles.html)).
-- Second-order principles at best — they point in a direction, they don't define a goal ([Mortenson](https://dev.to/chriswritesstuff/solid-30-years-later-g79)).
-- Rooted in late-90s OO assumptions; the framing feels dated ([nocomplexity, *Rise and Fall of SOLID*](https://nocomplexity.com/solid-programming/); [Dunn, *Is SOLID Still Relevant?*](https://dunnhq.com/posts/2021/solid-relevance/)).
+- "Principles" is the wrong word. They are patterns or properties that depend on context, not universal rules ([Henney, *SOLID Deconstruction*](https://www.slideshare.net/Kevlin/solid-deconstruction); [North, *Why Every Element of SOLID Is Wrong*](https://speakerdeck.com/tastapod/why-every-element-of-solid-is-wrong)).
+- Applied rigidly, SOLID produces over-abstracted code that is hard to navigate: lots of tiny classes and interfaces ([Khoo, *Challenging the Gospel*](https://medium.com/@jeremykhoois/solid-principles-sucks-b5935b1235d7); [Mortenson, *SOLID — 25 Years Later*](https://dev.to/chriswritesstuff/solid-30-years-later-g79)).
+- The definitions are not precise, so they are open to almost any interpretation ([Marston, *Not-so-SOLID OO Principles*](https://www.tonymarston.net/php-mysql/not-so-solid-oo-principles.html)).
+- There are no concrete demonstrations: show me the bug, the fix, and the side effects ([Marston](https://www.tonymarston.net/php-mysql/not-so-solid-oo-principles.html)).
+- They are second-order principles at best. They point in a direction but do not define a goal ([Mortenson](https://dev.to/chriswritesstuff/solid-30-years-later-g79)).
+- They come from late-90s OO assumptions, and it shows ([nocomplexity, *Rise and Fall of SOLID*](https://nocomplexity.com/solid-programming/); [Dunn, *Is SOLID Still Relevant?*](https://dunnhq.com/posts/2021/solid-relevance/)).
 
 ### Per principle
 
 #### S — Single Responsibility
-- Undefined in practice; "one reason to change" drifted to "one actor" with no operational test ([Marston](https://www.tonymarston.net/php-mysql/not-so-solid-oo-principles.html)). (The idea this gropes toward — [Cohesion](../chapter2/axiom-07-cohesion.md) — is given a sharper, testable shape in Chapter 2.)
-- Applied rigidly, produces overly granular classes for theoretical purity ([Khoo](https://medium.com/@jeremykhoois/solid-principles-sucks-b5935b1235d7)).
+
+- No working definition. "One reason to change" drifted into "one actor", and neither comes with a test you can apply ([Marston](https://www.tonymarston.net/php-mysql/not-so-solid-oo-principles.html)). Chapter 2 gives the underlying idea, [Cohesion](../chapter2/axiom-07-cohesion.md), a sharper and testable shape.
+- Applied rigidly, it produces overly small classes for the sake of purity ([Khoo](https://medium.com/@jeremykhoois/solid-principles-sucks-b5935b1235d7)).
 
 #### O — Open/Closed
-- Requires predicting the future — which axis of variation will matter next ([Khoo](https://medium.com/@jeremykhoois/solid-principles-sucks-b5935b1235d7)).
-- Inheritance-for-extension caused the 90s "inheritance overdose" we're still recovering from ([Dunn](https://dunnhq.com/posts/2021/solid-relevance/)).
-- Arguably redundant — already implied by LSP ([Henney summary](https://yahnd.com/theater/r/vimeo/157708450/); [Dunn](https://dunnhq.com/posts/2021/solid-relevance/)).
+
+- It requires predicting the future: which part of the code will vary next ([Khoo](https://medium.com/@jeremykhoois/solid-principles-sucks-b5935b1235d7)).
+- "Extend by inheritance" caused the 90s inheritance overdose we are still recovering from ([Dunn](https://dunnhq.com/posts/2021/solid-relevance/)).
+- Arguably redundant, because LSP already implies it ([Henney summary](https://yahnd.com/theater/r/vimeo/157708450/); [Dunn](https://dunnhq.com/posts/2021/solid-relevance/)).
 
 #### L — Liskov Substitution
-- Routinely misread as a *structural* rule (same interface ⇒ substitutable) when it's a *behavioral* contract ([Henney](https://www.slideshare.net/Kevlin/solid-deconstruction); [Oldwood, *KISSing SOLID Goodbye*](https://accu.org/journals/overload/22/122/oldwood_1957/)). (Behavioral contract is exactly what [honest, total signatures](../chapter2/axiom-06-honest-total-signatures.md) make visible.)
+
+- Often misread as a *structural* rule ("same interface, so it is substitutable"). It is really a *behavioural* contract ([Henney](https://www.slideshare.net/Kevlin/solid-deconstruction); [Oldwood, *KISSing SOLID Goodbye*](https://accu.org/journals/overload/22/122/oldwood_1957/)). [Honest, total signatures](../chapter2/axiom-06-honest-total-signatures.md) are what make that contract visible.
 
 #### I — Interface Segregation
+
 - Cargo-culted into "one interface per class, even with a single implementation" ([Khoo](https://medium.com/@jeremykhoois/solid-principles-sucks-b5935b1235d7)).
-- Arguably collapses into SRP — not a separate idea ([North](https://speakerdeck.com/tastapod/why-every-element-of-solid-is-wrong)).
+- Arguably just SRP again, not a separate idea ([North](https://speakerdeck.com/tastapod/why-every-element-of-solid-is-wrong)).
 
 #### D — Dependency Inversion
-- Routinely conflated with DI / DI frameworks; the principle ≠ the mechanism ([NDepend, *In Defense of SOLID*, noting the confusion](https://blog.ndepend.com/defense-solid-principles/)).
-- Arguably reduces to SRP + LSP — Henney argues it isn't a separate principle ([Henney summary](https://yahnd.com/theater/r/vimeo/157708450/)).
-- Terminology dated — "inversion" comes from the structured-programming era; today this *is* normal dependency direction ([Dunn](https://dunnhq.com/posts/2021/solid-relevance/)). (Where dependency direction *does* earn its keep, the [Impureheim sandwich](../chapter2/axiom-12-impureheim.md) makes it a shape, not a framework.)
+
+- Constantly confused with DI and DI frameworks. The principle is not the mechanism ([NDepend, *In Defense of SOLID*, noting the confusion](https://blog.ndepend.com/defense-solid-principles/)).
+- Henney argues it reduces to SRP + LSP, so it is not a separate principle ([Henney summary](https://yahnd.com/theater/r/vimeo/157708450/)).
+- The name is dated. "Inversion" comes from the structured-programming era; today it is just the normal direction of dependencies ([Dunn](https://dunnhq.com/posts/2021/solid-relevance/)). Where dependency direction does matter, the [Impureheim sandwich](../chapter2/axiom-12-impureheim.md) turns it into a code shape, not a framework.
 
 ### Paradigm fit
 
-- Doesn't transfer cleanly to functional programming or data pipelines; works mainly in its original context (large Java/.NET monoliths) ([Mikulski, *CUPID in Data Engineering*](https://mikulskibartosz.name/cupid-principles-in-data-engineering)).
-- Doesn't apply cleanly across microservice boundaries — no implementation injection over HTTP/AMQP, so OCP loses meaning and DIP becomes contract-coupling ([Van Couvering, *Applying SOLID to Services*](https://david-vancouvering.medium.com/applying-solid-principles-to-services-e56ef2382a26)).
+- It does not transfer well to functional programming or data pipelines. It works mainly in its original context: large Java/.NET monoliths ([Mikulski, *CUPID in Data Engineering*](https://mikulskibartosz.name/cupid-principles-in-data-engineering)).
+- It does not work across microservice boundaries. You cannot inject an implementation over HTTP or AMQP, so OCP loses its meaning and DIP becomes coupling to a contract ([Van Couvering, *Applying SOLID to Services*](https://david-vancouvering.medium.com/applying-solid-principles-to-services-e56ef2382a26)).
 
 ### Proposed alternatives
 
-- **CUPID** — Composable, Unix philosophy, Predictable, Idiomatic, Domain-based. Properties on a spectrum, not rules ([cupid.dev](https://cupid.dev/); [North, *CUPID — for joyful coding*](https://dannorth.net/2022/02/10/cupid-for-joyful-coding/)).
-- **Patterns over principles** — treat SOLID as context-dependent patterns to apply when symptoms appear, not rules to follow always ([Henney, *SOLID Deconstruction*](https://www.slideshare.net/Kevlin/solid-deconstruction)).
+- **CUPID**: Composable, Unix philosophy, Predictable, Idiomatic, Domain-based. Properties on a spectrum, not rules ([cupid.dev](https://cupid.dev/); [North, *CUPID — for joyful coding*](https://dannorth.net/2022/02/10/cupid-for-joyful-coding/)).
+- **Patterns over principles**: treat SOLID as patterns you apply when you see the symptoms, not rules you always follow ([Henney, *SOLID Deconstruction*](https://www.slideshare.net/Kevlin/solid-deconstruction)).
 
 ## My read — half architecture, half not actionable
 
-*This sharpens the community critique above rather than repeating it. The reasoning is my own; the one external attribution is cited inline.*
+This builds on the critique above instead of repeating it. The reasoning is my own; the one external source is cited inline.
 
-- **The structural/semantic split.** SOLID partitions cleanly. D, I, and the strategy-pattern form of O are *structural* — a convention, DI container, or linter enforces them, so they dissolve into invisible plumbing. S and L are *semantic* — about [cohesion](../chapter2/axiom-07-cohesion.md) and behavioral honesty — and nothing can mechanize them. The only live half of SOLID is S and L.
-- **Only the un-mechanizable letters survive review — and only as symptoms, never by name.** Nobody says "Liskov violation," they say "this implementation behaves weird." Nobody says "SRP," they argue the class does too much. The principle vocabulary is dead in practice; the symptom vocabulary (blast radius, shotgun surgery, "why do I touch five files to add one thing") won.
-- **SRP survives precisely because it's undefined.** Its vagueness isn't a bug — it's the only space in SOLID where real, contextual judgment ([cohesion](../chapter2/axiom-07-cohesion.md)) happens. The other letters became settled convention; SRP stays contested because it can't be reduced to a rule.
-- **Two OCPs, and the bad one is the popular one.** Meyer's inheritance-based OCP (subclass to extend) is the fragile-base-class trap everyone actually hits. Bob's polymorphic OCP (add an implementation, never edit existing ones) is fine — but it's just "composition over inheritance" + "program to an interface" renamed. OCP is only sane *reactively*, along an axis you've already seen vary ([rule of three](https://en.wikipedia.org/wiki/Rule_of_three_(computer_programming))); applied speculatively it's just speculative generality.
-- **OCP didn't die — it migrated up the stack.** Its surviving intent ("open for extension, closed for modification") is alive as Vertical Slice Architecture: add a feature by dropping in a vertical slice without touching existing slices. The unit of closure moved from the *class* to the *slice*, where it's finally actionable.
-- **Refactoring to extract a shared concept is OCP working, not OCP breaking.** A one-time stabilizing extraction — done when the second consumer appears — buys closure for every future consumer. The health metric isn't "zero edits ever," it's *extraction frequency decaying over time* as the domain model matures. Persistent big extractions years in signal a wrong domain model and or design, not an OCP failure. Extract the *stable* domain concept (the aggregate); tolerate duplication on the *volatile* workflow.
-- **SOLID is OOP-remediation, not universal design.** Its invisibility in FP is the tell: SRP, OCP, LSP, ISP, DIP are all structural givens in FP ([functional decomposition](../chapter2/axiom-01-data-vs-behaviour.md), [first-class functions](../chapter2/axiom-09-first-class-functions.md), parametricity, small composable functions, dependencies-as-parameters), so the vocabulary is never needed. Even Mark Seemann — a rigorous SOLID defender — argues that, taken seriously, SOLID converges on FP ([Seemann, *SOLID: the next step is Functional*](https://blog.ploeh.dk/2014/03/10/solid-the-next-step-is-functional/)): push ISP to role interfaces and you reach single-method interfaces, which *are* functions. SOLID is a diagnostic vocabulary for *OOP-as-practiced* failure modes — useful for naming smells, but not the level at which design actually happens.
-- **Judge SOLID by how it's practiced, not by what it was meant to be.** Almost no one applies the principles the way their authors intended, and the industry has long since settled into one particular way of working. That practiced version is the only SOLID most people ever meet — so debating what the principles *should* have meant is pointless; it only invites the reply *"you've misunderstood them."* The claim worth making is the concrete one: the version the industry actually practices isn't actionable — it doesn't help you reason about the code, only name what already went wrong. Everyone has felt that, so no one can dismiss it.
+### SOLID splits in two
+
+- **D, I, and the strategy-pattern form of O are structural.** A convention, a DI container or a linter enforces them. They become invisible plumbing.
+- **S and L are semantic.** They are about [cohesion](../chapter2/axiom-07-cohesion.md) and honest behaviour. No tool can enforce them.
+- So the only part of SOLID still alive is **S and L**.
+
+### Even S and L survive only as symptoms, never by name
+
+- Nobody says "Liskov violation". They say "this implementation behaves weird".
+- Nobody says "SRP". They argue that the class does too much.
+- The principle names are dead in practice. The symptom names won: blast radius, shotgun surgery, "why do I touch five files to add one thing?".
+
+### SRP survives because it is undefined
+
+Its vagueness is not a bug. It is the only place in SOLID where real judgement about [cohesion](../chapter2/axiom-07-cohesion.md) happens. The other letters became settled convention. SRP is still debated because it cannot be turned into a rule.
+
+### There are two OCPs, and the popular one is the bad one
+
+- **Meyer's OCP** (extend by subclassing) leads straight into the fragile-base-class trap.
+- **Uncle Bob's OCP** (add a new implementation, never edit existing ones) is fine. But it is just "composition over inheritance" plus "program to an interface" with a new name.
+- OCP only makes sense **after the fact**, along an axis you have already seen change (the [rule of three](https://en.wikipedia.org/wiki/Rule_of_three_(computer_programming))). Applied in advance, it is speculative generality.
+
+### OCP did not die, it moved up the stack
+
+Its intent, "open for extension, closed for modification", lives on in Vertical Slice Architecture: you add a feature by adding a new slice, without touching the existing ones. The unit that stays closed moved from the *class* to the *slice*, where it is finally actionable.
+
+### Refactoring to extract a shared concept is OCP working, not failing
+
+- Extract once, when the second consumer appears. That one change makes the code closed for every future consumer.
+- The health metric is not "zero edits ever". It is **extractions becoming rarer over time** as the domain model matures.
+- If you still need big extractions years in, your domain model or design is wrong. That is not an OCP failure.
+- Extract the *stable* domain concept (the aggregate). Tolerate duplication in the *volatile* workflow.
+
+### SOLID fixes OOP problems; it is not universal design
+
+You never hear about SOLID in functional code, and that is the tell. In FP, every letter is a given:
+
+- SRP comes from [functional decomposition](../chapter2/axiom-01-data-vs-behaviour.md).
+- OCP comes from [first-class functions](../chapter2/axiom-09-first-class-functions.md).
+- LSP comes from parametricity.
+- ISP comes from small, composable functions.
+- DIP comes from passing dependencies as parameters.
+
+Even Mark Seemann, a careful defender of SOLID, argues that SOLID taken seriously leads to FP: push ISP to role interfaces and you end up with single-method interfaces, which *are* functions ([Seemann, *SOLID: the next step is Functional*](https://blog.ploeh.dk/2014/03/10/solid-the-next-step-is-functional/)).
+
+So SOLID is a vocabulary to name the failures of OOP *as practiced*. Useful for naming smells, but not the level where design happens.
+
+### Judge SOLID by how it is practiced, not by what it meant
+
+- Almost nobody applies the principles the way their authors intended. The industry settled on one way of working, and that is the only SOLID most people ever meet.
+- Arguing about what the principles *should* mean is pointless. It only invites the reply "you misunderstood them".
+- The claim worth making is concrete: **SOLID as practiced is not actionable.** It does not help you reason about code. It only names what already went wrong. Everyone has felt this, so nobody can dismiss it.
 
 ## CUPID — names the destination, not the route
 
-The alternative I keep circling back to is Dan North's **CUPID** — five *properties* (Composable, Unix philosophy, Predictable, Idiomatic, Domain-based) on a spectrum ([North, *CUPID — for joyful coding*](https://dannorth.net/2022/02/10/cupid-for-joyful-coding/)). It is goal-oriented — *"move toward"*, not *"conform or don't"* — which is already a step up: **applied SOLID is useless for generating a design; CUPID is an ally.**
+The alternative I keep coming back to is Dan North's **CUPID**: five *properties* (Composable, Unix philosophy, Predictable, Idiomatic, Domain-based) on a spectrum ([North, *CUPID — for joyful coding*](https://dannorth.net/2022/02/10/cupid-for-joyful-coding/)).
 
-But it shares SOLID's ceiling. A property is something you *recognise*, not something you *do*: CUPID describes the **destination**, never the **route**. Read each property and you find yourself reaching for the building blocks of the next two chapters to actually *get there* — and that is the tell. **CUPID is the symptom of good mechanism; the axioms are the mechanism.**
+CUPID is about goals: "move toward this", not "comply or not". That is already a step up. **SOLID as practiced is useless for creating a design; CUPID is an ally.**
 
-This isn't me reading a flaw into CUPID. It's North's own framing, read with the opposite valence. He picked *properties* over *principles* on purpose. Principles are "rules: you are either compliant or you are not." Properties "define a goal or centre to move towards" and work as "a lens or filter to assess your code" ([North](https://dannorth.net/2022/02/10/cupid-for-joyful-coding/)). A lens you hold code up against is something you recognise. It is not something that writes the code for you. North says the same at the property level. The things that make code Composable are "neither necessary nor sufficient to make any guarantees … useful heuristics," because "more is not necessarily better; it is all trade-offs" ([cupid.dev](https://cupid.dev/properties/composable/)). One fair caveat: North also writes there is "always a clear *direction* of travel." So *"names the destination, not the route"* is my phrasing, not his. He sees the open route as a feature. I see it as the ceiling. That is the only point where we disagree.
+But it hits the same ceiling. A property is something you *recognise*, not something you *do*. CUPID describes the **destination**, never the **route**. When you read each property, you end up reaching for the building blocks of the next two chapters to actually get there. **CUPID describes what good code looks like; the axioms are how you get there.**
 
-I'm not the only one who lands here. Jeremy Miller is no CUPID skeptic. He brushed it off at first, then made himself take it seriously, and concluded: "I don't find it to be specific enough to be **actionable**, but as a philosophical starting point it's pretty solid" ([Miller, *Putting SOLID into Perspective*](https://jeremydmiller.com/2022/08/10/putting-solid-into-perspective/)). *Actionable* is the right word, and it names the gap. CUPID gives even a fair, experienced reader a starting point and no route. That route is what the next two chapters set out to provide.
+### This is North's own framing
 
-Every property below resolves into something I already reason with (or will, in a later chapter):
+I am not reading a flaw into CUPID. North chose properties over principles on purpose:
 
-### Composable — "plays well with others"
+- Principles are "rules: you are either compliant or you are not."
+- Properties "define a goal or centre to move towards" and act as "a lens or filter to assess your code" ([North](https://dannorth.net/2022/02/10/cupid-for-joyful-coding/)).
 
-- **Small surface area** → the future *Deep modules, small interfaces* Play (Chapter 3): module value = functionality ÷ interface cost. *Why:* a narrow API is the small surface.
-- **Intention-revealing** → [honest, total signatures](../chapter2/axiom-06-honest-total-signatures.md) + domain-named [value objects](../chapter2/axiom-18-value-objects.md); [making illegal states unrepresentable](../chapter2/axiom-22-illegal-states.md) and [discriminated unions](../chapter2/axiom-21-discriminated-unions.md) name each case where a `bool` would hide it. *Why:* the type, not a comment, reveals the intent.
-- **Minimal dependencies** → North means *external packages* (his example is dropping a logging library) — a packaging concern that sits *above* this book's altitude. Zoomed in to a single function it *rhymes* with [purity](../chapter2/axiom-05-pure-functions.md) (depends only on its arguments) and [Impureheim](../chapter2/axiom-12-impureheim.md) (dependencies handed in from the shell, never reached for). A rhyme, not the same claim — packages vs. hidden inputs.
-- The act of *composing* itself → [higher-order functions](../chapter2/axiom-10-higher-order-functions.md) and `Result` composition (map/bind/traverse). *Why:* composability is something you build, with combinators.
+A lens helps you assess code. It does not write it for you. North says the same about each property. For example, the things that make code Composable are "neither necessary nor sufficient to make any guarantees … useful heuristics", because "more is not necessarily better; it is all trade-offs" ([cupid.dev](https://cupid.dev/properties/composable/)).
 
-### Unix philosophy — "does one thing well"
+To be fair: North also says there is "always a clear *direction* of travel". So "names the destination, not the route" is my phrasing, not his. He sees the open route as a feature. I see it as the ceiling. That is the only point where we disagree.
 
-- **Does one thing** → [Cohesion](../chapter2/axiom-07-cohesion.md), judged outside-in — the same move North's Unix-philosophy property makes away from inside-out SRP. *Why:* "one job" is the cohesion question, made testable.
-- **Composes via pipes** → low [Connascence](../chapter2/axiom-08-connascence.md) between units, plus the combinators above. *Why:* tools pipe cleanly only when what couples them is weak and explicit.
+### Others reach the same conclusion
 
-### Predictable — "does what you expect"
+Jeremy Miller is no CUPID sceptic. He dismissed it at first, then made himself take it seriously, and concluded: "I don't find it to be specific enough to be **actionable**, but as a philosophical starting point it's pretty solid" ([Miller, *Putting SOLID into Perspective*](https://jeremydmiller.com/2022/08/10/putting-solid-into-perspective/)).
 
-- **Behaves as expected** → [honest, total signatures](../chapter2/axiom-06-honest-total-signatures.md). *Why:* the type tells you what can come back, so the behaviour is on the surface, not in the body.
-- **Deterministic** → [pure functions](../chapter2/axiom-05-pure-functions.md). The cleanest one-to-one in the whole set: determinism *is* referential transparency *is* purity.
-- **Observable** → instrumentation, telemetry, monitoring. Operational, above this book's altitude.
+*Actionable* is the right word. CUPID gives even a fair, experienced reader a starting point, but no route. The next two chapters set out to provide that route.
 
-### Idiomatic — "feels natural"
+### Mapping each property to the book
 
-- **Language + team idioms** → not an axiom but a *contextual choice* (dated, reversible, team-dependent — the ADR tier; `AsNoTracking`, jOOQ are idiom picks, and North himself sends local idioms to ADRs). *Why:* what feels natural is a property of the reader, not of the code.
-- The honest tension worth naming: my axioms sometimes go *against* the local idiom — `Result<int, string>` instead of the idiomatic `bool TryParse(string, out int)`. I trade paradigm-idiom for honesty (simplicity-first: honest before familiar) while paying the idiom back at the *mechanism* level — records, `switch` expressions, pattern matching, LINQ. Idiomatic still applies and still matters; it just sits a level above the building blocks.
+Every property maps to something I already reason with, or will in a later chapter.
 
-### Domain-based — "models the problem domain in language and structure"
+#### Composable — "plays well with others"
 
-- **Domain-based language** → domain-named [value objects](../chapter2/axiom-18-value-objects.md) and the future FP-style *DDD tactical patterns* (Chapter 3). *Why:* `Surname`, not `string` — close the gap between the code and the conversation.
-- **Domain-based structure** → Vertical Slice Architecture: directories mirror the domain, not technical layers — which is where I argued [OCP migrated](#my-read--half-architecture-half-not-actionable).
-- **Domain-based boundaries** (module = deployment unit) → architectural, above this book's altitude.
+- **Small surface area** → the future *Deep modules, small interfaces* Play (Chapter 3): a module's value is its functionality divided by the cost of its interface. A narrow API *is* the small surface.
+- **Intention-revealing** → [honest, total signatures](../chapter2/axiom-06-honest-total-signatures.md) and domain-named [value objects](../chapter2/axiom-18-value-objects.md). [Making illegal states unrepresentable](../chapter2/axiom-22-illegal-states.md) and [discriminated unions](../chapter2/axiom-21-discriminated-unions.md) name each case where a `bool` would hide it. The type, not a comment, reveals the intent.
+- **Minimal dependencies** → North means *external packages* (his example is dropping a logging library). That is a packaging concern, above this book's level. At the level of a single function it is *similar to*, but not the same as:
+  - [purity](../chapter2/axiom-05-pure-functions.md): the function depends only on its arguments;
+  - [Impureheim](../chapter2/axiom-12-impureheim.md): dependencies are handed in from the shell, never fetched.
+- **Composing itself** → [higher-order functions](../chapter2/axiom-10-higher-order-functions.md) and `Result` composition (map/bind/traverse). Composability is something you build, with combinators.
 
-One closing note on the criticism that *does* exist, because there is less of it than you would expect. Direct critique of the five letters is thin. Most write-ups just restate North and agree with him. But CUPID's precursor drew a sharp one worth keeping. Before the properties, North proposed "fits in my head" as his replacement for Single Responsibility: "you can only reason about something if it fits in your head" ([North, *the back story*](https://dannorth.net/blog/cupid-the-back-story/)). The reply on Hacker News was simple: "any developer who wants to defend their code will simply claim a given spaghetti incident easily fit in *their* head" ([HN](https://news.ycombinator.com/item?id=26531079)). That is the whole point in one line. A heuristic you can *recognise* but not *enforce* settles no argument. The most-quoted critique of CUPID does not land on a property. It lands on the missing mechanism behind one.
+#### Unix philosophy — "does one thing well"
 
-Stack the chapters by altitude — Chapter 1 the inception, Chapter 2 the building blocks, Chapter 3 the plays, each a level up — and the parts of CUPID that *don't* land in Chapters 2–3 (Observable, Idiomatic, minimal-dependencies-as-packaging) all point the same way: up, at a layer this book doesn't reach yet. That is the honest reason they're unmapped — not that they don't matter, but that they live above the code altitude. Everything *at* code altitude is already a building block waiting in the next chapter.
+- **Does one thing** → [Cohesion](../chapter2/axiom-07-cohesion.md), judged from the outside in. That is the same move North makes away from SRP, which judges from the inside out. "One job" is the cohesion question, made testable.
+- **Composes via pipes** → low [Connascence](../chapter2/axiom-08-connascence.md) between units, plus the combinators above. Pieces connect cleanly only when what couples them is weak and explicit.
+
+#### Predictable — "does what you expect"
+
+- **Behaves as expected** → [honest, total signatures](../chapter2/axiom-06-honest-total-signatures.md). The type tells you what can come back, so the behaviour is visible in the signature, not hidden in the body.
+- **Deterministic** → [pure functions](../chapter2/axiom-05-pure-functions.md). The cleanest match in the whole set: deterministic means referentially transparent means pure.
+- **Observable** → instrumentation, telemetry, monitoring. Operational, above this book's level.
+
+#### Idiomatic — "feels natural"
+
+- **Language and team idioms** → not an axiom but a *contextual choice*: dated, reversible, team-dependent. That belongs in ADRs (`AsNoTracking` and jOOQ are idiom choices, and North himself sends local idioms to ADRs). What feels natural depends on the reader, not on the code.
+- **The honest tension**: my axioms sometimes go *against* the local idiom. For example, `Result<int, string>` instead of the idiomatic `bool TryParse(string, out int)`.
+  - I trade idiom for honesty (simplicity first: honest before familiar).
+  - I pay the idiom back in the mechanics: records, `switch` expressions, pattern matching, LINQ.
+  - Idiomatic still matters. It just sits one level above the building blocks.
+
+#### Domain-based — "models the problem domain in language and structure"
+
+- **Domain-based language** → domain-named [value objects](../chapter2/axiom-18-value-objects.md) and the future FP-style *DDD tactical patterns* (Chapter 3). `Surname`, not `string`: close the gap between the code and the conversation.
+- **Domain-based structure** → Vertical Slice Architecture: folders mirror the domain, not technical layers. That is also where I argued [OCP moved to](#ocp-did-not-die-it-moved-up-the-stack).
+- **Domain-based boundaries** (module = deployment unit) → architecture, above this book's level.
+
+### The critique of CUPID that does exist
+
+There is less direct criticism of CUPID than you would expect. Most write-ups just restate North and agree. But CUPID's precursor got one sharp reply worth keeping:
+
+- Before the properties, North proposed "fits in my head" as his replacement for Single Responsibility: "you can only reason about something if it fits in your head" ([North, *the back story*](https://dannorth.net/blog/cupid-the-back-story/)).
+- The reply on Hacker News: "any developer who wants to defend their code will simply claim a given spaghetti incident easily fit in *their* head" ([HN](https://news.ycombinator.com/item?id=26531079)).
+
+That is the whole point in one line. A heuristic you can *recognise* but not *enforce* settles no argument. The best-known critique of CUPID is not about a property. It is about the missing mechanism behind one.
+
+### What CUPID leaves above this book
+
+The book is stacked by level: Chapter 1 is the motivation, Chapter 2 the building blocks, Chapter 3 the plays. The parts of CUPID that do not map into Chapters 2 and 3 all point the same way: **up**.
+
+- Observable
+- Idiomatic
+- Minimal dependencies, in the packaging sense
+
+They are not unmapped because they do not matter. They are unmapped because they live above the level of code. Everything that *is* at the level of code is already a building block in the next chapter.
 
 ## So what do I reason with instead?
 
-When reading and writing code we must have the tools, the precise vocabulary to evaluate each line, each data point and each function, in several dimensions. To argue about trade-offs and to describe them properly.
+When reading and writing code, we need tools: a precise vocabulary to evaluate each line, each piece of data and each function, along several dimensions. Something to argue about trade-offs with, and to describe them properly.
 
-SOLID does not give us that. The tell is right there: SOLID is invisible in functional code. It can only be applied where objects own mutable state and behaviour at once. And even when applied, half of it is pure architecture and the other is not actionable.
+SOLID does not give us that:
 
-CUPID comes closer — it's an ally, pointing *toward* a destination, but it stops at the same ceiling: it can't hand you the route. Both leave me able to *name* what I'm looking at, never to *generate* it.
+- It is invisible in functional code. It only applies where objects own mutable state and behaviour at the same time.
+- Even where it applies, half of it is architecture and the other half is not actionable.
 
-So the question I want answered isn't "how do I obey five principles, or chase five properties?" It's:
+CUPID comes closer. It is an ally that points toward a destination, but it stops at the same ceiling: it cannot give you the route.
 
-**What are the building blocks that give me the precise vocabulary and metrics to reason about the code?**
+Both let me *name* what I am looking at. Neither helps me *create* it.
+
+So the question is not "how do I obey five principles, or chase five properties?". It is:
+
+**What building blocks give me a precise vocabulary and metrics to reason about code?**
 
 And once I have them:
 
-**How can I enforce those in the code itself, so I do not rely on anyone's discipline at review time?**
+**How can I enforce them in the code itself, so I do not depend on anyone's discipline at review time?**
 
 ---
 
