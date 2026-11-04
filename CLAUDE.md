@@ -42,6 +42,7 @@ A few edge concerns are explicitly **in** scope at this level *because they shap
 One level up from a single function: how the Chapter 2 building blocks assemble into a *designed module* and reach the outside world. This chapter is allowed material Chapter 2 deliberately excludes:
 
 - **FP-style DDD tactical patterns** — aggregates, entities, value objects, repositories, domain events — modelled the book's way: behaviour as pure functions and deciders over immutable data, not methods on mutable entities (see *The central model*). The "rich domain model" / Tell-Don't-Ask orthodoxy is the road not taken — presented as a trade-off, never attacked.
+- **Vertical slices** — grouping code by feature instead of by technical layer, within one deployable: Cohesion and Connascence applied to the folder layout. Not service decomposition, which is system topology.
 - **Immutable-data persistence** — reading and writing immutable records without an identity-tracking ORM: EF `AsNoTracking()` (and Dapper) for C#, jOOQ for Java. The concrete realization of the impure shell's gather/act steps.
 - **Deep modules, small interfaces** — Ousterhout's "functionality ÷ interface cost"; the counterweight to tiny-function enthusiasm.
 - **Information hiding** — Parnas's "a module hides a design decision likely to change," at the in-scope, code-shaping end (the impure shell hiding the stateful secret), not as architectural decomposition.

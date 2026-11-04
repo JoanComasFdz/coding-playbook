@@ -522,7 +522,18 @@ Echoes the [SOLID critique](#solid-critique)'s note that the **O**/**L** letters
 
 ## Vertical Slice Architecture
 
-🔍 **Open**
+🔍 **Open** — a planned **Chapter 3 Play**, *Vertical slices* ([skeleton](chapter3/02-vertical-slices.md), not yet drafted).
+
+**What:** group code by feature instead of by technical layer, inside one deployable.
+
+**Verdict:** a Play, not a principle: Cohesion and Connascence applied to the folder layout.
+
+- [Axiom 7](chapter2/axiom-07-cohesion.md) — group by reason to change, pointed at a folder.
+- [Axiom 8](chapter2/axiom-08-connascence.md) — high locality inside a slice, low degree between slices.
+- [Axiom 12](chapter2/axiom-12-impureheim.md) — each slice is one Impureheim sandwich.
+- [Chapter 1](chapter1/README.md#ocp-did-not-die-it-moved-up-the-stack) — where OCP's intent survives.
+
+**Source:** Bogard, [*Vertical Slice Architecture*](https://www.jimmybogard.com/vertical-slice-architecture/).
 
 ---
 

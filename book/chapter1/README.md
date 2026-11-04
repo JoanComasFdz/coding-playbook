@@ -166,7 +166,9 @@ SOLID-as-practiced enforces the first kind. This book enforces the second.
 
 ### OCP did not die, it moved up the stack
 
-Its intent, "open for extension, closed for modification", lives on in Vertical Slice Architecture: you add a feature by adding a new slice, without touching the existing ones. The unit that stays closed moved from the *class* to the *slice*, where it is finally actionable.
+Its intent, "open for extension, closed for modification", lives on in Vertical Slice Architecture. In Bogard's words: "New features only add code, you're not changing shared code and worrying about side effects" ([Bogard](https://www.jimmybogard.com/vertical-slice-architecture/)).
+
+The unit that stays closed moved from the *class* to the *slice*, and there it becomes actionable. "Does this change touch one slice or several?" is a question two reviewers answer the same way. The [Vertical slices](../chapter3/02-vertical-slices.md) Play (Chapter 3) builds it from Cohesion and Connascence.
 
 ### Refactoring to extract a shared concept is OCP working, not failing
 
@@ -274,7 +276,7 @@ Every property maps to something I already reason with, or will in a later chapt
 #### Domain-based — "models the problem domain in language and structure"
 
 - **Domain-based language** → domain-named [value objects](../chapter2/axiom-18-value-objects.md) and the future FP-style *DDD tactical patterns* (Chapter 3). `Surname`, not `string`: close the gap between the code and the conversation.
-- **Domain-based structure** → Vertical Slice Architecture: folders mirror the domain, not technical layers. That is also where I argued [OCP moved to](#ocp-did-not-die-it-moved-up-the-stack).
+- **Domain-based structure** → the [Vertical slices](../chapter3/02-vertical-slices.md) Play (Chapter 3): folders mirror the domain, not technical layers. That is also where I argued [OCP moved to](#ocp-did-not-die-it-moved-up-the-stack).
 - **Domain-based boundaries** (module = deployment unit) → architecture, above this book's level.
 
 ### The critique of CUPID that does exist
