@@ -28,8 +28,7 @@ If a draft drifts toward "how to architect a system," pull it back to "how to wr
 
 ### Chapter 1 — the SOLID critique: the motivating hook
 
-- It is the **one place forward links are allowed**: it may link ahead to Chapter 2 axioms. This is the only exception to Chapter 2's foreshadow-don't-spoil rule.
-- The chapter states its own stance in its intro; keep edits consistent with it.
+Editing rules for this chapter live in [`book/chapter1/CLAUDE.md`](book/chapter1/CLAUDE.md).
 
 ### Chapter 2 — Fundamentals: the anatomy of a module and its functions
 
