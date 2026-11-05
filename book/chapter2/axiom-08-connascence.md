@@ -365,7 +365,7 @@ It is also the one this book is built to *remove* rather than weaken. Immutable 
 
 ## Problem / forces
 
-Strong connascence is **invisible when you create it**. Only CoN and CoT break the build when violated (see the compiler line in *Definitions*). The others compile, the happy path passes, and the dependency only speaks up when a future change touches one unit and not its partner.
+Strong connascence is **invisible when you create it**. Only the weak forms break the build when violated (see the compiler line in *Definitions*). The others compile, the happy path passes, and the dependency only speaks up when a future change touches one unit and not its partner.
 
 The competing force is that **strong connascence is the easy path, and it works**, until it doesn't:
 
