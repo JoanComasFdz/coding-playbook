@@ -122,7 +122,7 @@ var clean = lines.stream().map(normalize).toList();
 
 `Compose` is higher-order on both counts: it takes two functions and returns one. The resulting `normalize` isn't a method anyone declared. It is a **closure**, as in [Axiom 9](axiom-09-first-class-functions.md): a function value that applies `trim` and then `toLower`, both captured from the call that built it. It can be passed anywhere a `Func<string, string>` is expected, and no caller has to spell out the chain again.
 
-The clearest sign that an HOF wants to be extracted is code where the *same shape* repeats with a different *step* in the middle: open and close a resource, walk and accumulate, start and commit a transaction, time and report. Pull the step into a parameter, and the shape goes from copy-pasted to written once.
+The clearest sign that an HOF wants to be extracted is code where the *same shape* repeats with a different *step* in the middle: walk and accumulate, filter then transform, group by a key, sort by a field. Pull the step into a parameter, and the shape goes from copy-pasted to written once.
 
 ---
 
@@ -139,12 +139,12 @@ Not every place that "takes some behavior" should become a function. When the be
 ## Why
 
 **1. Shape and step become independently named.**
-Every loop, wrapper and dispatch carries two ideas: the *shape* around the variation (walk every element, time the operation, log entry and exit, open a transaction) and the *step* applied in the middle. A hand-written version mixes them in one block; an HOF separates them. The shape is named once, in the function definition; the step is named at the call site, where the variation actually lives. Two ideas, two names, one call, and the call site reads as the step alone. Hughes calls higher-order functions the *glue* that lets small definitions combine into large programs [1].
+Every loop, wrapper and dispatch carries two ideas: the *shape* around the variation (walk every element, keep the ones that match, group by a key) and the *step* applied in the middle. A hand-written version mixes them in one block; an HOF separates them. The shape is named once, in the function definition; the step is named at the call site, where the variation actually lives. Two ideas, two names, one call, and the call site reads as the step alone. Hughes calls higher-order functions the *glue* that lets small definitions combine into large programs [1].
 
-**2. Boilerplate around an operation collapses to one definition.**
-"Open a transaction, run, commit on success, roll back on failure." "Acquire a lock, run, release." "Log entry, run, log exit." Without HOFs, each of these *shapes* ends up copy-pasted around every *step*. With them, the shape is a function that takes the step as a parameter. The number of places that must be right when the shape changes goes from many to one.
+**2. A pure shape collapses to one definition.**
+"Walk the list and keep a running total." "Check every field and collect the errors." "Group the items by a key." Without HOFs, each of these *shapes* gets rewritten around every *step*. With them, the shape is a function that takes the step as a parameter, and the number of places that must be right when the shape changes goes from many to one.
 
-This doesn't contradict [Axiom 7](axiom-07-cohesion.md#what-dry-is-for)'s advice to let orchestration repeat. A transaction or logging wrapper is infrastructure: one concept with one reason to change (how this application opens transactions, or logs), so it falls under Axiom 7's exception for frameworks and libraries. What Axiom 7 warns against is the opposite: one generic handler with the business step passed in, where every caller has its own reasons to change.
+These are shapes of *pure* code. Impure plumbing (open a transaction, acquire a lock, log entry and exit) is a different case: see *When NOT to*.
 
 **3. Configuration travels inside the returned function.**
 A function that *returns* a function can build its configuration into the result. `PriceFormatter(culture, currency)` returns a function from an amount to its display text; the caller never passes `culture` or `currency` again. The factory's parameters disappear from the call site and reappear, unchanged, inside every later call of the value it produced. The returned function is the configuration *and* the behavior, packaged together.
@@ -164,10 +164,11 @@ With the standard library's higher-order operations (`Select`/`map`, `Where`/`fi
 
 ## When NOT to
 
-Two cases where reaching for a function parameter is the wrong reflex:
+Three cases where reaching for a function parameter is the wrong reflex:
 
 - **Behavior that really has several methods.** `IEnumerator<T>` and `IObserver<T>` declare *several* operations that must be implemented together; their cohesion is the point of having a type. Collapsing them into one function loses something, so the interface is the right shape.
 - **Behavior that needs a stable identity.** A plugin handler looked up by string key in a `Map<String, Function<...>>` works as long as the keys live inside the same program. A handler that has to survive serialization, be found by an annotation scanner, or be registered across processes needs a class: the same exception as in [Axiom 9](axiom-09-first-class-functions.md).
+- **Wrapping impure plumbing.** Don't write reusable wrappers around impure steps, like a `WithTransaction(step)`, `WithLock(step)` or `Logged(step)` that every handler passes its work into. That hides impure code behind a reusable facade, and it is the generic handler with the business step passed in that [Axiom 7](axiom-07-cohesion.md#what-dry-is-for) warns against. Let each orchestration do its own transaction, locking and logging, in plain sight; where the framework already provides the wrapper, use it.
 
 ---
 
