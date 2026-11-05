@@ -125,7 +125,7 @@ record PurchaseOrder(CustomerId buyer, …) {}
 </tr>
 </table>
 
-The compiler enforces none of this yet: `Process` compiles as happily as `PrintLabel`. That is what the axioms that follow are for. They are how a chosen name stops being optional.
+The compiler enforces none of this yet: `Process` compiles as happily as `PrintLabel` (see *Why*, point 3).
 
 ---
 
@@ -177,7 +177,7 @@ You don't find a naming problem after the design is done, the way you find a sme
 
 - **You pay in name length and in learning.** The domain's word is sometimes longer or more awkward than `data`. You use it anyway, because a precise long name beats a short lie. And you have to actually learn the domain's vocabulary, which the generic word lets you skip.
 - **The right word changes.** As the domain is better understood, the right name changes, and a rename touches every place it appears. Tooling makes the mechanical rename cheap. Agreeing on the new word is the hard part.
-- **The compiler cannot check it.** Nothing flags "this is the wrong domain word" or "you used two words for one concept". Choosing the right name stays a human judgment, made at the keyboard and confirmed in review. The rest of this book makes a *chosen* name impossible to bypass. It cannot tell you it was the right name.
+- **The compiler cannot check it.** Nothing flags "this is the wrong domain word" or "you used two words for one concept". Choosing the right name stays a human judgment, made at the keyboard and confirmed in review. Later axioms can enforce a name once it is chosen, but not that it was the right one.
 
 ---
 

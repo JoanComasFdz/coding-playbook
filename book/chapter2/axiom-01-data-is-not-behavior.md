@@ -5,7 +5,7 @@
 - Model facts as plain, immutable data.
 - Put business logic in functions whose result depends only on the data handed to them.
 
-Most of the axioms that follow build on this one.
+[Axiom 0](axiom-00-ubiquitous-language.md) gave each concept one name. The first thing the code decides about a named concept is what it fundamentally is, and the answer is inert data, not behavior. Most of the axioms that follow build on this one.
 
 ---
 
@@ -126,7 +126,7 @@ The usual tool, an object that bundles mutable state with the methods that chang
 
 One force pulls the other way: keeping a fact and the operations on it physically together ("keep the things that change together, together"). That force is real, and this axiom does not deny it. It moves it somewhere else (see *When NOT to*).
 
-The OO practice built on that force has a name: **Tell, Don't Ask**. Don't pull an object's data out to make a decision; push the decision into the object that owns the data. It is the deliberate opposite of this axiom, and *When NOT to* covers it as the road not taken.
+The OO practice built on that force has a name, **Tell, Don't Ask**, and it is the deliberate opposite of this axiom (see *Tell, Don't Ask: the road not taken*).
 
 ---
 
@@ -189,7 +189,7 @@ This book removes the premise instead. Once the data is an *immutable value*, th
 Same benefits (one home for the rule, no reaching into objects), different mechanism (freeze the data instead of hiding it behind behavior). Keeping things together is not lost, only moved:
 
 - **to the module**, where a function and the types it transforms sit side by side without being fused;
-- **to the one place where mutable state still lives**, where telling a stateful resource what to do remains right.
+- **to the one place where mutable state still lives** (see *Mutable resources* above).
 
 ---
 

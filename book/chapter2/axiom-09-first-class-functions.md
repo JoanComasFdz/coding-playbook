@@ -128,13 +128,13 @@ One force pulls the other way: **discoverability**. A named function shows up in
 ## Why
 
 **1. Behavior can be named and reused at its actual size.**
-The shortest way to say "multiply by 1.20" is `a => a * 1.20m`: one line, one expression. As a value, that line can be given a name (`Func<decimal, decimal> withVat = a => a * 1.20m;`) and reused in many places, or left anonymous inside a larger expression when it doesn't deserve a name. The unit no longer has a minimum size set by the class that hosts it: behavior can be as small as the work it does, and named or not as the surrounding code needs.
+The shortest way to say "multiply by 1.20" is `a => a * 1.20m`: one line, one expression. As a value, that line can be given a name (`Func<decimal, decimal> withVat = a => a * 1.20m;`) and reused in many places, or left anonymous inside a larger expression (when to name it is in *Trade-offs*). The unit no longer has a minimum size set by the class that hosts it: behavior can be as small as the work it does.
 
 **2. A function value moves like data.**
 Once behavior is a value, it can live wherever any other value can: in a `Map<Key, Function<T, R>>`, in a record field, in a configuration object, in a queue. Dispatch becomes a lookup; registration becomes adding an entry. Behavior and data flow through the same shapes; there is no separate world of "things that do" next to the structures that hold "things that are".
 
 **3. Closures carry data along with the function.**
-A function value can capture variables from the scope that built it. In `Multiplier`, the returned lambda refers to `factor`, a value from the calling scope, and remembers it for every later call, wherever that call happens. The function value plus those captured values is the **closure**. Data and operation arrive at the call site together, as one value; the function doesn't need to look anywhere outside itself for the data it depends on.
+As `Multiplier` shows in the *Example*, a closure brings its data and its operation to the call site together, as one value. The function doesn't need to look anywhere outside itself for the data it depends on.
 
 The captured values have to be values in the sense of [Axiom 5](axiom-05-pure-functions.md): immutable, created once, and not shared with anything mutable. Otherwise the function value silently becomes impure. A closure is a way to carry data *into* a function value; it isn't a license for the function to reach *out*.
 
