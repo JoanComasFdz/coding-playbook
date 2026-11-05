@@ -4,7 +4,7 @@
 
 - A function value is the same kind of thing as a number or a record: created somewhere, named, moved around, called when needed.
 
-Axioms [5](axiom-05-pure-functions.md) to [8](axiom-08-connascence.md) set the criteria for a well-formed function: pure, honest, total, cohesive and weakly coupled. This axiom names the property that lets two such functions be combined at all: a function is not only something a program *does*. It is a *value* the program can hold, store, move and pass.
+Axioms [5](axiom-05-pure-functions.md) to [8](axiom-08-connascence.md) set the criteria for a well-formed function: pure, honest, total, cohesive and weakly coupled. This axiom names the property that lets the program itself combine such functions, instead of only the programmer, by hand: a function is not only something a program *does*. It is a *value* the program can hold, store, move and pass.
 
 Through [Axiom 8](axiom-08-connascence.md)'s lens, this axiom weakens no connascence on its own. It is the *carrier* that later weakenings ride on. Once a function is a value, a dispatch carried by a `switch` on strings (a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com)) can become a lookup keyed by a type, such as an enum, that the compiler checks. First-class functions don't make that move; they make it *possible*.
 
@@ -19,7 +19,7 @@ A language has first-class functions when a function value is treated the same w
 - **passed as an argument:** to another function that calls it when ready;
 - **returned as a result:** built at runtime and handed back to the caller, often capturing values from the scope that built it.
 
-A function value carries two things: the operation it performs, and any values it captured from the scope that built it (a [*closure*](https://en.wikipedia.org/wiki/Closure_(computer_programming))). A [*lambda*](https://en.wikipedia.org/wiki/Anonymous_function) is the most compact way to create one: an anonymous function expression that evaluates to a value of a function type. But a named static method or a method reference is the same kind of value. Named or not, the thing being moved around is the function. Only calling it *runs* it; until then, the function value is just data, like any other.
+A function value carries two things: the operation it performs, and any values it captured from the scope that built it (a [*closure*](https://en.wikipedia.org/wiki/Closure_(computer_programming))). A [*lambda*](https://en.wikipedia.org/wiki/Anonymous_function) is the most compact way to create one: an anonymous function expression that evaluates to a value of a function type. But a reference to a named method (a method group in C#, a method reference such as `Pricing::total` in Java) is the same kind of value. Named or not, the thing being moved around is the function. Only calling it *runs* it; until then, the function value is just data, like any other.
 
 C# (delegates, `Func<>`, `Action<>`, lambdas) and Java (functional interfaces such as `Function<T, R>`, `Predicate<T>` and `Supplier<T>`, lambdas, method references) both support all four uses. The capability isn't in question. The question is whether the codebase *treats* functions as values, or only as declarations that happen to compile.
 
