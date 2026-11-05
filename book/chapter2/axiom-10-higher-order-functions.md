@@ -25,8 +25,8 @@ A function that does both is higher-order on both counts. In real code, the patt
 
 This axiom departs from three common defaults that do the same job with other constructs [2]:
 
-- **Template Method.** An abstract base class with one method left for the subclass to fill in. The filled-in step is a function; inheritance is the long way to deliver it. A method that takes the step directly gives the same separation, without a class hierarchy.
-- **Strategy as a one-method interface.** A single-method interface (`IComparer<T>`, Java's `Comparator<T>`) is, structurally, a function type. It is the right shape when the variation deserves a name and its own file. It is overhead when the variation is one lambda, passed at one call site and never named anywhere else.
+- **[Template Method](https://en.wikipedia.org/wiki/Template_method_pattern).** An abstract base class with one method left for the subclass to fill in. The filled-in step is a function; inheritance is the long way to deliver it. A method that takes the step directly gives the same separation, without a class hierarchy.
+- **[Strategy](https://en.wikipedia.org/wiki/Strategy_pattern) as a one-method interface.** A single-method interface (`IComparer<T>`, Java's `Comparator<T>`) is, structurally, a function type. It is the right shape when the variation deserves a name and its own file. It is overhead when the variation is one lambda, passed at one call site and never named anywhere else.
 - **Hand-written loops with mutable accumulators.** A `for` loop that walks a list to sum, find or transform reimplements the body of `Aggregate`, `First` or `Select` inline. The loop names neither the traversal nor the step; the higher-order version separates them, so the call site reads as the step alone.
 
 C# (delegates, `Func<>`, `Action<>`) and Java (functional interfaces such as `Function<T, R>`, `Predicate<T>`, `BiFunction<T, U, R>`) both support HOFs fully. The rule is the same in both: when the same *shape* of code keeps appearing around a different *step*, the shape becomes a function that takes the step as a parameter.
@@ -176,7 +176,7 @@ Three cases where reaching for a function parameter is the wrong reflex:
 
 [1] **John Hughes**, *Why Functional Programming Matters*, Research Topics in Functional Programming, Addison-Wesley, 1990. Already cited in earlier axioms. Listed again because its central argument, that higher-order functions (together with lazy evaluation) are the *glue* that lets small, simple definitions combine into large programs, is the classic case for this axiom. Its worked examples (`foldr`, `map`, numerical algorithms) are the standard demonstrations. <https://www.cs.kent.ac.uk/people/staff/dat/miranda/whyfp90.pdf>
 
-[2] **Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides**, *Design Patterns: Elements of Reusable Object-Oriented Software*, Addison-Wesley, 1994. Template Method, Strategy and Command are the OO forms that higher-order functions replace at a lower cost. Already cited in [Axiom 9](axiom-09-first-class-functions.md); listed again because HOFs are how this book expresses those patterns when the variation is one function.
+[2] **Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides**, *Design Patterns: Elements of Reusable Object-Oriented Software*, Addison-Wesley, 1994. Template Method, Strategy and [Command](https://en.wikipedia.org/wiki/Command_pattern) are the OO forms that higher-order functions replace at a lower cost. Already cited in [Axiom 9](axiom-09-first-class-functions.md); listed again because HOFs are how this book expresses those patterns when the variation is one function.
 
 ---
 
