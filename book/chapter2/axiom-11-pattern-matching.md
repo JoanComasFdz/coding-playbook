@@ -12,19 +12,19 @@ Through [Axiom 8](axiom-08-connascence.md)'s lens, an exhaustive match turns "di
 
 ## Definitions
 
-A pattern match is an expression evaluated against a value. Each branch, called an *arm* (or *case*), has a **pattern**, the shape the value must have for that arm to fire, and a **body**, the expression to evaluate when it does. The first arm whose pattern matches wins; its body is the result of the whole expression.
+A pattern match is an expression evaluated against a value. Each branch has a **pattern**, the shape the value must have for that branch to run, and a **body**, the expression to evaluate when it does. The first branch whose pattern matches wins; its body is the result of the whole expression.
 
 Modern C# and Java support several kinds of pattern:
 
 - **Type patterns.** `case Circle c` picks on the runtime type and binds the value to a name of that type. The cast is part of the match.
 - **Record (deconstruction) patterns.** `Point(var x, var y)` picks on shape *and* pulls the components out. Inside the body, `x` and `y` are local values of their declared types. (Letting a type choose which shape it shows to patterns, while hiding its internals, is an idea Wadler explored as *views* [1].)
 - **Constant patterns.** `0`, `"OPEN"`, `EventType.Deleted` pick on equality with a known value.
-- **Guarded patterns.** `case Square s when s.Side > 5` adds a runtime condition to a structural match: shape *and* condition in one arm.
+- **Guarded patterns.** `case Square s when s.Side > 5` adds a runtime condition to a structural match: shape *and* condition in one branch.
 
-A match is *exhaustive* when its arms cover every value the input type can hold. How much the compiler helps differs:
+A match is *exhaustive* when its branches cover every value the input type can hold. How much the compiler helps differs:
 
 - **Java** checks exhaustiveness over sealed interfaces and enums. A `switch` that misses a case doesn't compile [3].
-- **C#** warns (CS8509) when a `switch` expression isn't exhaustive, and you can turn that warning into an error. But C# can't yet prove that a class hierarchy is closed, so a `switch` over an abstract record base needs a discard arm (`_ => throw ...`), and a newly added subtype isn't flagged.
+- **C#** warns (CS8509) when a `switch` expression isn't exhaustive, and you can turn that warning into an error. But C# can't yet prove that a class hierarchy is closed, so a `switch` over an abstract record base needs a discard branch (`_ => throw ...`), and a newly added subtype isn't flagged.
 
 ---
 
@@ -66,9 +66,9 @@ public static String describe(Object obj) {
 </tr>
 </table>
 
-Each arm names the type and binds the narrowed value right where its work happens. The arms read as a table, "if it's *this*, do *that*", with no separate cast or extra variable.
+Each branch names the type and binds the narrowed value right where its work happens. The branches read as a table, "if it's *this*, do *that*", with no separate cast or extra variable.
 
-A second case: a *closed* hierarchy. Guards let one shape split into several arms by condition.
+A second example: a *closed* hierarchy. Guards let one shape split into several branches by condition.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -117,7 +117,7 @@ public static String classify(Shape shape) {
 </tr>
 </table>
 
-The Java version has no `default` arm, and adding a `Triangle` later points you at every `switch` that must handle it. The C# version needs the discard arm (see *Definitions*).
+The Java version has no `default` branch, and adding a `Triangle` later points you at every `switch` that must handle it. The C# version needs the discard branch (see *Definitions*).
 
 ---
 
@@ -170,7 +170,7 @@ sealed interface Shape permits Circle, Rectangle, Square {
 </tr>
 </table>
 
-Its body is the same `switch` as before: `Match` wraps it as a method on the type. Java needs no fallback arm; C# does, for the reason in *Definitions*.
+Its body is the same `switch` as before: `Match` wraps it as a method on the type. Java needs no fallback branch; C# does, for the reason in *Definitions*.
 
 The same `Area` function, first as a `switch` expression and then as a `Match` call:
 
@@ -222,14 +222,14 @@ public static double area(Shape shape) {
 </tr>
 </table>
 
-Both read at about the same length. The difference is *where the case name lives*: in the `switch`, the consumer spells the type on every arm (`Circle c =>`); in the `Match` call, the case is a parameter name (`circle: c =>`) and the lambda's parameter type is inferred.
+Both read at about the same length. The difference is *where the case name lives*: in the `switch`, the consumer spells the type on every branch (`Circle c =>`); in the `Match` call, the case is a parameter name (`circle: c =>`) and the lambda's parameter type is inferred.
 
 ### `switch` or `Match`?
 
-- **`switch` puts the case list at the call site.** Every consumer writes its own arms and can use guards, nested patterns, or a default for cases it doesn't care about. The cost: every arm spells out the case type. That's short with `Circle`, but tiresome when the type is generic and every arm repeats a long compound type.
-- **`Match` puts the case list on the type.** Every consumer gets one uniform call shape, and no arm spells out a type. The costs:
+- **`switch` puts the case list at the call site.** Every consumer writes its own branches and can use guards, nested patterns, or a default for cases it doesn't care about. The cost: every branch spells out the case type. That's short with `Circle`, but tiresome when the type is generic and every branch repeats a long compound type.
+- **`Match` puts the case list on the type.** Every consumer gets one uniform call shape, and no branch spells out a type. The costs:
   - the method's signature grows with the number of variants (seven variants, seven function parameters);
-  - each arm is a lambda allocation;
+  - each branch is a lambda allocation;
   - every consumer is coupled to the variant list, so adding, removing or renaming a variant changes a method signature every caller sees.
 
 For most line-of-business code the performance costs don't matter. Start with `switch`. Move to `Match` once the variant list has settled and enough consumers exist that spelling out the case types becomes a visible tax. The answer can differ between types in the same codebase.
@@ -243,8 +243,8 @@ Every program that decides what to do based on which kind of thing it holds is d
 - **A virtual method on the type.** Each shape owns its definition and dispatch is implicit. Right when the behavior belongs to the type (see *When NOT to*).
 - **The [Visitor pattern](https://en.wikipedia.org/wiki/Visitor_pattern)** [2]. A type-safe way to do case analysis in an OO language without pattern matching: one visitor per operation, one method per shape, double dispatch through `accept`. The compiler checks the cases. Where pattern matching exists, the same idea fits in one expression instead of a class hierarchy.
 - **`instanceof` / `is` chains with manual casts.** Light and immediate, with no extra types. But the type test and the cast are separate statements, and nothing checks completeness. Fine for a throwaway decision; awkward as soon as a shape is added.
-- **A `switch` on a tag string or enum, with a cast inside each arm.** Common in event-handling code where the tag is the dispatch key. The narrowing has to be written by hand, because the language can't carry it across the branch.
-- **Pattern matching.** Picks on shape, narrows and binds in one arm, and the compiler can check exhaustiveness over a closed set of cases.
+- **A `switch` on a tag string or enum, with a cast inside each branch.** Common in event-handling code where the tag is the dispatch key. The narrowing has to be written by hand, because the language can't carry it into the branch.
+- **Pattern matching.** Picks on shape, narrows and binds in one branch, and the compiler can check exhaustiveness over a closed set of cases.
 
 When the operation belongs to the consumer (not the data) and the set of cases is closed, pattern matching is the most direct of the five. The others stay the right fit when their conditions hold.
 
@@ -252,8 +252,8 @@ When the operation belongs to the consumer (not the data) and the set of cases i
 
 ## Why
 
-**1. Shape, binding and action sit in the same arm.**
-Inside an arm typed `Circle c`, the value already *is* a `Circle` with a radius. The body uses its parts directly, without a cast or an extra local. The arm contains exactly the work for that case and nothing else.
+**1. Shape, binding and action sit in the same branch.**
+Inside a branch typed `Circle c`, the value already *is* a `Circle` with a radius. The body uses its parts directly, without a cast or an extra local. The branch contains exactly the work for that case and nothing else.
 
 **2. The `if` chain collapses into one expression.**
 An `if` chain (see *Problem / forces*) gives each case its own braces, type test, cast and local. The match removes that scaffolding: one `switch`, and between its braces the cases themselves, one per line. The cases also sit *together*, where an `if` chain leaves them as separate blocks the reader has to reassemble into "the set of cases this code handles".
@@ -268,8 +268,8 @@ The consumer that needs to branch on a shape holds the branching logic; the data
 
 ## Trade-offs
 
-- **The temptation to grow the match forever.** A match with forty arms usually means the data should be redesigned: maybe the cases should be grouped, or the consumer is making too many decisions in one place. The match is doing its job by making the size of the decision visible.
-- **The guarantee needs a closed type.** A match over a non-sealed type compiles, but nothing checks completeness and the `default` arm carries the weight. Acceptable for `Object`-typed dispatch or hierarchies you don't own; where the cases are under your control, seal them. (For sets that are open by design, see *When NOT to*.)
+- **The temptation to grow the match forever.** A match with forty branches usually means the data should be redesigned: maybe the cases should be grouped, or the consumer is making too many decisions in one place. The match is doing its job by making the size of the decision visible.
+- **The guarantee needs a closed type.** A match over a non-sealed type compiles, but nothing checks completeness and the `default` branch carries the weight. Acceptable for `Object`-typed dispatch or hierarchies you don't own; where the cases are under your control, seal them. (For sets that are open by design, see *When NOT to*.)
 - **`switch` versus `Match` is your call.** Each has its own costs (see *`switch` or `Match`?*).
 
 ---
