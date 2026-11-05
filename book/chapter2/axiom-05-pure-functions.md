@@ -15,7 +15,7 @@ In one sentence: **a function is pure when no side effect from [Axiom 3](axiom-0
 
 A function is pure when all of these are true:
 
-- **No effects in its body.** No clock or random read, no I/O, no logging, no parameter changes, and no `throw` on bad input: an exception is an output that bypasses the return value. None of Axiom 3's categories appear.
+- **No effects in its body.** No clock or random read, no I/O, no logging, no parameter changes, and no `throw` on bad input: an exception is an output that bypasses the return value. None of [Axiom 3](axiom-03-side-effects.md#the-categories)'s categories appear.
 - **No effects through its calls.** Purity is deep, just like impurity. A function that does arithmetic plus one call to an impure helper is impure. Every function it calls, all the way down, must be pure too.
 - **No hidden inputs through captures.** A captured field or reference that holds a `DbContext`, a `Random`, a settable singleton or any other mutable shared state makes the function impure. Captures are allowed, but they must be values: immutable, created once, and not shared with anything that changes.
 - **Deterministic.** Same inputs in, same output out: two calls with equal arguments must give equal results. Determinism is about *behavior*, not just *the body*: a function whose body looks effect-free but reads a mutable field is not pure.
@@ -31,7 +31,7 @@ On a pure function, the signature `(InputA, InputB) -> Output` describes *everyt
 
 The return type itself can still be vague about *which* outcomes are possible. That is a separate problem from purity: purity only guarantees there is no other channel.
 
-C# and Java can't express purity in a signature. So recognizing it is a *reading* skill, applied to the whole body and everything it calls: the same skill as in Axiom 4, used to spot the opposite kind.
+C# and Java can't express purity in a signature. So recognizing it is a *reading* skill, applied to the whole body and everything it calls: the same skill as in [Axiom 4](axiom-04-impure-functions.md), used to spot the opposite kind.
 
 ---
 

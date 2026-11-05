@@ -8,7 +8,7 @@
 [Axiom 6](axiom-06-honest-total-signatures.md) made the signature *honest*: every outcome named, every input defined. But a signature can tell the whole truth and still promise too much. A function that validates an order *and* prices it *and* records the decision can have a perfectly honest signature around three jobs.
 
 - Purity ([Axiom 5](axiom-05-pure-functions.md)) limits what a function may touch.
-- Honesty and totality (Axiom 6) limit how it reports its outcomes.
+- Honesty and totality ([Axiom 6](axiom-06-honest-total-signatures.md)) limit how it reports its outcomes.
 - This axiom limits *how much it decides at all*.
 
 Honest, total **and cohesive** is the full test for a well-formed function. Of the three, cohesion gets the least help from the compiler: honesty and totality show up in the types, but "one reason to change" is a judgment about the future.
