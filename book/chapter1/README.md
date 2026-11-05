@@ -157,7 +157,7 @@ Enforcing rules in the code is not the problem. The rest of this book wants exac
 - **Ceremony** is structure that is enforced but carries no information.
 - **A decision** is structure that is enforced *and* tells the reader something true about the code.
 
-The test: **remove it, and ask what the reader lost.**
+The decisions-vs-ceremony test: **remove it, and ask what the reader lost.**
 
 - Remove the `IFoo` next to its only `Foo`: nothing. There was one implementation before and there is one now.
 - Remove the `Result` return type: the reader no longer knows the call can fail, or how.

@@ -37,7 +37,7 @@ Bogard's own rule is the two Chapter 2 lenses in one line: "Minimize coupling be
 
 ## Trade-offs & when NOT to
 
-- **Ceremony.** Vertical slices as practised often come with a handler interface per request and a mediator library. Apply Chapter 1's test: [remove it and ask what the reader lost](../chapter1/README.md#enforce-decisions-not-ceremony). If the answer is nothing, leave it out.
+- **Ceremony.** Vertical slices as practised often come with a handler interface per request and a mediator library. Apply the [decisions-vs-ceremony test](../chapter1/README.md#enforce-decisions-not-ceremony) from [Chapter 1](../chapter1/README.md): remove it and ask what the reader lost. If the answer is nothing, leave it out.
 - **Duplication.** Slices repeat similar code. That is intended for the volatile workflow. Extract a shared concept once it proves stable, not because two pieces of code look alike ([Axiom 7](../chapter2/axiom-07-cohesion.md): similarity is not a reason to merge).
 - **Thin CRUD.** When every feature is the same thin read and write, a folder per endpoint adds structure without adding information.
 - **No features to slice.** A library or a single-purpose module has no requests in this sense. Slicing does not apply.
