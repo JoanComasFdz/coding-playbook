@@ -128,7 +128,7 @@ The clearest sign that an HOF wants to be extracted is code where the *same shap
 
 ## Problem / forces
 
-The usual OO ways to say "this shape, with this step swapped in" are Template Method and Strategy as an interface. Both work, and both have a cost: a type per variation, a folder of small classes, a registration in the composition root. A function as a parameter gives the same separation in one parameter, with the variation living at the call site instead of in a new file.
+The usual OO ways to say "this shape, with this step swapped in" are [Template Method](https://en.wikipedia.org/wiki/Template_method_pattern) and [Strategy](https://en.wikipedia.org/wiki/Strategy_pattern) as an interface. Both work, and both have a cost: a type per variation, a folder of small classes, a registration in the composition root. A function as a parameter gives the same separation in one parameter, with the variation living at the call site instead of in a new file.
 
 One force pulls the other way: **debugging**. Chains of HOFs can be harder to step through, and the stack trace shows the wrapper while the lambda inside it is anonymous. A long pipeline of unnamed steps becomes opaque as soon as something needs investigating. The remedy is the rule from [Axiom 9](axiom-09-first-class-functions.md): name a function when it deserves a name. A `static` method passed to an HOF is as easy to find as any other method.
 
