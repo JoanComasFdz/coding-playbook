@@ -24,6 +24,10 @@ Examples in this playbook use the current LTS versions of each target language:
 - **C# 14** on **.NET 10 LTS** (released November 2025)
 - **Java 25 LTS** (released September 2025)
 
+## This book changes
+
+The axioms in Chapter 2 are small, stable ideas, and I don't expect them to change often. What changes is how languages express them, and what I learn from using them in real code. When that happens, I update this book. For example, if C# gets a better way to model a domain value than the value objects I use today, I may add or replace an axiom and update the Plays that build on it.
+
 ---
 
 ## Start reading here

@@ -97,7 +97,8 @@ Prose density runs in three tiers: a **how-to** file is near-zero prose (mechani
 
 ## Per-topic template
 
-For consistency and fairness, draft each topic as: **Problem / forces → What I do today → Why → C#/Java example → Trade-offs & when NOT to → What might change tomorrow.** The last two sections are the playbook's non-dogmatism — don't skip them.
+- **Chapter 2 axioms:** Definitions → Example → Problem / forces → Why → Trade-offs → When NOT to → References. No per-axiom "What might change tomorrow": axioms are stable ideas, and how this book changes is covered once, in the main README.
+- **Chapter 3 Plays:** Problem / forces → What I do today → Why → C#/Java example → Trade-offs & when NOT to → What might change tomorrow. Plays are compositions and tactical choices that can change, so the last two sections are their non-dogmatism. Don't skip them.
 
 ## When adding content
 
