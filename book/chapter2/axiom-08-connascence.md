@@ -1,51 +1,66 @@
 # Axiom 8 — Connascence
 
-**Two units are connascent when a change to one forces a matching change to the other to keep the system correct. Connascence is the metric for that inter-unit dependency, graded on three axes — strength (how hard it is to find and change safely), degree (how many units are bound), locality (how far apart they sit) — and ordered from weakest to strongest forms. The work is to weaken strong connascence into weak, shrink its degree, and pull connascent units closer together.**
+**Two units are connascent when a change to one forces a matching change to the other to keep the system correct. Connascence measures that dependency on three axes (strength, degree and locality) and orders its forms from weakest to strongest. The work is to weaken strong connascence, shrink its degree, and pull connascent units closer together.**
 
-- Weaker is better than stronger: a dependency the compiler can see (name, type) beats one carried by convention (meaning, execution order).
-- Closer is better than farther: two units that must change together should be near enough that the reader finds the second when changing the first.
-- Fewer is better than more: a convention three units share is worse than the same convention shared by two.
+- **Weaker beats stronger.** A dependency the compiler can see (a name, a type) beats one carried by convention (a meaning, an execution order).
+- **Closer beats farther.** Two units that must change together should be near enough that whoever changes the first finds the second.
+- **Fewer beats more.** A convention shared by three units is worse than the same convention shared by two.
 
-[Axiom 7](axiom-07-cohesion.md) named the metric *inside* a unit: a cohesive function has one reason to change. This axiom names the matching metric *between* units: when a change to one forces a change to another, they are connascent, and the question is no longer "does this hold together?" but "what is bound to what, and how strongly?" The two are the same question — *what changes together?* — answered from the inside and from the outside. Cohesion asks what belongs in one unit; connascence asks what survives being split across two. Where Axiom 7 warned about a "shared blast radius" without naming the shrapnel, this axiom supplies the taxonomy: every blast radius is a *kind* of connascence, and naming the kind tells you how to shrink it.
+[Axiom 7](axiom-07-cohesion.md) named the metric *inside* a unit: a cohesive function has one reason to change. This axiom names the matching metric *between* units: when a change to one forces a change in another, they are connascent. The question is no longer "does this hold together?" but "what is bound to what, and how strongly?".
 
-This is the playbook's second evaluative axiom, and its second lens. It builds nothing — no type, no construct comes out of it; what it gives you is vocabulary precise enough to argue about a dependency. And that vocabulary does most of its work *later*: much of the toolkit still to come is, read through this lens, one move — *turn a strong connascence into a weak one*.
+Both axioms ask the same question, *what changes together?*, one from the inside and one from the outside. Cohesion asks what belongs in one unit; connascence asks what survives being split across two. [Axiom 7](axiom-07-cohesion.md) talked about a "shared blast radius" without naming its parts. This axiom supplies the taxonomy: every blast radius is a *kind* of connascence, and naming the kind tells you how to shrink it.
+
+This is the second evaluative axiom, the chapter's second lens. It builds nothing: no type or construct comes out of it. What it gives you is a vocabulary precise enough to argue about a dependency. And that vocabulary does most of its work *later*: much of the toolkit still to come is, through this lens, one move: *turn a strong connascence into a weak one*.
 
 ---
 
 ## Definitions
 
-**Connascence.** Two software units are connascent if a change in one requires a corresponding change in the other for the system to remain correct. It is the successor concept to *coupling* [5] — not a synonym, but a sharper instrument. "Coupling" tells you two things are connected; connascence tells you *in what way* and *how badly*, which is the part you can act on. The classic teaching pairs "low coupling" with "high cohesion" as two knobs in tension; this playbook keeps the pairing but changes the framing — cohesion is *one reason to change*, connascence is the *graded kind of cross-unit binding* — so the two read as inside and outside of one question, not as opposing dials.
+**[Connascence](https://en.wikipedia.org/wiki/Connascence).** Two units of code are connascent if a change in one requires a matching change in the other for the system to stay correct. Page-Jones introduced the term as a refinement of [*coupling*](https://en.wikipedia.org/wiki/Coupling_(computer_programming)) [1][5]: not a synonym, but a sharper tool. "Coupling" tells you two things are connected; connascence tells you *how* and *how badly*, which is the part you can act on.
 
-**The three axes.** A given connascence is judged on three independent dimensions, and a refactor improves it by moving it along any of them:
+The classic teaching names "low coupling" and "high cohesion" as two separate goals. This book keeps the pair but frames it differently: cohesion is *one reason to change*, connascence is the *graded kind of binding between units*. They are the inside and the outside of one question.
 
-- **Strength** — how hard the dependency is to discover and change safely. The deciding question is whether the *compiler* enforces the agreement or a *convention* does: a shared *name* or *type* breaks the build the moment it is violated, so a violation cannot ship; a shared *meaning*, *position*, *algorithm*, or *call order* is silent at compile time, and the mismatch surfaces only when something runs — a failing test, or a customer. The convention-carried forms are the strong ones.
-- **Degree** — how many units share the dependency. The same convention agreed on by two units is a smaller liability than one agreed on by twelve; degree is the size of the blast radius once it goes off.
-- **Locality** — how far apart the connascent units sit. Two fields in one record that must move together are trivially connascent and trivially fixed; the same dependency split across two services is the one that rots, because the reader changing one has no line of sight to the other. *High locality makes strong connascence tolerable* — this is the bridge back to Axiom 7: connascence read at reading-distance is just cohesion.
+**The three axes.** Each connascence is judged on three independent dimensions, and a refactoring improves it by moving it along any of them [2]:
 
-**The taxonomy, weakest to strongest.** Page-Jones splits the forms into *static* — found by reading the source, without running it — and *dynamic* — only manifest at runtime. Reading the source, weakest first:
+- **Strength:** how hard the dependency is to find and to change safely. The deciding question is whether the *compiler* enforces the agreement or a *convention* does. A shared *name* or *type* breaks the build the moment it is violated, so a violation can't ship. A shared *meaning*, *position*, *algorithm* or *call order* is silent at compile time; the mismatch shows up only when something runs, in a failing test or for a customer. The forms carried by convention are the strong ones.
+- **Degree:** how many units share the dependency. The same convention agreed by two units is a smaller risk than one agreed by twelve. Degree is the size of the blast radius when it goes off.
+- **Locality:** how far apart the connascent units are. Two fields in one record that must change together are trivially connascent and trivially fixed. The same dependency split across two services is the one that rots, because whoever changes one side can't see the other. *High locality makes strong connascence tolerable.* This is the bridge back to [Axiom 7](axiom-07-cohesion.md): connascence at reading distance is just cohesion.
 
-- **Connascence of Name (CoN).** Units must agree on a name. A method and its callers agree on `getBalance`. The weakest form, and the one every program is full of: rename-aware tooling fixes it mechanically.
-- **Connascence of Type (CoT).** Units must agree on a type. A function taking `Username` and the caller producing one agree on that type. Slightly stronger than name, still fully static — and, like name, the compiler is the enforcer.
-- **Connascence of Meaning (CoM).** Units must agree on the *meaning* of a value with no type to carry it — a magic number, a sentinel, a status string. `0` means success and `1` means failure; `-1` means "not found"; `""` means "no name yet." Visible in the source, but invisible to the type checker: the agreement lives in heads and comments.
-- **Connascence of Position (CoP).** Units must agree on the *order* of things — most commonly positional arguments. `transfer(from, to, amount)` binds every caller to that order; swap two same-typed parameters and nothing complains until money moves the wrong way.
-- **Connascence of Algorithm (CoA).** Units must agree on a specific algorithm. Two ends of a channel must hash, checksum, or serialise the same way; change the algorithm on one side and the other silently rejects every message.
+**The forms, weakest to strongest.** Page-Jones splits them into *static* forms, which you can find by reading the source, and *dynamic* forms, which only show up at runtime [1][2]. The static forms, weakest first:
 
-Dynamic — invisible in the source, surfacing only at runtime, and stronger still. Weakest first:
+- **Connascence of Name (CoN).** Units must agree on a name: a method and its callers agree on `getBalance`. The weakest form, and every program is full of it. Rename-aware tooling fixes it mechanically.
+- **Connascence of Type (CoT).** Units must agree on a type: a function that takes a `Username` and its caller agree on that type. Slightly stronger than name, still fully static, and the compiler enforces it.
+- **Connascence of Meaning (CoM).** Units must agree on the *meaning* of a value that no type carries: a magic number, a sentinel, a status string. `0` means success and `1` means failure; `-1` means "not found"; `""` means "no name yet". Visible in the source, but invisible to the type checker: the agreement lives in heads and comments.
+- **Connascence of Position (CoP).** Units must agree on the *order* of things, most often positional arguments. `transfer(from, to, amount)` binds every caller to that order; swap two parameters of the same type and nothing complains until money moves the wrong way.
+- **Connascence of Algorithm (CoA).** Units must agree on a specific algorithm. Both ends of a channel must hash, checksum or serialize the same way; change the algorithm on one side and the other silently rejects every message.
 
-- **Connascence of Execution (CoE).** Units must agree on the *order in which operations run*. You must authenticate before you fetch the profile; you must open before you read. Nothing in the types forbids the wrong order — the contract is temporal, and it is enforced, if at all, by a runtime guard.
-- **Connascence of Timing (CoTiming).** Units must agree on the *timing* of operations — a deadline, a window, the interleaving of two threads. This is the concurrency-and-duration form, more about runtime scheduling than the anatomy of a module, so it falls outside this playbook's scope; it is named here only to keep the ordering honest, sitting between Execution and Value.
-- **Connascence of Value (CoV).** Several values must *change together* to preserve an invariant that binds them. `Total` must equal `Subtotal + Tax`; a period's `Start` must not pass its `End`; the same constant copied into two files must match. No single type carries the rule, so the agreement lives among the values themselves, kept by whoever remembers to update all of them at once.
-- **Connascence of Identity (CoI).** Two or more units must reference *the very same instance* — not merely equal values, but one shared entity: two views onto a cart, two handles on a connection, two readers of a cache. The compiler sees two references of the same type and cannot tell whether they point at one object or two, so the agreement is object identity, invisible until the two silently diverge at runtime. It is the **strongest** form of all.
+The dynamic forms are invisible in the source, show up only at runtime, and are stronger still. Weakest first:
 
-The literature agrees on the static/dynamic split, on Name and Type as the two weakest, and on Identity as the strongest; it is looser about the exact rank of Meaning, Position, and Algorithm among the static forms, and treats the whole sequence as approximate — even Weirich declined to fix a precise order. That precise order matters less than the line drawn through the list next.
+- **Connascence of Execution (CoE).** Units must agree on the *order in which operations run*: authenticate before fetching the profile, open before reading. Nothing in the types forbids the wrong order. The contract is about time, and it is enforced, if at all, by a runtime check.
+- **Connascence of Timing (CoTiming).** Units must agree on the *timing* of operations: a deadline, a time window, how two threads interleave. This is about runtime scheduling more than the structure of a module, so it is out of scope for this book. It is named here only to keep the order complete; it sits between Execution and Value.
+- **Connascence of Value (CoV).** Several values must *change together* to keep a rule that binds them. `Total` must equal `Subtotal + Tax`; a period's `Start` must not pass its `End`; the same constant copied into two files must match. No single type carries the rule, so the agreement lives among the values themselves, kept by whoever remembers to update all of them.
+- **Connascence of Identity (CoI).** Two or more units must refer to *the very same instance*, not just equal values: two views onto one cart, two handles on one connection, two readers of one cache. The compiler sees two references of the same type and can't tell whether they point to one object or two, so the agreement is invisible until the two silently drift apart at runtime. It is the **strongest** form.
 
-The line this playbook cares about most is not static-versus-dynamic but **compiler-enforced versus convention-carried**, and it falls right after Type. CoN and CoT are the only forms the compiler enforces — violate them and the build breaks. From CoM onward — and CoP whenever the swapped values share a type — the type system is blind, and the agreement is kept by humans, comments, and memory; the violation waits for a failing test, or a customer. That is the same line [Axiom 6](axiom-06-honest-total-signatures.md) draws between honest and dishonest signatures, now running *between* units instead of inside one. **Weakening** a connascence means moving it across that line — a magic value lifted into a type (CoM → CoT) is the canonical step. The other two moves fall out of the remaining axes: **reduce degree** (fewer units sharing the convention) and **localise** (bring connascent units close, ideally into one). Strength has the most leverage, because turning a runtime agreement into a compile-time one is the difference between a broken build and a broken production.
+Sources agree on the static/dynamic split, on Name and Type as the two weakest forms, and on Identity as the strongest. They are looser about the exact order of Meaning, Position and Algorithm, and treat the whole sequence as approximate. The precise order matters less than the line drawn through the list next.
+
+The line this book cares about most is not static versus dynamic, but **enforced by the compiler versus carried by convention**, and it falls right after Type:
+
+- **CoN and CoT** are the only forms the compiler enforces. Violate them and the build breaks.
+- **From CoM onward** (and CoP whenever the swapped values share a type), the type system is blind. The agreement is kept by people, comments and memory, and a violation waits for a failing test or a customer.
+
+That is the same line [Axiom 6](axiom-06-honest-total-signatures.md) draws between honest and dishonest signatures, now running *between* units instead of inside one. There are three ways to improve a connascence:
+
+- **Weaken it:** move it across that line. Lifting a magic value into a type (CoM → CoT) is the classic step.
+- **Reduce its degree:** fewer units sharing the convention.
+- **Localize it:** bring the connascent units close together, ideally into one.
+
+Weakening has the most leverage, because turning a runtime agreement into a compile-time one is the difference between a broken build and a broken production system.
 
 ---
 
 ## Examples
 
-One minimal example of each form (all but Timing, which is out of scope), in the taxonomy's weakest-to-strongest order. Each shows the *agreement itself* — what is bound to what — and where the compiler stands on it: holding the two sides to the agreement, or blind to it. None of them shows the cure; that is the rest of the chapter's job.
+One minimal example of each form (except Timing, which is out of scope), from weakest to strongest. Each shows the *agreement itself*, what is bound to what, and where the compiler stands: holding both sides to the agreement, or blind to it. None of them shows the cure; that is the job of the rest of the chapter.
 
 ### Connascence of Name (CoN)
 
@@ -79,7 +94,7 @@ var balance = account.getBalance();   // rename getBalance, and this line stops 
 </tr>
 </table>
 
-`GetBalance` and every site that calls it are bound by that name. It is the weakest form and the one every program is saturated with: the agreement is *compiler-enforced*, so a rename breaks the build at each site that needed updating and rename-aware tooling fixes them all for you. (The one place it bites is a name carried as a *string* — a reflection key, a JSON field, a DI registration — where the compiler is no longer watching.)
+`GetBalance` and every call site are bound by that name. It is the weakest form, and every program is full of it. The agreement is *compiler-enforced*: a rename breaks the build at every site that needs updating, and rename-aware tooling fixes them all for you. (The one place it bites is a name carried as a *string*, such as a reflection key, a JSON field or a DI registration, where the compiler is no longer watching.)
 
 ### Connascence of Type (CoT)
 
@@ -122,7 +137,7 @@ var receipt = transfer(payer, payee,
 </tr>
 </table>
 
-The caller and `Transfer` are bound by the *types* of what crosses between them. Change a parameter's type, or pass the wrong one, and the compiler refuses the call. The agreement is a type and the compiler is its enforcer — which is why CoT, with CoN, sits at the benign end of the scale.
+The caller and `Transfer` are bound by the *types* of what passes between them. Change a parameter's type, or pass the wrong one, and the compiler refuses the call. The agreement is a type and the compiler enforces it, which is why CoT, like CoN, sits at the harmless end of the scale.
 
 ### Connascence of Meaning (CoM)
 
@@ -154,11 +169,11 @@ if (charge(card) == 0) confirm(order);   // the caller must know 0 means ok
 </tr>
 </table>
 
-`Charge` and its caller must agree that `0` means success. Nothing in the `int` records that; the meaning lives in a comment and in the heads of whoever wrote both ends. Renumber the codes — make `1` the success case — and the compiler stays silent while the caller confirms every *failed* charge. This is the first *convention-carried* form: the first the type system cannot see.
+`Charge` and its caller must agree that `0` means success. Nothing in the `int` says so; the meaning lives in a comment and in the heads of whoever wrote both ends. Renumber the codes (make `1` the success case) and the compiler stays silent while the caller confirms every *failed* charge. This is the first form *carried by convention*: the first one the type system can't see.
 
 ### Connascence of Position (CoP)
 
-Callers must agree on the *order* of things — most often positional arguments.
+Callers must agree on the *order* of things, most often positional arguments.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -198,7 +213,13 @@ var oops = transfer(payer, payee, new BigDecimal("2.50"),
 </tr>
 </table>
 
-Every caller is bound to the *order* of the arguments. It is worth grading on the three axes: its *strength* is high wherever two parameters share a type — the compiler cannot tell `amount` from `fee`, so a swap moves the wrong money with no complaint until runtime; its *degree* is every call site at once; its *locality* is poor, since those sites sit far from the signature that fixes the order. (Where two positions hold *different* types, the compiler does catch a swap, and the connascence is far milder.)
+Every caller is bound to the *order* of the arguments. It is worth grading on the three axes:
+
+- **strength** is high wherever two parameters share a type: the compiler can't tell `amount` from `fee`, so a swap moves the wrong money with no complaint until runtime;
+- **degree** is every call site at once;
+- **locality** is poor, since those sites sit far from the signature that fixes the order.
+
+(Where two positions hold *different* types, the compiler does catch a swap, and the connascence is much milder.)
 
 ### Connascence of Algorithm (CoA)
 
@@ -228,7 +249,7 @@ boolean ok = sha256(received).equals(tag);  // receiver re-derives it
 </tr>
 </table>
 
-Sender and receiver are bound by the whole procedure. Switch one side from SHA-256 to SHA-1 and nothing fails to compile — every message simply fails verification at runtime, on the far side, long after the change was made. The agreement is an entire algorithm, carried by convention from end to end.
+Sender and receiver are bound by the whole procedure. Switch one side from SHA-256 to SHA-1 and nothing fails to compile; every message simply fails verification at runtime, on the other side, long after the change was made. The agreement is an entire algorithm, carried by convention from end to end.
 
 ### Connascence of Execution (CoE)
 
@@ -258,11 +279,11 @@ session.authenticate();   // nothing in the types forced this to come before the
 </tr>
 </table>
 
-The two calls are bound in time — authenticate, then fetch. The contract is temporal: no parameter and no return type expresses it, so the wrong order is fully writeable and is caught, if at all, by a runtime guard. It is the first purely *dynamic* form — invisible in the source, surfacing only when the program runs — and the two that follow are stronger still.
+The two calls are bound in time: authenticate, then fetch. No parameter or return type expresses that, so the wrong order can be written freely and is caught, if at all, by a runtime check. It is the first purely *dynamic* form (invisible in the source, showing up only when the program runs), and the two that follow are stronger still.
 
 ### Connascence of Value (CoV)
 
-Several values must *change together* to keep an invariant that binds them.
+Several values must *change together* to keep a rule that binds them.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -296,11 +317,11 @@ var wrong = new Invoice(new BigDecimal("200.00"),
 </tr>
 </table>
 
-`Subtotal`, `Tax`, and `Total` are bound by an arithmetic invariant: change one and the rest must follow, or the record quietly lies. No single type carries the rule — to the compiler they are three independent decimals — so the agreement lives *among the values*, kept by whoever remembers to touch all three. It is the dynamic cousin of Meaning: where CoM is one value whose *meaning* is conventional, CoV is several values whose *relationship* is conventional, caught (if at all) only when something reads them. It is also the precise shape that *making illegal states unrepresentable* dissolves — store one value and derive the others, or refuse to construct the inconsistent combination, and there is nothing left to keep in sync.
+`Subtotal`, `Tax` and `Total` are bound by an arithmetic rule: change one and the others must follow, or the record quietly lies. No single type carries the rule (to the compiler they are three independent decimals), so the agreement lives *among the values*, kept by whoever remembers to update all three. It is the dynamic cousin of Meaning: CoM is one value whose *meaning* is a convention; CoV is several values whose *relationship* is a convention, caught (if at all) only when something reads them. Store one value and derive the others, or refuse to build the inconsistent combination, and there is nothing left to keep in sync.
 
 ### Connascence of Identity (CoI)
 
-Two or more units must reference *the very same instance* — not merely equal values.
+Two or more units must refer to *the very same instance*, not just equal values.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -336,65 +357,77 @@ var oops = new Checkout(new Cart());
 </tr>
 </table>
 
-`summary` and `checkout` are bound by *identity*: they must hold one and the same `Cart`, not two carts that merely compare equal. The compiler sees two `Cart` references and cannot tell whether they alias one object or two, so handing `checkout` a separate-but-equal cart compiles and the two drift apart at runtime with nothing to flag it. That invisibility is why Identity is the strongest form on the scale — and it is the one this playbook's central model is built to *dissolve* rather than weaken: immutable values have no shared mutable cell to alias, so passing a value leaves no identity for a second holder to depend on. Where genuine shared identity is unavoidable — a connection, a cache, a session — it lives in the impure shell, held in one place and fed into the pure core as a value, so the aliasing has a single visible home instead of being smeared across the call tree — a home the chapter returns to later.
+`summary` and `checkout` are bound by *identity*: they must hold the same `Cart`, not two carts that merely compare equal. The compiler sees two `Cart` references and can't tell whether they point to one object or two. Hand `checkout` a separate-but-equal cart and it compiles, and the two drift apart at runtime with nothing to flag it. That invisibility is why Identity is the strongest form.
+
+It is also the one this book is built to *remove* rather than weaken. Immutable values ([Axiom 2](axiom-02-immutability.md)) have no shared mutable cell to point at, so passing a value leaves no identity for a second holder to depend on. Where real shared identity can't be avoided (a connection, a cache, a session), it lives at the edges of the program, held in one place and passed into the pure code as a value. The sharing then has one visible home instead of being spread across the call tree. Later axioms come back to that home.
 
 ---
 
 ## Problem / forces
 
-The competing force is that **strong connascence is the path of least resistance, and it works** — right up until it doesn't. Returning an `int` status code is faster to write than giving each outcome its own type. Passing four positional arguments is faster than giving each its own type. Relying on "everyone knows you call `init()` first" is faster than encoding the order so the wrong call cannot be written. Each strong-connascence shortcut buys speed now against a debt paid later, by whoever changes one side of the agreement and discovers — at runtime, or never — that the other side needed changing too.
+Strong connascence is **invisible when you create it**. CoN and CoT announce themselves: the build breaks the moment they are violated, so you can't ship a violation. CoM, a same-typed CoP, CoA, CoE, CoV and CoI are silent. The program compiles, the happy path passes, and the dependency only speaks up when a future change touches one unit and not its partner. This is the same gap [Axiom 6](axiom-06-honest-total-signatures.md) describes between honest and dishonest signatures, now across units: a dependency the type system can see is one you can't forget.
 
-The trap is that strong connascence is **invisible at the moment you create it**. CoN and CoT announce themselves: the build breaks the instant they are violated, so you cannot ship a violation. CoM, a same-typed CoP, CoA, CoE, CoV, and CoI are silent — the program compiles, the happy path passes, and the dependency only speaks when a future change touches one unit and not its partner. This is the same asymmetry [Axiom 6](axiom-06-honest-total-signatures.md) draws between honest and dishonest signatures, now generalised across units: a dependency the type system can see is a dependency you cannot forget.
+The competing force is that **strong connascence is the easy path, and it works**, until it doesn't:
 
-The second force is **over-correction**. Not every connascence is a problem to be eliminated; most code is held together by oceans of CoN and CoT, and that is fine — those are the *weak* forms, the ones tooling manages for you. The discipline is not "remove all connascence" — impossible, and the attempt produces its own tangle of indirection. It is "*don't pay in the strong forms what you could pay in the weak ones*," and "keep connascent units close." Locality is the release valve: a strong connascence between two adjacent lines is not worth a type to fix, because the reader changing one sees the other for free.
+- returning an `int` status code is faster than giving each outcome its own type;
+- passing four positional arguments is faster than giving each its own type;
+- relying on "everyone knows you call `init()` first" is faster than making the wrong order impossible to write.
+
+Each shortcut buys speed now, against a debt paid later by whoever changes one side of the agreement and discovers (at runtime, or never) that the other side needed changing too.
+
+A second force is **over-correction**. Not every connascence is a problem. Most code is held together by large amounts of CoN and CoT, and that's fine: those are the *weak* forms, the ones tooling manages for you. The goal is not "remove all connascence"; that is impossible, and trying produces its own tangle of indirection. The goal is: *don't pay in strong forms what you could pay in weak ones*, and keep connascent units close. Locality is the release valve: a strong connascence between two neighboring lines isn't worth a new type, because whoever changes one sees the other anyway.
 
 ---
 
 ## Why
 
-**1. It turns "this feels coupled" into a claim you can act on.**
-"These two classes are too coupled" is a feeling; "these two classes share a Connascence of Meaning on the status codes, degree six, spread across three packages" is a diagnosis with a treatment. The taxonomy converts a vague unease into a named kind with a known weakening move, the same way [Axiom 7](axiom-07-cohesion.md) converted "this function does too much" into "this function has two reasons to change." A lens you can name is a lens you can teach, review against, and argue with.
+**1. It turns "this feels coupled" into something you can act on.**
+"These two classes are too coupled" is a feeling. "These two classes share a Connascence of Meaning on the status codes, with degree six, spread across three packages" is a diagnosis with a treatment. The taxonomy turns a vague unease into a named kind with a known way to weaken it, the same way [Axiom 7](axiom-07-cohesion.md) turned "this function does too much" into "this function has two reasons to change". A lens you can name is a lens you can teach, review against and argue with. Weirich's talks made exactly this case: improve a system by weakening its connascence [3].
 
 **2. Weakening connascence moves failures from runtime to compile time.**
-The strength axis is, underneath, the same axis [Axiom 6](axiom-06-honest-total-signatures.md) runs on: a dependency carried by a type fails when you build; a dependency carried by a convention fails when you run. Every strong-to-weak transformation — a magic value lifted into a type, a wrong-order call made impossible to write — buys the same thing: the compiler starts enforcing an agreement that humans were enforcing by memory.
+The strength axis is the same axis [Axiom 6](axiom-06-honest-total-signatures.md) is built on: a dependency carried by a type fails when you build; a dependency carried by a convention fails when you run. Every move from strong to weak (a magic value lifted into a type, a wrong-order call made impossible to write) buys the same thing: the compiler starts enforcing an agreement that people were enforcing from memory.
 
-**3. It is the unifying thread under the tools still to come.**
-Read forward, the chapter keeps making one move under different names: a value whose meaning everyone re-checks becomes a type checked once; a record whose fields must agree on a convention becomes a shape where only the valid combinations can be built; an operation order enforced by a runtime guard becomes a contract the wrong call cannot violate. Each is introduced for its own reasons and stands on its own. But seen through this lens they are one idea — *weaken the connascence* — applied to values, to the shape of data, and to the order of calls.
+**3. It is the thread that ties the coming tools together.**
+Read ahead, and this chapter keeps making one move under different names:
 
-**4. Locality reconciles it with cohesion instead of competing with it.**
-The locality axis is the hinge between the two evaluative lenses. Strong connascence inside one cohesive unit is cheap, because the unit is read as a whole — the agreement and both sides of it sit in one frame. Strong connascence *across* units is expensive, because no single frame contains it. So "high cohesion" and "weak, local connascence" are not two goals to trade off; they are the same goal — *keep what changes together within one readable frame* — stated from the inside and the outside. Pulling connascent units closer (improving locality) and giving a unit one reason to change (improving cohesion) are the same hand on the same dial.
+- a value whose meaning everyone re-checks becomes a type that is checked once;
+- a record whose fields must agree on a convention becomes a shape where only the valid combinations can be built;
+- an order of operations enforced by a runtime check becomes a contract the wrong call can't break.
 
-**5. The lens scales past the module — but the axiom stops at the code.**
-Point connascence at services instead of functions and it still reads true: two systems that must agree on a message format are connascent, and the same *weaken / reduce degree / localise* moves apply. That is a real and useful reading — but it is *topology*, and this is a coding playbook. The axiom claims only the code-level form: connascence between signatures, records, call sites, the meanings of values, and the order of calls *within a module*. Connascence across services or processes is the same idea at architectural altitude — noted here, and left out of scope as a consumer of these building blocks rather than one of them. The cross-service distances mentioned under *locality* mark the far end of the scale; they are not an invitation to architect with the lens.
+Each tool is introduced for its own reasons and stands on its own. But through this lens they are one idea, *weaken the connascence*, applied to values, to the shape of data and to the order of calls.
+
+**4. Locality connects it to cohesion instead of competing with it.**
+The locality axis is the hinge between the two lenses. Strong connascence inside one cohesive unit is cheap, because the unit is read as a whole: the agreement and both of its sides are in view at once. Strong connascence *across* units is expensive, because nothing shows both sides together. So "high cohesion" and "weak, local connascence" are not two goals to trade off. They are the same goal, *keep what changes together where it can be read together*, stated from the inside and from the outside.
+
+**5. The lens scales past the module, but this axiom stops at the code.**
+Point connascence at services instead of functions and it still holds: two systems that must agree on a message format are connascent, and the same three moves apply. That is a real and useful reading, but it is *system topology*, which is out of scope for this book. This axiom covers only connascence in code: between signatures, records, call sites, the meanings of values, and the order of calls *within a module*. The cross-service distances mentioned under *locality* mark the far end of the scale; they are not an invitation to design systems with this lens.
 
 ---
 
 ## Trade-offs
 
-The real cost is that **connascence is a judgment call, like cohesion, and the compiler will not grade it for you on the axes that matter most.** It will tell you a CoN or CoT exists — those are symbols and types it tracks — but it cannot tell you that a CoM is lurking in your status codes, because to the compiler an `int` is just an `int`. The strong forms, the ones worth hunting, are exactly the convention-carried ones the type system is blind to. The axiom hands you the categories; spotting an instance in your own code is still on you.
-
-The second cost is **the weakening is not free**. Lifting a magic value into a type means writing the type; giving two same-typed arguments distinct types means writing those types; making a wrong-order call impossible means a type per state and a transition between them. Every move up the strength axis is paid for in code that did not exist before. For a strong connascence between two distant, much-changed units, the price is obviously worth it. For one between two adjacent lines that have not changed in a year, it is ceremony. Locality is how you decide: the farther apart and the more numerous the connascent units, the more a weakening earns its keep.
+- **Connascence is a judgment call, like cohesion, and the compiler won't grade it for you where it matters most.** It knows a CoN or CoT exists, since it tracks names and types. But it can't tell you a CoM is hiding in your status codes, because to the compiler an `int` is just an `int`. The strong forms, the ones worth hunting, are exactly the ones the type system can't see. This axiom gives you the categories; spotting an instance in your own code is still up to you. A compact reference helps once the vocabulary is familiar [4].
+- **Weakening isn't free.** Lifting a magic value into a type means writing the type. Giving two same-typed arguments distinct types means writing those types. Making a wrong-order call impossible means a type per state and a transition between them. Every step up the strength axis costs code that didn't exist before. For a strong connascence between two distant, often-changed units, the cost is clearly worth it. For one between two neighboring lines that haven't changed in a year, it is ceremony. Locality decides: the farther apart and the more numerous the connascent units, the more a weakening pays for itself.
 
 ---
 
 ## When NOT to
 
-- **When the connascence is already weak and local.** Two positional arguments of different types, passed one line apart, are a Connascence of Position you should leave alone — the types make a swap a compile error, and the locality makes it visible anyway. Wrapping them in a type here only dodges a problem you do not have. Spend the weakening effort where strength *and* distance are both high.
-- **When the strong form is irreducible.** Some Connascence of Algorithm cannot be weakened away — the two ends of a wire protocol genuinely must agree on the framing, and no type in your codebase reaches across the network to enforce it on the other party. The move there is not "eliminate it" but "localise and isolate it": put the shared algorithm in one place both sides depend on, so the agreement has a single home rather than being re-implemented at each end. Naming it CoA tells you it cannot be deleted, only contained — which is itself the useful answer.
-- **When chasing connascence would shred locality.** The mirror of [Axiom 7](axiom-07-cohesion.md)'s warning: decomposing a unit to break an internal connascence can scatter one thought across a swarm of indirection, trading a cheap local dependency for an expensive distributed one. Internal connascence in a cohesive unit is paying rent; do not evict it into three files to satisfy a metric.
+- **When the connascence is already weak and local.** Two positional arguments of different types, passed one line apart, form a Connascence of Position you should leave alone. The types make a swap a compile error, and the locality makes it visible anyway. Wrapping them in a new type only solves a problem you don't have. Spend the effort where strength *and* distance are both high.
+- **When the strong form can't be removed.** Some Connascence of Algorithm can't be weakened: both ends of a wire protocol really must agree on the framing, and no type in your code reaches across the network to enforce it on the other side. The move there is not to eliminate it but to localize and isolate it: put the shared algorithm in one place both sides depend on, so the agreement has one home instead of being reimplemented at each end. Calling it CoA tells you it can't be deleted, only contained, which is itself a useful answer.
+- **When chasing connascence would scatter one thought.** This mirrors [Axiom 7](axiom-07-cohesion.md)'s warning. Splitting a unit to break an internal connascence can scatter one thought across a swarm of indirection, trading a cheap local dependency for an expensive spread-out one. Internal connascence in a cohesive unit is paying its rent; don't evict it into three files to satisfy a metric.
 
 ---
 
 ## References
 
-[1] **Meilir Page-Jones**, *What Every Programmer Should Know About Object-Oriented Design*, Dorset House, 1995. The book that introduced connascence and its taxonomy, framing it explicitly as a measure that refines and subsumes the older notion of coupling.
+[1] **Meilir Page-Jones**, *What Every Programmer Should Know About Object-Oriented Design*, Dorset House, 1995. Introduced connascence and its forms, explicitly as a measure that refines the older idea of coupling.
 
-[2] **Meilir Page-Jones**, *Fundamentals of Object-Oriented Design in UML*, Addison-Wesley, 1999. The later, more accessible treatment, where the strength / degree / locality axes and the static/dynamic ordering of the forms are laid out as the working vocabulary.
+[2] **Meilir Page-Jones**, *Fundamentals of Object-Oriented Design in UML*, Addison-Wesley, 1999. The later, more accessible treatment, where the strength / degree / locality axes and the static/dynamic order of the forms are set out as a working vocabulary.
 
-[3] **Jim Weirich**, *Connascence Examined* / *The Building Blocks of Modularity*, conference talks, 2009–2012. The talks that revived connascence for a working audience and reframed it as a practical refactoring guide — "improve a system by weakening its connascence" — rather than an academic taxonomy.
+[3] **Jim Weirich**, conference talks including *Connascence Examined* (2012). They brought connascence back to a working audience and recast it as a practical refactoring guide ("improve a system by weakening its connascence") instead of an academic taxonomy.
 
-[4] **connascence.io**, *Connascence Reference*. A compact online reference for the forms and the guiding rules — useful as a lookup table once the vocabulary is in hand.
-<https://connascence.io>
+[4] **connascence.io**, *Connascence*. A compact online reference for the forms and the rules of thumb: a useful lookup table once the vocabulary is familiar. <https://connascence.io>
 
 [5] **Wayne Stevens, Glenford Myers & Larry Constantine**, *Structured Design*, IBM Systems Journal, 1974. The origin of *coupling* and *cohesion* as design measures; connascence refines coupling into the graded, named taxonomy this axiom uses.
 
