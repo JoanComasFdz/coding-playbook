@@ -27,6 +27,11 @@ The term comes from Domain-Driven Design [1]. This axiom takes only the half tha
 
 The same function, in framework words and in the domain's words:
 
+<table>
+<tr><th>C#</th><th>Java</th></tr>
+<tr>
+<td>
+
 ```csharp
 // ❌ technical / CRUD vocabulary: every name is a translation step
 bool Process(Dictionary<string, object> data, int type) { … }
@@ -35,29 +40,90 @@ bool Process(Dictionary<string, object> data, int type) { … }
 ShippingLabel PrintLabel(Shipment shipment, Carrier carrier) { … }
 ```
 
-A synonym scatter, and its fix:
+</td>
+<td>
 
 ```java
+// ❌ technical / CRUD vocabulary: every name is a translation step
+boolean process(Map<String, Object> data, int type) { … }
+
+// ✅ the domain's words: the signature reads like the sentence you'd say
+ShippingLabel printLabel(Shipment shipment, Carrier carrier) { … }
+```
+
+</td>
+</tr>
+</table>
+
+A synonym scatter, and its fix:
+
+<table>
+<tr><th>C#</th><th>Java</th></tr>
+<tr>
+<td>
+
+```csharp
 // ❌ one concept, three names across three files
 class Debtor  { … }   // billing
 class Payer   { … }   // invoicing
-class Account { … }   // ledger   — all the same "customer who owes money"
+class Account { … }   // ledger
+// all the same "customer who owes money"
 
 // ✅ one concept, one name, used everywhere
 class Debtor { … }
 ```
 
+</td>
+<td>
+
+```java
+// ❌ one concept, three names across three files
+class Debtor  { … }   // billing
+class Payer   { … }   // invoicing
+class Account { … }   // ledger
+// all the same "customer who owes money"
+
+// ✅ one concept, one name, used everywhere
+class Debtor { … }
+```
+
+</td>
+</tr>
+</table>
+
 A homonym, split apart:
+
+<table>
+<tr><th>C#</th><th>Java</th></tr>
+<tr>
+<td>
 
 ```csharp
 // ❌ one word, two concepts
-enum Order { Ascending, Descending }      // a sort direction
-record Order(CustomerId Buyer, …);        // a purchase
+enum Order { Ascending, Descending }   // a sort direction
+record Order(CustomerId Buyer, …);     // a purchase
 
 // ✅ each concept gets its own word
 enum SortDirection { Ascending, Descending }
 record PurchaseOrder(CustomerId Buyer, …);
 ```
+
+</td>
+<td>
+
+```java
+// ❌ one word, two concepts
+enum Order { ASCENDING, DESCENDING }   // a sort direction
+record Order(CustomerId buyer, …) {}   // a purchase
+
+// ✅ each concept gets its own word
+enum SortDirection { ASCENDING, DESCENDING }
+record PurchaseOrder(CustomerId buyer, …) {}
+```
+
+</td>
+</tr>
+</table>
 
 The compiler enforces none of this yet: `Process` compiles as happily as `PrintLabel`. That is what the axioms that follow are for. They are how a chosen name stops being optional.
 
