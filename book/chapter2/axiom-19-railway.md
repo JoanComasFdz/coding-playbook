@@ -232,7 +232,7 @@ public HttpResponse verifyEndpoint(String rawToken) {
 
 Read the picture from top to bottom and every prior axiom is visible at its post:
 
-- **Data, immutable, separate from behaviour** ([Axiom 1](axiom-01-data-vs-behaviour.md), [Axiom 2](axiom-02-immutability.md)). `Token`, `Payload`, `VerifiedUser`, `HttpResponse`, and the user dictionary are all immutable records or read-only views; none of the functions on the page own and mutate their own state.
+- **Data, immutable, separate from behaviour** ([Axiom 1](axiom-01-data-is-not-behavior.md), [Axiom 2](axiom-02-immutability.md)). `Token`, `Payload`, `VerifiedUser`, `HttpResponse`, and the user dictionary are all immutable records or read-only views; none of the functions on the page own and mutate their own state.
 - **Effects are named and contained** ([Axiom 3](axiom-03-side-effects.md), [Axiom 4](axiom-04-impure-functions.md)). The clock read and the user-store snapshot are the only effects in the listing — both at the top of `VerifyEndpoint`, both marked. The rest of the function is structurally pure; the `HttpResponse` it returns is a value the framework will turn into a real response somewhere outside this file.
 - **The decision is pure** ([Axiom 5](axiom-05-pure-functions.md)). The railway expression that builds `result` is a function of `rawToken`, `now`, and `users` only. Same triple in, same `Result` out. No clock read inside the chain, no I/O — the shell *hands* the chain every value it needs.
 - **The signature is honest and total** ([Axiom 6](axiom-06-honest-total-signatures.md)). The chain's type is `Result<VerifiedUser, string>`. Every outcome lives in the return type as a value: the verified user, or the first reason a step refused.

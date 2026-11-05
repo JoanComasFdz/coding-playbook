@@ -29,7 +29,7 @@ But four of the playbook's load-bearing guarantees lean on **nominal typing** an
 
 | Axiom | Applies? | TS mechanism vs. the C#/Java example |
 |---|---|---|
-| [1 Data vs Behaviour](book/chapter2/axiom-01-data-vs-behaviour.md) | ✅ unchanged | Language-agnostic; TS culture already leans this way (plain data + functions). |
+| [1 Data vs Behaviour](book/chapter2/axiom-01-data-is-not-behavior.md) | ✅ unchanged | Language-agnostic; TS culture already leans this way (plain data + functions). |
 | [2 Immutability](book/chapter2/axiom-02-immutability.md) | ⚠️ weaker | `readonly` / `as const` / `Readonly<T>` are **shallow + erased**; no value equality; `Object.freeze` is the only runtime teeth. The reflection quizzes and "records are values" don't map. |
 | [3 Side effects](book/chapter2/axiom-03-side-effects.md) | ✅ unchanged | Same recognition discipline; the API catalogue needs a JS rewrite (`Date.now`, `Math.random`, `fetch`, `fs`, `console`, throwing, microtasks). |
 | [4 Impure functions](book/chapter2/axiom-04-impure-functions.md) | ✅ unchanged | Same; minor bonus — `async` *is* surfaced in the type (`Promise<T>`), unlike most effects. |

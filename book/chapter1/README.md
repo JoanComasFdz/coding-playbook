@@ -191,7 +191,7 @@ Henney and Oldwood, above, point out that LSP is often misread as a structural r
 
 ### SOLID wraps universal concerns in OOP mechanisms
 
-You rarely hear about SOLID in functional code, and Mikulski, above, notes it does not transfer well. Part of the reason is that most of the mechanisms SOLID corrects come from objects that bundle mutable state with behavior. In FP, [data and behavior are separate](../chapter2/axiom-01-data-vs-behaviour.md), so those mechanisms are gone. The concerns underneath are not.
+You rarely hear about SOLID in functional code, and Mikulski, above, notes it does not transfer well. Part of the reason is that most of the mechanisms SOLID corrects come from objects that bundle mutable state with behavior. In FP, [data and behavior are separate](../chapter2/axiom-01-data-is-not-behavior.md), so those mechanisms are gone. The concerns underneath are not.
 
 | Letter | What it corrects in OOP | In FP | What remains |
 |---|---|---|---|

@@ -4,7 +4,7 @@ Chapter 2 built the **Fundamentals**: the anatomy of a module and its functions,
 
 Nothing here is a new principle. Every Play applies and combines Chapter 2 axioms; where a pattern is really an axiom wearing different clothes (a DDD value object *is* [Axiom 18](../chapter2/axiom-18-value-objects.md)), it links back rather than re-teaching. The chapter stays on the **tactical** (code-shaped) side of design — not bounded contexts, context maps, or system topology.
 
-One stance holds the chapter together: **FP-style DDD**. Behaviour is pure functions and deciders over immutable data — invariants in smart constructors, decisions returning action DUs — not methods on mutable entities. The "rich domain model" / Tell-Don't-Ask orthodoxy is the road not taken, presented as a trade-off, never attacked. See [Axiom 1 — Data is not Behaviour](../chapter2/axiom-01-data-vs-behaviour.md).
+One stance holds the chapter together: **FP-style DDD**. Behaviour is pure functions and deciders over immutable data — invariants in smart constructors, decisions returning action DUs — not methods on mutable entities. The "rich domain model" / Tell-Don't-Ask orthodoxy is the road not taken, presented as a trade-off, never attacked. See [Axiom 1 — Data is not Behaviour](../chapter2/axiom-01-data-is-not-behavior.md).
 
 ## What's expected here
 

@@ -6,7 +6,7 @@
 
 > Either is the *structural* primitive, named here because later axioms build on the vocabulary. Do not use this, but make an effort to understand it.
 
-[Axiom 1](axiom-01-data-vs-behaviour.md) says data is a value; [Axiom 2](axiom-02-immutability.md) says values do not change; [Axiom 13](axiom-13-maybe.md) says absence is itself a value. This axiom adds the next honest thing data does: when a computation can produce one of two distinct outcomes, *both* belong in the return type — and `Either<L, R>` is the minimum way to spell that.
+[Axiom 1](axiom-01-data-is-not-behavior.md) says data is a value; [Axiom 2](axiom-02-immutability.md) says values do not change; [Axiom 13](axiom-13-maybe.md) says absence is itself a value. This axiom adds the next honest thing data does: when a computation can produce one of two distinct outcomes, *both* belong in the return type — and `Either<L, R>` is the minimum way to spell that.
 
 Through [Axiom 8](axiom-08-connascence.md)'s lens, this axiom weakens a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com) — a tombstone or flag whose meaning the type cannot carry — into a Connascence of Type.
 
@@ -134,7 +134,7 @@ What Either does *not* cost you is honesty: the return type names what the funct
 [1] **Haskell** `Data.Either` (Haskell 2010 Report) and **Scala** `scala.util.Either` (right-biased since 2.12, 2016). `Either` predates the language-specific named success/failure types in both ecosystems; the convention "right = success" comes from Haskell and was inherited.
 <https://hackage.haskell.org/package/base/docs/Data-Either.html>
 
-[2] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022. Cited in [Axiom 1](axiom-01-data-vs-behaviour.md), [Axiom 2](axiom-02-immutability.md), and [Axiom 13](axiom-13-maybe.md); relevant here for the broader case that distinct outcomes belong in the data, not in the control flow.
+[2] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022. Cited in [Axiom 1](axiom-01-data-is-not-behavior.md), [Axiom 2](axiom-02-immutability.md), and [Axiom 13](axiom-13-maybe.md); relevant here for the broader case that distinct outcomes belong in the data, not in the control flow.
 <https://www.manning.com/books/data-oriented-programming>
 
 ---

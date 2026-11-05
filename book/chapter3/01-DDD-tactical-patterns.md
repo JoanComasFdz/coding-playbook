@@ -129,7 +129,7 @@ This is the Event DU from [Axiom 24](../chapter2/axiom-24-state-machines.md). Th
 
 Some behaviour does not belong to any single entity. In OOP this becomes a "service" class, because behaviour has to live on an object and this behaviour has no object to live on.
 
-In our world that problem never appears: no behaviour lives on the data in the first place ([Axiom 1](../chapter2/axiom-01-data-vs-behaviour.md)). So the pattern splits in two, and the old advice ("reach for a service when an operation spans more than one entity") does not survive the move.
+In our world that problem never appears: no behaviour lives on the data in the first place ([Axiom 1](../chapter2/axiom-01-data-is-not-behavior.md)). So the pattern splits in two, and the old advice ("reach for a service when an operation spans more than one entity") does not survive the move.
 
 - **A pure decision over several values is just a function.** `Transfer(from, to, amount)` takes two accounts and returns the two new accounts, or a failure. It needs no label. It is an ordinary pure function ([Axiom 5](../chapter2/axiom-05-pure-functions.md)) that returns a value or an action ([Axiom 23](../chapter2/axiom-23-pure-functions-returning-actions.md)). Spanning entities adds nothing: a function can take as many inputs as it needs.
 - **Loading and saving those entities is orchestration, not domain logic.** Load the accounts, call the pure function, save the result. That is the Impureheim shell ([Axiom 12](../chapter2/axiom-12-impureheim.md)): gather, decide, act. The decision inside it is still the pure function above.
