@@ -22,7 +22,7 @@ The classic teaching names "low coupling" and "high cohesion" as two separate go
 
 **The three axes.** Each connascence is judged on three independent dimensions, and a refactoring improves it by moving it along any of them [2]:
 
-- **Strength:** how hard the dependency is to find and to change safely. The deciding question is whether the *compiler* enforces the agreement or a *convention* does. A shared *name* or *type* breaks the build the moment it is violated, so a violation can't ship. A shared *meaning*, *position*, *algorithm* or *call order* is silent at compile time; the mismatch shows up only when something runs, in a failing test or for a customer. The forms carried by convention are the strong ones.
+- **Strength:** how hard the dependency is to find and to change safely. The deciding question is whether the *compiler* enforces the agreement or a *convention* does. A shared *name* or *type* breaks the build the moment it is violated, so a violation can't ship. A shared *meaning*, *position* (of values with the same type), *algorithm* or *call order* is silent at compile time; the mismatch shows up only when something runs, in a failing test or for a customer. The forms carried by convention are the strong ones.
 - **Degree:** how many units share the dependency. The same convention agreed by two units is a smaller risk than one agreed by twelve. Degree is the size of the blast radius when it goes off.
 - **Locality:** how far apart the connascent units are. Two fields in one record that must change together are trivially connascent and trivially fixed. The same dependency split across two services is the one that rots, because whoever changes one side can't see the other. *High locality makes strong connascence tolerable.* This is the bridge back to [Axiom 7](axiom-07-cohesion.md): connascence at reading distance is just cohesion.
 
@@ -46,7 +46,7 @@ Sources agree on the static/dynamic split, on Name and Type as the two weakest f
 The line this book cares about most is not static versus dynamic, but **enforced by the compiler versus carried by convention**, and it falls right after Type:
 
 - **CoN and CoT** are the only forms the compiler enforces. Violate them and the build breaks.
-- **From CoM onward** (and CoP whenever the swapped values share a type), the type system is blind. The agreement is kept by people, comments and memory, and a violation waits for a failing test or a customer.
+- **From CoM onward**, the type system is blind (for CoP, only when the swapped values share a type). The agreement is kept by people, comments and memory, and a violation waits for a failing test or a customer.
 
 That is the same line [Axiom 6](axiom-06-honest-total-signatures.md) draws between honest and dishonest signatures, now running *between* units instead of inside one. There are three ways to improve a connascence:
 
