@@ -18,25 +18,17 @@ They are the program's plumbing. Everything else is business logic: the rules th
 
 In one sentence: **a function is impure if any side effect from [Axiom 3](axiom-03-side-effects.md) is reachable from its body.** "Reachable" means anywhere:
 
-- directly in the body;
-- in a function it calls, however deep;
-- in a constructor it runs;
-- in a reference it captures;
-- behind an injected interface whose implementation, at runtime, performs one.
+- **directly in the body:** a line matches a category from [Axiom 3](axiom-03-side-effects.md#the-categories), such as a clock read, a logger call, a `throw`, a parameter change, a database call or a singleton lookup;
+- **in a function it calls, however deep:** impurity spreads upward. A function that does arithmetic plus a single `logger.info` is impure, and so is its caller, and so is the caller's caller;
+- **in a constructor it runs;**
+- **in a field or reference it captures:** capturing a `DbContext`, an `HttpClient` or a `Random` taints the function as much as creating one inline;
+- **behind an injected interface** whose implementation, at runtime, performs one.
 
 When that effect is a *read* (the clock, a random source, a mutable singleton, the file system), the function is also *non-deterministic*: two calls with the same arguments can give different results. The hidden read is the *cause*; the non-determinism is the *symptom* that tests, parallel runs and replays notice.
-
-A function is impure when any of these is true:
-
-- **A line in its body matches a category from [Axiom 3](axiom-03-side-effects.md#the-categories):** a clock read, a logger call, a `throw`, a parameter change, a database call, a singleton lookup.
-- **A function it calls is impure.** Impurity spreads upward. A function that does arithmetic plus a single `logger.info` is impure, and so is its caller, and so is the caller's caller.
-- **A field or reference it captures is impure.** Capturing a `DbContext`, an `HttpClient` or a `Random` taints the function as much as creating one inline.
 
 Normand draws the same line with different words: an impure function is an *action*, whose outcome depends on when or how often it runs [1].
 
 This axiom departs from a common default: treating every function as the same kind of thing. In C# and Java, the type system doesn't separate them. `int Add(int, int)` and `Order PlaceOrder(string, List<string>)` are declared the same way and called the same way. Without a label that lives outside the type system, questions like "can I cache this? run it in parallel? test it without setup?" have no quick answer.
-
-As [Axiom 3](axiom-03-side-effects.md) noted, a `void` return is the loudest sign, but not the only one: a function that returns a value can have effects too. So you recognize impurity by reading the whole body, not the signature.
 
 ---
 
@@ -121,7 +113,7 @@ Most code talks to the world somewhere, and most engineers don't draw a line bet
 
 One force pulls the other way: **convenience**. Writing the rule and the I/O in one place is the fastest thing to type.
 
-This axiom doesn't claim impure functions are bad. It claims the label matters: until you can point at a function and say "this one is impure", you can't reason about which functions are safe to move, run in parallel, cache, retry or test in isolation. The point is to *separate* them, not to *eliminate* them.
+This axiom doesn't claim impure functions are bad. It claims the label matters: until you can point at a function and say "this one is impure", you can't tell which functions are safe to do those things with. The point is to *separate* them, not to *eliminate* them.
 
 ---
 
@@ -132,14 +124,14 @@ Impure functions do a different kind of work from the rest of the program: as th
 
 Without the label, the two kinds of work look the same in the source, and the default is to weave them together line by line. With the label, the seam becomes visible. Hughes' classic case for functional programming rests on the same separation: functions with no hidden inputs or outputs are the ones you can compose [2].
 
-**2. Impurity is deep, not shallow.**
-Impurity belongs to everything a function reaches, not to one line. A function that calls a logger is impure for the same reason as one that writes to a database: once the effect happens anywhere downstream, the function as a whole carries it. That's why the label belongs to functions. You can't ask "is this impure?" of a single statement, only of a function.
+**2. The label belongs to functions, not lines.**
+As *Definitions* shows, impurity spreads to everything that calls an impure function, however deep the effect sits. So you can't ask "is this impure?" of a single statement, only of a function, and that is where the label belongs.
 
 **3. Tests split cleanly along this line.**
 An impure function needs the world it depends on, set up the way it expects, plus cleanup of the writes it makes. Take those needs away, so the function depends only on its parameters, and the test becomes *given these inputs, expect this output*. The difference in effort between the two kinds of test is large, and this label is exactly where it appears.
 
 **4. The compiler won't draw the line for you.**
-Java's checked exceptions put one effect (throwing) in the signature and miss the rest. C# has no way to track effects in a signature at all. So recognizing impurity is a *reading* skill, and you can only practice it once the category has a name.
+Java's checked exceptions put one effect (throwing) in the signature and miss the rest. C# has no way to track effects in a signature at all. So recognizing impurity is a *reading* skill, applied to the whole body (and everything it reaches), not to the signature. You can only practice it once the category has a name.
 
 ---
 
