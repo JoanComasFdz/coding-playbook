@@ -26,7 +26,7 @@ A signature is **honest** when:
 - **No outcome comes through a side channel.** Throwing to signal an *expected* outcome is dishonest in the same way: the type says one thing, the runtime delivers another. (Purity already rules this out inside a pure function; honesty makes it explicit in the signature.)
 - **No hidden return values in parameters.** An `out` or `ref` parameter is a second return value the signature doesn't admit to.
 
-The smallest dishonest case is a bare `bool`. Returning `true`/`false` collapses the outcomes into two cases with no names. This is called *boolean blindness* [3]: the caller learns *that* something holds, but not *what*, and has nothing useful to carry forward. Replacing that `bool` with named cases is the same fix as replacing the sentinel `int`.
+The smallest dishonest case is a bare `bool`. Returning `true`/`false` collapses the outcomes into two cases with no names. This is called *boolean blindness* [3]: the caller learns *that* something holds, but not *what*, and has nothing useful to carry forward. Replacing that `bool` with named cases is the same fix as replacing a sentinel `int` (below).
 
 A function is **total** when:
 
