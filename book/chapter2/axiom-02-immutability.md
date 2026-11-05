@@ -538,7 +538,7 @@ The usual tool, a class with private mutable fields and getters and setters, wor
 - Every getter that returns an internal collection or sub-object has to clone it, or callers can reach in and change it. Every method that accepts one has to clone it on the way in.
 - The value a field held two seconds ago only exists in the logs you remembered to write. There is no clean way to ask "what was this at 14:03?"
 
-One force pulls the other way: **ergonomics**. Updating in place reads naturally ("the counter increments"), and much of the tooling (ORMs, serializers, UI frameworks) was designed around setters. This axiom does not deny that force; it moves it. Mutation belongs at the edges of the program, where [Axiom 1](axiom-01-data-is-not-behavior.md) already left room for mutable resources, not in the data itself.
+One force pulls the other way: **ergonomics**. Updating in place reads naturally ("the counter increments"), and much of the tooling expects it (see *Trade-offs*). This axiom does not deny that force; it moves it. Mutation belongs at the edges of the program, where [Axiom 1](axiom-01-data-is-not-behavior.md) already left room for mutable resources, not in the data itself.
 
 ---
 
