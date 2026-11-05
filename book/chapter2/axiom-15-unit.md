@@ -6,7 +6,7 @@
 
 > Unit is a *structural* primitive — small, plain, almost invisible. It earns its keep wherever a slot that wants a type wants the answer "no information here."
 
-[Axiom 1](axiom-01-data-vs-behaviour.md) says data is a value; [Axiom 6](axiom-06-honest-total-signatures.md) says every outcome belongs in the return type; [Axiom 14](axiom-14-either.md) says distinct outcomes belong there as values. This axiom adds the smallest case: when there is *one* outcome and it carries no information, it still belongs in the return type as a value — and `Unit` is the minimum way to spell that.
+[Axiom 1](axiom-01-data-is-not-behavior.md) says data is a value; [Axiom 6](axiom-06-honest-total-signatures.md) says every outcome belongs in the return type; [Axiom 14](axiom-14-either.md) says distinct outcomes belong there as values. This axiom adds the smallest case: when there is *one* outcome and it carries no information, it still belongs in the return type as a value — and `Unit` is the minimum way to spell that.
 
 Through [Axiom 8](axiom-08-connascence.md)'s lens, `Unit` *eliminates* a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com): a function with nothing useful to say otherwise hands back a dummy — a `bool` that is always `true`, a `0`, a `null` — and the caller has to know by convention that the value means "succeeded, ignore me." `Unit` removes the thing to agree on; there is exactly one value, it carries no information, and so there is nothing left to misread.
 

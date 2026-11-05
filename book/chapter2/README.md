@@ -12,9 +12,9 @@ Code examples are for teaching. They are not complete, production-ready implemen
 
 One name per concept, one concept per name. The code speaks the domain's words, everywhere.
 
-***Leads to Data vs Behavior:*** *The names come first; the structure follows. The first thing the code decides about a named concept is what it fundamentally is, and the answer is inert data, not behavior.*
+***Leads to Data is not Behavior:*** *The names come first; the structure follows. The first thing the code decides about a named concept is what it fundamentally is, and the answer is inert data, not behavior.*
 
-### 1. [Data vs Behavior](axiom-01-data-vs-behaviour.md)
+### 1. [Data is not Behavior](axiom-01-data-is-not-behavior.md)
 
 Data is a fact; behavior is an operation. We keep the two separate. This is the founding premise.
 

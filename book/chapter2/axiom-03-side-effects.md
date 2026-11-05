@@ -7,7 +7,7 @@
 
 > Side effects are named here so further axioms can refer to them. The point is not to avoid them — every useful program eventually does I/O — but to recognise them when you see them.
 
-[Axiom 1](axiom-01-data-vs-behaviour.md) says data is a value; [Axiom 2](axiom-02-immutability.md) eliminates one source of bugs by making data unchangeable. This axiom adds the other source: code that reaches outside its declared interface, where the compiler has no way to see it.
+[Axiom 1](axiom-01-data-is-not-behavior.md) says data is a value; [Axiom 2](axiom-02-immutability.md) eliminates one source of bugs by making data unchangeable. This axiom adds the other source: code that reaches outside its declared interface, where the compiler has no way to see it.
 
 This file is short on purpose. The rest of it is the recognition test — what counts as a side effect, what it looks like in code, and why naming the category matters before anything else can be said about it.
 

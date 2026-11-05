@@ -370,13 +370,13 @@ The OO maxim: don't pull an object's data out to decide for it — push the deci
 
 **Where it lives, and how:**
 
-- [**Axiom 1 — Data is not Behaviour**](chapter2/axiom-01-data-vs-behaviour.md) — the road not taken. Tell-Don't-Ask moves the decision *to* the data; the playbook moves the data *to* the decision. Same goal (one home for the rule, no reaching into internals), opposite mechanism (freeze the data vs. hide it behind behaviour).
+- [**Axiom 1 — Data is not Behaviour**](chapter2/axiom-01-data-is-not-behavior.md) — the road not taken. Tell-Don't-Ask moves the decision *to* the data; the playbook moves the data *to* the decision. Same goal (one home for the rule, no reaching into internals), opposite mechanism (freeze the data vs. hide it behind behaviour).
 - [**Axiom 23 — Pure functions returning actions**](chapter2/axiom-23-pure-functions-returning-actions.md) — the inversion. Tell-Don't-Ask *fuses* deciding and acting; this axiom *splits* them: pure `Decide` returns an action value, impure shell executes it.
 - [**Axiom 26 — Stateful Shell**](chapter2/axiom-26-stateful-shell.md) — where it belongs. Connections, pools, sockets are places, not values; the shell *tells* them and never asks for their insides. Right rule on the stateful side of the seam, wrong on the pure side.
 
 **Why no axiom of its own** — the goods it offers already have homes: encapsulation → [Axiom 18](chapter2/axiom-18-value-objects.md); rule-in-one-place → [Axiom 7](chapter2/axiom-07-cohesion.md) + [Axiom 23](chapter2/axiom-23-pure-functions-returning-actions.md); read-write-race safety → [Axiom 2](chapter2/axiom-02-immutability.md) + [Axiom 27](chapter2/axiom-27-typestate.md).
 
-**Source:** Andrew Hunt & David Thomas, *The Pragmatic Programmer* (1999); Martin Fowler, *TellDontAsk* (bliki) — cited at [Axiom 1](chapter2/axiom-01-data-vs-behaviour.md) ref [7].
+**Source:** Andrew Hunt & David Thomas, *The Pragmatic Programmer* (1999); Martin Fowler, *TellDontAsk* (bliki) — cited at [Axiom 1](chapter2/axiom-01-data-is-not-behavior.md) ref [7].
 
 ---
 
@@ -384,7 +384,7 @@ The OO maxim: don't pull an object's data out to decide for it — push the deci
 
 "One dot" — don't navigate object graphs. Its dangerous half is designed away and the rest is trivial: the law restricts *message sends* (behaviour), not field-walks over transparent data, so a value-core gives it almost nothing to bite on — and what remains is weak, compiler-enforced coupling, not a hazard.
 
-- [Axiom 1 — Data is not Behaviour](chapter2/axiom-01-data-vs-behaviour.md) — the behavioural half: LoD governs which *methods* a unit may call; inert immutable data has no behaviour to reach through, so walking `person.Address.Street` is not what the law targets.
+- [Axiom 1 — Data is not Behaviour](chapter2/axiom-01-data-is-not-behavior.md) — the behavioural half: LoD governs which *methods* a unit may call; inert immutable data has no behaviour to reach through, so walking `person.Address.Street` is not what the law targets.
 - [Axiom 2 — Immutability](chapter2/axiom-02-immutability.md) — the action-at-a-distance half: immutable *all the way down* (the `Person → Address → Street` setter quiz) means no deep node can mutate underneath a holder, so deep reads are safe to pass around.
 - [Axiom 8 — Connascence](chapter2/axiom-08-connascence.md) — the residual: a field chain still binds the reader to the path, but in a typed value world that is Connascence of Name/Type — the weakest, compiler-enforced forms, where a rename or reshape breaks the build at every site. It is Axiom 8's *weak-and-local* case to leave alone, not a train-wreck to fear.
 - [Axiom 7 — Cohesion](chapter2/axiom-07-cohesion.md) — the look-alike: reaching deep to *recompute* a rule at the call site is a decide-in-one-place concern, not LoD.
@@ -501,7 +501,7 @@ The composition half — the default:
 
 The over-inheritance half — the hierarchy designed away, kept honestly:
 
-- [Axiom 1 — Data is not Behaviour](chapter2/axiom-01-data-vs-behaviour.md) — the root: inert data plus free functions removes the base-class-for-reuse reflex at the source.
+- [Axiom 1 — Data is not Behaviour](chapter2/axiom-01-data-is-not-behavior.md) — the root: inert data plus free functions removes the base-class-for-reuse reflex at the source.
 - [Axiom 21 — Discriminated unions](chapter2/axiom-21-discriminated-unions.md) — a closed subtype hierarchy consumed by polymorphic dispatch becomes a sealed DU + pattern match; the *When NOT to* keeps a virtual method per leaf for intrinsic operations and the non-sealed interface "exactly the OO shape" for an open set.
 - [Axiom 11 — Pattern matching](chapter2/axiom-11-pattern-matching.md) — the same virtual-dispatch-vs-match trade-off, inheritance kept as the right tool for intrinsic behaviour and open sets.
 

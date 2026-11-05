@@ -73,7 +73,7 @@ The intended reader is a working engineer in a high-level OO language. When draf
 - North star is **simplicity first** — "as simple as possible, as honest as possible, as robust as possible," in that order. Let it settle ties: prefer the simpler formulation, then the more honest, then the more robust only when it costs nothing above the first two.
 - The playbook is opinionated and first-person. Match that register; don't neutralize it into generic best-practices prose.
 - Say "this book", never "the book", when the text refers to itself.
-- **US spelling.** Convert a file to US spelling when it is rewritten. Never change quotes (they keep their original spelling) or link targets (file names such as `axiom-01-data-vs-behaviour.md` stay as they are).
+- **US spelling.** Convert a file to US spelling when it is rewritten. Never change quotes (they keep their original spelling). Don't rename files as part of a spelling pass; a rename is its own change and must update every link to the file.
 - **Never attack a discipline, language, framework, or architecture.** Present alternatives as points on a trade-off curve, never as targets. Every strong opinion is "what I do today, and why," with an explicit "when not to."
 - Favor examples in C# or Java unless told otherwise. Immutable-record persistence leans on EF `AsNoTracking()` (possibly Dapper) for C#, jOOQ for Java.
 

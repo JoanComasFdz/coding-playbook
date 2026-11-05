@@ -197,4 +197,4 @@ You don't find a naming problem after the design is done, the way you find a sme
 
 ---
 
-← [Chapter 2 Contents](README.md) · Next: [Axiom 1 — Data is not Behavior](axiom-01-data-vs-behaviour.md) →
+← [Chapter 2 Contents](README.md) · Next: [Axiom 1 — Data is not Behavior](axiom-01-data-is-not-behavior.md) →

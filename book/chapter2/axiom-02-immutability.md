@@ -5,7 +5,7 @@
 - Model facts as values: once constructed, they never change.
 - Carry the discipline all the way down — a single mutable field anywhere makes the whole object mutable.
 
-[Axiom 1](axiom-01-data-vs-behaviour.md) already touches on immutability — its claim that data is a *value* depends on it. This axiom is the deep dive: what immutability is, how to recognise it, what it costs, and what it buys.
+[Axiom 1](axiom-01-data-is-not-behavior.md) already touches on immutability — its claim that data is a *value* depends on it. This axiom is the deep dive: what immutability is, how to recognise it, what it costs, and what it buys.
 
 ---
 
@@ -612,7 +612,7 @@ Mutable state earns its keep in two main cases.
 [1] **JLS / `java.lang.reflect`** and **`sun.misc.Unsafe`** are the canonical Java escape hatches; **`System.Reflection`** with `BindingFlags.NonPublic | BindingFlags.Instance` (and `FieldInfo.SetValue`) is the equivalent in .NET. Their existence means no JVM- or CLR-level guarantee of immutability is possible; the contract is enforced at the source level only.
 
 [2] **Rich Hickey**, *The Value of Values*, keynote at JaxConf 2012 (also delivered at GOTO Copenhagen 2012). Recording on InfoQ, published 14 August 2012:
-<https://www.infoq.com/presentations/Value-Values/>. The argument that values — immutable, location-independent — are what make concurrency and distribution tractable. Already cited in [Axiom 1](axiom-01-data-vs-behaviour.md) as reference [4]; cross-listed here because the argument is load-bearing for Axiom 2 as well.
+<https://www.infoq.com/presentations/Value-Values/>. The argument that values — immutable, location-independent — are what make concurrency and distribution tractable. Already cited in [Axiom 1](axiom-01-data-is-not-behavior.md) as reference [4]; cross-listed here because the argument is load-bearing for Axiom 2 as well.
 
 [3] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022 — Principle #3 ("Data is immutable") and the discussion of update ergonomics, allocation cost, and tooling friction in the corresponding chapter.
 <https://www.manning.com/books/data-oriented-programming>
@@ -620,7 +620,7 @@ Mutable state earns its keep in two main cases.
 [4] **Chris Okasaki**, *Purely Functional Data Structures*, Cambridge University Press, 1998. The standard reference on how to build immutable data structures (lists, queues, heaps, finger trees) with asymptotic costs comparable to their mutable counterparts — the answer to "but isn't copy-on-write slow?" for everything outside the absolute hottest loops.
 
 [5] **Mike Acton**, *Data-Oriented Design and C++*, keynote at CppCon 2014:
-<https://www.youtube.com/watch?v=rX0ItVEVjHc>. Already cited in [Axiom 1](axiom-01-data-vs-behaviour.md) as reference [6]; relevant here as the dominant counter-argument inside performance-critical inner loops.
+<https://www.youtube.com/watch?v=rX0ItVEVjHc>. Already cited in [Axiom 1](axiom-01-data-is-not-behavior.md) as reference [6]; relevant here as the dominant counter-argument inside performance-critical inner loops.
 
 [6] **Joshua Bloch**, *Effective Java*, 3rd ed., Addison-Wesley, 2018 — Item 17, "Minimize mutability". The canonical Java-specific statement of the rules listed in this axiom's *Definitions* section, with the same five-point recipe (no mutators, ensure the class cannot be extended, make all fields final, make all fields private, ensure exclusive access to any mutable components).
 
@@ -628,4 +628,4 @@ Mutable state earns its keep in two main cases.
 
 ---
 
-← Previous: [Axiom 1 — Data is not Behaviour](axiom-01-data-vs-behaviour.md) · Next: [Axiom 3 — Side effects](axiom-03-side-effects.md) →
+← Previous: [Axiom 1 — Data is not Behaviour](axiom-01-data-is-not-behavior.md) · Next: [Axiom 3 — Side effects](axiom-03-side-effects.md) →

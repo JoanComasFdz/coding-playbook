@@ -200,7 +200,7 @@ Unit login(Credentials creds) {
 
 Read the picture from top to bottom and every prior axiom is in plain sight:
 
-- **Data, immutable, separate from behaviour** ([Axiom 1](axiom-01-data-vs-behaviour.md), [Axiom 2](axiom-02-immutability.md)). `Credentials`, `User`, `Token` — all records, all immutable, all distinct from the functions that operate on them.
+- **Data, immutable, separate from behaviour** ([Axiom 1](axiom-01-data-is-not-behavior.md), [Axiom 2](axiom-02-immutability.md)). `Credentials`, `User`, `Token` — all records, all immutable, all distinct from the functions that operate on them.
 - **Effects are named and contained** ([Axiom 3](axiom-03-side-effects.md), [Axiom 4](axiom-04-impure-functions.md)). The DB lookup, the clock read, the log write, and the session write are the only effects in the listing, and every one of them is in `Login`. The comment markers — *impure: DB read* — exist because the rest of the code earned the right not to need them.
 - **The decision is pure** ([Axiom 5](axiom-05-pure-functions.md)). `Decide(lookup, submitted, now)` is a function of its inputs and nothing else. Same triple in, same `Result` out. No clock read inside; the clock value is *passed in*. That single discipline is what makes `Decide` trivially testable — no mocks, no clock fakes, just call it.
 - **The signature is honest and total** ([Axiom 6](axiom-06-honest-total-signatures.md)). `Decide` returns `Result<Token, string>` — the success carries a `Token`, the failure carries a reason. Every outcome the function can produce lives in the return type as a value. There is no thrown exception, no nullable success, no side channel.

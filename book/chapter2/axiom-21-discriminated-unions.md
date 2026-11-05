@@ -186,7 +186,7 @@ A pattern match over a DU sits the cases side by side, one per line: shape on th
 [4] **Scott Wlaschin**, *Designing with Types: Making illegal states unrepresentable*, F# for Fun and Profit. Cross-listed from [Axiom 6](axiom-06-honest-total-signatures.md). The DU is the operational form of "illegal states unrepresentable" applied to multi-outcome data: each impossible combination of fields is not "checked against" but *literally not a type that exists*.
 <https://fsharpforfunandprofit.com/posts/designing-with-types-making-illegal-states-unrepresentable/>
 
-[5] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022. Cross-listed from [Axiom 1](axiom-01-data-vs-behaviour.md), [Axiom 2](axiom-02-immutability.md), [Axiom 13](axiom-13-maybe.md), and [Axiom 14](axiom-14-either.md). The broader case that distinct kinds-of-thing belong as distinct shapes of data — exactly the move from "one flat record with optional fields" to "a sealed hierarchy whose variants each declare only their own fields."
+[5] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022. Cross-listed from [Axiom 1](axiom-01-data-is-not-behavior.md), [Axiom 2](axiom-02-immutability.md), [Axiom 13](axiom-13-maybe.md), and [Axiom 14](axiom-14-either.md). The broader case that distinct kinds-of-thing belong as distinct shapes of data — exactly the move from "one flat record with optional fields" to "a sealed hierarchy whose variants each declare only their own fields."
 <https://www.manning.com/books/data-oriented-programming>
 
 ---
