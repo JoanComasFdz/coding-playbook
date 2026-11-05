@@ -32,7 +32,7 @@ The three rows hold each other up. A repository interface usually exists so a un
 > To do. Points to develop:
 > - Mocks test wiring, not behavior; whole-service tests test what users see.
 > - Pure functions are cheap to test exhaustively; the shell is thin, so a few whole-service tests cover it.
-> - Apply Chapter 1's [decisions vs ceremony](../chapter1/README.md#enforce-decisions-not-ceremony) test to the repository interface: remove it, and the reader loses nothing.
+> - Apply the [decisions-vs-ceremony test](../chapter1/README.md#enforce-decisions-not-ceremony) from [Chapter 1](../chapter1/README.md) to the repository interface: remove it, and the reader loses nothing.
 
 ## C#/Java example
 
