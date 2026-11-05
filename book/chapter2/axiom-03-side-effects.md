@@ -150,7 +150,7 @@ A reference list. You don't need to memorize it; skim it once, and come back whe
 
 If side effects are not named as a category, three things get much harder:
 
-1. **Local reasoning.** A function whose result depends on hidden inputs (the clock, a cache, a singleton) can't be understood on its own: to understand the call, you have to understand the world around it. Naming the category is the first step toward separating the calls that need that world from the ones that don't. Composing functions relies on the same property: no hidden inputs or outputs [3].
+1. **Local reasoning.** A function whose result depends on hidden inputs (the clock, a cache, a singleton) can't be understood, or a bug in it reproduced, on its own: to understand the call, you have to understand the world around it. Naming the category is the first step toward separating the calls that need that world from the ones that don't. Composing functions relies on the same property: no hidden inputs or outputs [3].
 2. **Testing.** A function with hidden writes changes state the test can't see. A function with hidden reads depends on state the test can't control. Either way, the test setup grows bigger than the function under test.
 3. **Concurrency.** A function that shares mutable state with others can't run safely beside them without coordination; one that doesn't share, can. You can't tell which is which until effects are named.
 
@@ -161,13 +161,13 @@ One force pulls the other way: **convenience**. Every line-of-business function 
 ## Why
 
 **1. The compiler won't flag effects for you.**
-A `void` return is the loudest signal, but not the only one. A method that returns a value can also have effects, and neither C#'s nor Java's type system warns the reader. So recognizing effects is a *reading* skill, and you can only practice it once the category has a name.
+Neither C#'s nor Java's type system marks effects in a signature; a `void` return is only a hint (see *Definitions*). So recognizing effects is a *reading* skill, and you can only practice it once the category has a name.
 
 **2. Effects are how programs touch the world.**
 Without side effects, a program is a mathematical function: it takes inputs, produces outputs, and changes nothing observable. Such a program is useless: it can't save a file, send a message, draw a pixel or learn the time of day. Every useful program has effects somewhere. The question, which later axioms answer, is *where*: scattered through every function, or gathered at the edges.
 
 **3. Effects are a common source of non-local bugs.**
-A function whose result depends on hidden inputs is hard to test and hard to reproduce: changing something far away changes its behavior. A function with hidden writes is the same problem in reverse: changing what it does ripples into code that never calls it. As Hickey argues, mixing state into what should be plain values is a root of incidental complexity [1]. Naming the category is what lets you ask *which* effects a function has, and *which* of them could move elsewhere.
+*Problem / forces* showed what hidden inputs cost. Hidden writes are the same problem in reverse: changing what a function does ripples into code that never calls it. As Hickey argues, mixing state into what should be plain values is a root of incidental complexity [1]. Naming the category is what lets you ask *which* effects a function has, and *which* of them could move elsewhere.
 
 ---
 
