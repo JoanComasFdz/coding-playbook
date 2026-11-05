@@ -30,7 +30,7 @@ This axiom departs from a common default: a "data class" whose `final` keyword g
 
 The discipline is about the type's contract, not its bytes. Reflection, `Unsafe` and JNI can break any of the rules above. That doesn't make the type mutable; it only means the language allows trespassing [1]. The contract holds for code that doesn't cheat.
 
-A record built this way is a *product type*: its value is all of its fields at once.
+A record built this way is a [*product type*](https://en.wikipedia.org/wiki/Product_type): its value is all of its fields at once.
 
 ---
 
