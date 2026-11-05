@@ -293,6 +293,16 @@ Prefer what reader and compiler can see — named types, declared effects, passe
 
 ---
 
+## Conciseness — [🔁 FOLDED]
+
+Saying more with fewer lines (terseness, succinctness). A side effect of removing ceremony, never a goal: several axioms make code longer on purpose.
+
+- [Chapter 1 — Enforce decisions, not ceremony](chapter1/README.md#enforce-decisions-not-ceremony) — the test that tells concise from cryptic: remove the structure and ask what the reader lost.
+- [Axiom 11 — Pattern matching](chapter2/axiom-11-pattern-matching.md) — the clearest example (*Why*, point 2), and the overreach, *Concise can turn cryptic* (*Trade-offs*).
+- [Axiom 6 — Honest/total signatures](chapter2/axiom-06-honest-total-signatures.md), [Axiom 18 — Value objects](chapter2/axiom-18-value-objects.md) — longer on purpose: honesty outranks length.
+
+---
+
 ## DRY — the real (knowledge) definition — [🔁 FOLDED]
 
 Don't Repeat Yourself governs *knowledge*, not code text: one authoritative home per piece of knowledge.

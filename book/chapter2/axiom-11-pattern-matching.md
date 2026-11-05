@@ -255,8 +255,8 @@ When the operation belongs to the consumer (not the data) and the set of cases i
 **1. Shape, binding and action sit in the same branch.**
 Inside a branch typed `Circle c`, the value already *is* a `Circle` with a radius. The body uses its parts directly, without a cast or an extra local. The branch contains exactly the work for that case and nothing else.
 
-**2. The `if` chain collapses into one expression.**
-An `if` chain (see *Problem / forces*) gives each case its own braces, type test, cast and local. The match removes that scaffolding: one `switch`, and between its braces the cases themselves, one per line. The cases also sit *together*, where an `if` chain leaves them as separate blocks the reader has to reassemble into "the set of cases this code handles".
+**2. The match is [concise](https://en.wikipedia.org/wiki/Conciseness): less [boilerplate](https://en.wikipedia.org/wiki/Boilerplate_code), the same decisions.**
+An `if` chain (see *Problem / forces*) gives each case its own braces, type test, cast and local. The match removes that scaffolding: one `switch`, and between its braces the cases themselves, one per line. Apply [Chapter 1's test](../chapter1/README.md#enforce-decisions-not-ceremony): remove the type test, the cast and the local, and the reader loses nothing. Every line left is a decision. The cases also sit *together*, where an `if` chain leaves them as separate blocks the reader has to reassemble into "the set of cases this code handles".
 
 **3. Missing cases become build errors, not production bugs.**
 For a closed type, the compiler knows every shape (fully in Java; with the limits in *Definitions* in C#). A match that misses one is flagged at build time, and adding a shape points you at every match that has to handle it.
@@ -269,6 +269,7 @@ The consumer that needs to branch on a shape holds the branching logic; the data
 ## Trade-offs
 
 - **The temptation to grow the match forever.** A match with forty branches usually means the data should be redesigned: maybe the cases should be grouped, or the consumer is making too many decisions in one place. The match is doing its job by making the size of the decision visible.
+- **Concise can turn cryptic.** Nested patterns and long guards pack a decision into one line the reader has to decode. The same test applies in reverse: if taking the line apart shows a decision the reader had to rebuild, pull it out into a named step.
 - **The guarantee needs a closed type.** A match over a non-sealed type compiles, but nothing checks completeness and the `default` branch carries the weight. Acceptable for `Object`-typed dispatch or hierarchies you don't own; where the cases are under your control, seal them. (For sets that are open by design, see *When NOT to*.)
 - **`switch` versus `Match` is your call.** Each has its own costs (see *`switch` or `Match`?*).
 
