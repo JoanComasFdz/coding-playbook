@@ -3,41 +3,42 @@
 **Data cannot be modified after it is created.**
 
 - Model facts as values: once constructed, they never change.
-- Carry the discipline all the way down — a single mutable field anywhere makes the whole object mutable.
+- Carry the discipline all the way down: a single mutable field anywhere makes the whole object mutable.
 
-[Axiom 1](axiom-01-data-is-not-behavior.md) already touches on immutability — its claim that data is a *value* depends on it. This axiom is the deep dive: what immutability is, how to recognise it, what it costs, and what it buys.
+[Axiom 1](axiom-01-data-is-not-behavior.md) already touches on immutability: its claim that data is a *value* depends on it. This axiom goes deeper: what immutability is, how to recognize it, what it costs and what it buys.
 
 ---
 
 ## Definitions
 
-> Data is immutable.
-Yehonathan Sharvit's Principle #3
+> "Data is immutable."
+>
+> — Yehonathan Sharvit, Principle #3 of Data-Oriented Programming [3]
 
-It says one structural thing: **once a value exists, no one — including the code that produced it — may change it.**
+It says one structural thing: **once a value exists, no one may change it, not even the code that created it.**
 
-A type is immutable when every one of the following is true:
+A type is immutable when all of the following are true. This is essentially Bloch's recipe from *Effective Java* [6]:
 
-- **Records or final classes** — the type cannot be extended into a mutable subtype.
-- **No public fields** — fields cannot be reached and reassigned from outside.
-- **No setters** — no method reassigns a field after construction.
-- **Immutable fields, all the way down** — every field is itself a value (no `List`, no `Date`, no `Address`-with-a-setter masquerading as one).
-- **No state-changing methods** — no method changes the object's internal state, even if it returns `void`.
-- **Final / readonly fields** — declare every field `final` (Java) / `readonly` (C#) so the compiler refuses any reassignment after construction. Class-level discipline (no setter) keeps the public surface clean; field-level discipline keeps future maintainers honest.
+- **Records or final classes.** The type cannot be extended into a mutable subtype.
+- **No public fields.** Fields cannot be reached and reassigned from outside.
+- **No setters.** No method reassigns a field after construction.
+- **Immutable fields, all the way down.** Every field is itself a value: no `List`, no Java `Date`, no `Address` with a setter pretending to be a value.
+- **No state-changing methods.** No method changes the object's internal state, even one that returns `void`.
+- **Final / readonly fields.** Declare every field `final` (Java) or `readonly` (C#), so the compiler refuses any reassignment after construction. No setters keeps the public surface clean; `final` fields keep future maintainers honest.
 
-This axiom rejects the mainstream default: a "data class" whose `final` keyword guards only the outermost wrapper while mutability leaks through public fields, setters, mutable collections, or a method called `increment()`.
+This axiom departs from a common default: a "data class" whose `final` keyword guards only the outer wrapper, while mutability leaks through public fields, setters, mutable collections or a method called `increment()`.
 
-The discipline is contract-level, not byte-level. Reflection, `Unsafe`, and JNI can break any of the rules above; that does not make the type mutable, only that the language permits trespass[1]. The contract holds for code that does not cheat.
+The discipline is about the type's contract, not its bytes. Reflection, `Unsafe` and JNI can break any of the rules above. That doesn't make the type mutable; it only means the language allows trespassing [1]. The contract holds for code that doesn't cheat.
 
-A record built this way is a *product type* — its value is all of its fields at once.
+A record built this way is a [*product type*](https://en.wikipedia.org/wiki/Product_type): its value is all of its fields at once.
 
 ---
 
 ## Recognizing immutability
 
-The five short quizzes below apply the checklist. Each row pairs a small C# type with its Java counterpart; ask whether the pair is immutable before reading on.
+The five short quizzes below apply the checklist. Each one shows a small C# type next to its Java counterpart. Decide whether the pair is immutable before reading the answer.
 
-### Is this immutable? (1/5) — extension and setters
+### Is this immutable? (1/5): extension and setters
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -70,7 +71,7 @@ public class Person {
 </tr>
 </table>
 
-❌ Not immutable — the class can be extended; a subclass can add a setter or override the getter to return mutable state.
+❌ Not immutable. The class can be extended: a subclass can add a setter, or override the getter to return mutable state.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -89,7 +90,7 @@ public sealed class Person(string name)
 
 ```java
 public final class Person {
-    private String name;
+    private final String name;
     public Person(String name) {
         this.name = name;
     }
@@ -103,7 +104,7 @@ public final class Person {
 </tr>
 </table>
 
-✅ Immutable — `sealed` / `final` blocks extension, there is no setter, and `string` is itself a value.
+✅ Immutable. `sealed` / `final` blocks extension, there is no setter, the field is read-only, and `string` is itself a value.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -139,9 +140,9 @@ public final class Person {
 </tr>
 </table>
 
-❌ Not immutable — the setter reassigns `name` after construction.
+❌ Not immutable. The setter reassigns `name` after construction.
 
-### Is this immutable? (2/5) — depth
+### Is this immutable? (2/5): depth
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -171,7 +172,7 @@ public final class Person {
 </tr>
 </table>
 
-❌ Not immutable — the public field can be reassigned from outside the class.
+❌ Not immutable. The public field can be reassigned from outside the class.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -204,7 +205,7 @@ public final class Person {
 </tr>
 </table>
 
-❌ Not immutable — `List` itself is mutable, so any caller can mutate the contents of the returned reference.
+❌ Not immutable. `List` itself is mutable, so any caller can change the contents of the returned list.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -251,9 +252,9 @@ public final class Address {
 </tr>
 </table>
 
-❌ Not immutable — `Address` exposes a setter, so the contained value can change underneath `Person`.
+❌ Not immutable. `Address` has a setter, so the value inside `Person` can change underneath it.
 
-### Is this immutable? (3/5) — state-changing methods and value types
+### Is this immutable? (3/5): methods, reflection and value types
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -291,7 +292,7 @@ public final class Counter {
 </tr>
 </table>
 
-❌ Not immutable — `Increment` / `increment()` mutates the field after construction.
+❌ Not immutable. `Increment` / `increment()` changes the field after construction.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -324,7 +325,7 @@ void main() throws Exception {
 }
 
 final class Person {
-    private String name;
+    private final String name;
     Person(String name) {
         this.name = name;
     }
@@ -335,7 +336,7 @@ final class Person {
 </tr>
 </table>
 
-✅ Immutable — the type's contract still holds; reflection is a language escape hatch, not a refutation.
+✅ Immutable. The type's contract still holds. Reflection is a language escape hatch, not a counterexample.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -354,7 +355,7 @@ public sealed class Person(DateOnly birthdate)
 
 ```java
 public final class Person {
-    private LocalDate birthdate;
+    private final LocalDate birthdate;
     public Person(LocalDate birthdate) {
         this.birthdate = birthdate;
     }
@@ -368,9 +369,9 @@ public final class Person {
 </tr>
 </table>
 
-✅ Immutable — `DateOnly` / `LocalDate` is itself a value, so the field cannot change underneath.
+✅ Immutable. `DateOnly` / `LocalDate` is itself a value, so the field cannot change underneath.
 
-### Is this immutable? (4/5) — records
+### Is this immutable? (4/5): records
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -378,7 +379,7 @@ public final class Person {
 <td>
 
 ```csharp
-record Person(DateOnly Birthdate);
+sealed record Person(DateOnly Birthdate);
 ```
 
 </td>
@@ -392,7 +393,7 @@ record Person(LocalDate birthdate) {}
 </tr>
 </table>
 
-✅ Immutable — `record` makes the wrapper a value, and `DateOnly` / `LocalDate` is itself a value.
+✅ Immutable. `record` makes the wrapper a value, and `DateOnly` / `LocalDate` is itself a value. Java records are always final. C# records can be inherited, so they need `sealed` to meet the first rule of the checklist.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -400,7 +401,7 @@ record Person(LocalDate birthdate) {}
 <td>
 
 ```csharp
-record Person(List<string> Friends);
+sealed record Person(List<string> Friends);
 ```
 
 </td>
@@ -414,7 +415,7 @@ record Person(List<String> friends) {}
 </tr>
 </table>
 
-❌ Not immutable — `record` only protects the wrapper; the `List` inside can still be mutated.
+❌ Not immutable. `record` only protects the wrapper; the `List` inside can still be changed.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -426,7 +427,7 @@ var person = new Person("Alice");
 var nameProperty = typeof(Person).GetProperty("Name");
 nameProperty!.SetValue(person, "Bob");
 
-record Person(string Name);
+sealed record Person(string Name);
 ```
 
 </td>
@@ -447,9 +448,9 @@ record Person(String name) {}
 </tr>
 </table>
 
-✅ Immutable — the record's contract still holds; reflection is the same language-level trespass as before, not a refutation.
+✅ Immutable. The record's contract still holds; reflection is the same trespass as before. In Java the attempt actually fails: record fields cannot be changed through reflection, so `set` throws `IllegalAccessException`. In C# it succeeds.
 
-### Is this immutable? (5/5) — defense in depth
+### Is this immutable? (5/5): defense in depth
 
 The first four quizzes ask whether the public surface of a type allows mutation. This one asks the next question: with a clean public surface, what stops the *next* maintainer from reassigning a field from inside the class?
 
@@ -489,7 +490,7 @@ public final class Person {
 </tr>
 </table>
 
-❌ Not immutable — the class is `sealed` / `final` and has no setter, but `Rename` / `rename` reassigns the field from inside. Nothing at the class level forbids this.
+❌ Not immutable. The class is `sealed` / `final` and has no setter, but `Rename` / `rename` reassigns the field from inside. Nothing at the class level forbids it.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -523,53 +524,65 @@ public final class Person {
 </tr>
 </table>
 
-✅ Immutable — `readonly` / `final` on the field means the compiler refuses any reassignment after construction. A future maintainer who tries to add a `Rename` / `rename` method gets a compile error.
+✅ Immutable. `readonly` / `final` on the field means the compiler refuses any reassignment after construction. A future maintainer who tries to add `Rename` / `rename` gets a compile error.
 
 ---
 
 ## Problem / forces
 
-When writing ordinary line-of-business code, engineers keep doing the same things to their data: hand it to other functions, store and retrieve it, serialise and transmit it, inspect it long after the moment that produced it, and reuse the same shapes across modules.
+In ordinary line-of-business code, engineers keep doing the same things with their data: hand it to other functions, store and load it, serialize and send it, look at it long after the moment that produced it, and reuse the same shapes across modules.
 
-The default tool the industry reaches for — a class with private mutable fields and getter/setter accessors — quietly works against most of those forces:
+The usual tool, a class with private mutable fields and getters and setters, works against most of those forces:
 
-- Two parts of the program holding references to "the same object" silently drift, because any holder can mutate it without telling the others.
-- Every accessor that returns an internal collection or sub-object has to clone, or callers can reach in and change it; every method that accepts one has to clone it on the way in.
-- The value a field held two seconds ago exists only in the logs you remembered to write; equality and identity drift apart, and there is no clean way to ask "what was this at 14:03?"
+- Two parts of the program holding "the same object" drift apart silently, because any holder can change it without telling the others.
+- Every getter that returns an internal collection or sub-object has to clone it, or callers can reach in and change it. Every method that accepts one has to clone it on the way in.
+- The value a field held two seconds ago only exists in the logs you remembered to write. There is no clean way to ask "what was this at 14:03?"
 
-The competing force is **ergonomics** — in-place update reads naturally ("the counter increments"), and most of the tooling (ORMs, serialisers, UI frameworks) was designed assuming setters. The axiom does not deny this force; it relocates it. Mutation is a property of the *shell* — Axiom 1's impure orchestrator — not of the data itself.
+One force pulls the other way: **ergonomics**. Updating in place reads naturally ("the counter increments"), and much of the tooling (ORMs, serializers, UI frameworks) was designed around setters. This axiom does not deny that force; it moves it. Mutation belongs at the edges of the program, where [Axiom 1](axiom-01-data-is-not-behavior.md) already left room for mutable resources, not in the data itself.
 
 ---
 
 ## Why
 
-**1. A value is a fact; facts do not change.**
-The deeper reason data should be immutable is that data represents facts about the world, and facts about the world do not change after they happen. The order *was* placed at 14:03. The customer's birthday *is* 1987-04-12. Overwriting a memory cell with new information does not change the old fact; it only loses your reference to it. This is Hickey's place-oriented critique[2] — and it is what Axiom 1 was already pointing at when it called data a *value*. Axiom 2 is just enforcing that claim.
+**1. A value is a fact, and facts do not change.**
+Data represents facts about the world, and facts do not change after they happen. The order *was* placed at 14:03. The customer's birthday *is* 1987-04-12. Overwriting a memory cell with new information does not change the old fact; it only loses your reference to it. This is Hickey's critique of place-oriented programming [2], and it is what Axiom 1 was already pointing at when it called data a *value*. This axiom enforces that claim.
 
 **2. No action at a distance.**
-The most expensive class of bugs in OO codebases comes from one piece of code mutating an object that another piece of code is still using. Immutability eliminates the class. If a function hands you a value, nothing the function later does can change what you hold; if you hand a value to a function, nothing it does can change what you still hold. Every reference is, in effect, a defensive copy you did not have to write.
+One of the most expensive kinds of bug in OO code is one piece of code changing an object that another piece is still using. Immutability removes that whole kind:
+
+- If a function hands you a value, nothing it does later can change what you hold.
+- If you hand a value to a function, nothing it does can change what you still hold.
+
+Every reference is, in effect, a defensive copy you didn't have to write.
 
 **3. Concurrency without coordination.**
-Locks exist because state is both *shared* and *mutable*. Remove the mutability and the lock disappears. A value can be read by any number of threads, in any order, with no synchronisation, and no thread will ever see an inconsistent view. This is the single cheapest concurrency win available, and it is the property that makes distributed systems tractable at all[2].
+Locks exist because state is both *shared* and *mutable*. Remove the mutability and the lock is no longer needed. Any number of threads can read a value, in any order, with no synchronization, and no thread ever sees an inconsistent view. It is one of the cheapest concurrency wins available, and a large part of what makes distributed systems manageable [2].
 
-**4. Cheap to reason, cheap to test.**
-A function over immutable inputs is the easiest thing in the universe to test: pin the inputs, pin the output, no setup, no teardown, no order-of-operations effects between cases. The same property that makes it testable — that the inputs uniquely determine the output — is also what lets you read the call site once and trust it. (And as a minor bonus, short-lived values are cheap for the garbage collector to reclaim.)
+**4. Easier to reason about and to test.**
+When the inputs cannot change, a test only has to set them up and check the result. There is no state to reset between cases and nothing can change the inputs halfway through. The same property lets you read a call site once and trust it. As a small bonus, short-lived values are cheap for the garbage collector to reclaim.
 
 ---
 
 ## Trade-offs
 
-Sharvit names the costs honestly[3] and they apply here too. Immutable types cost you **ergonomics on update**: changing a field means producing a new value (`record.with(name = "x")`, builder patterns, lens libraries), which is verbose in Java and C# compared to `obj.name = "x"`. They cost you **tooling friction**: ORMs (Hibernate, EF) and some serialisers were designed for mutable entities and need adaptation. They cost you a small amount of **allocation pressure**, since you cannot mutate in place; modern GCs absorb most of this, but in tight loops it matters[4]. And they cost you **named entities** — a separate "builder" or "with-er" surface where mutation used to live inline.
+Immutable types cost you:
 
-These costs buy what Why lists above. The trade is almost always worth it for line-of-business code; it sometimes is not for inner loops (see below).
+- **Ergonomics on update.** Changing a field means producing a new value. C# has `person with { Name = "x" }`. In Java you write `withName(...)` methods or a builder, extra code that sits where a setter used to be. Both are more verbose than `person.Name = "x"`.
+- **Tooling friction.** ORMs (Hibernate, EF) and some serializers were designed for mutable entities and need adapting.
+- **Some allocation pressure.** You cannot change things in place. Modern garbage collectors absorb most of this, but in tight loops it matters [5].
+
+These costs buy what *Why* lists above. For line-of-business code the trade is almost always worth it. For inner loops it sometimes isn't (see *When NOT to*).
 
 ### "But isn't all this copying slow?"
 
-This is the worry hiding behind that allocation-pressure cost, and it deserves a straight answer. For a small record, a "copy" is a handful of field assignments — already cheap, not worth a second thought. The worry only bites when the value is a *collection*: surely adding one item to a 10,000-element list can't mean copying all 10,000 on every edit?
+This is the worry behind the allocation cost, and it deserves a straight answer. For a small record, a "copy" is a handful of field assignments: cheap, not worth a second thought. The worry only matters for *collections*: surely adding one item to a 10,000-element list can't mean copying all 10,000 every time?
 
-It doesn't — if you reach for a **persistent collection**. These are immutable collections built as trees, so an updated "copy" shares every unchanged node with the original and rebuilds only the path to the one that changed — O(log n) new nodes, not O(n). The old version stays valid and untouched; the new one is cheap. That node-reuse is **structural sharing**, and it is what makes immutability practical at collection scale.
+It doesn't, if you use a **persistent collection**. These are immutable collections built as trees. An updated "copy" shares every unchanged node with the original and rebuilds only the path to the node that changed: O(log n) new nodes, not O(n). The old version stays valid and untouched, and the new one is cheap. This reuse of nodes is called **structural sharing**, and it is what makes immutability practical for large collections.
 
-The rule is: **don't hand-roll this.** Reach for the standard library — `System.Collections.Immutable` (`ImmutableList`, `ImmutableDictionary`, …) in C#, Vavr in Java[7] — and the sharing comes for free:
+The rule: **don't build this yourself.** Use a well-tested library [7]:
+
+- **C#:** `System.Collections.Immutable` (`ImmutableList`, `ImmutableDictionary`, …), part of .NET.
+- **Java:** Vavr. Java's built-in `List.of` and `List.copyOf` are immutable too, but they copy everything on each change; they don't share structure.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -593,17 +606,16 @@ var b = a.append(4); // a is still [1, 2, 3]; b reuses a's nodes
 </tr>
 </table>
 
-How these are built — the finger trees, the amortized-versus-worst-case bounds — is Okasaki's subject[4]; you *consume* the library, you do not implement it. That reference is the deep answer; this is the everyday one.
+How these are built (finger trees, amortized versus worst-case bounds) is Okasaki's subject [4]. You *use* the library; you don't implement it. That reference is the deep answer; this section is the everyday one.
 
 ---
 
 ## When NOT to
 
-Mutable state earns its keep in two main cases.
+Mutable state earns its place in two cases:
 
-**Inner loops where allocation dominates.** When you are inside a tight hot path — a parser tokenising megabytes per second, a renderer building a frame, a physics step iterating millions of bodies — copy-on-write loses to in-place update on the only axis that matters. This is the Mike Acton territory Axiom 1 already flagged as out-of-scope for this playbook[5], and the same caveat applies here: a *performance* argument, not a *complexity* one.
-
-**Boundary objects you do not own.** ORM entities, framework callbacks, and DTOs from generated code sometimes ship with setters you cannot remove. Wrap them: parse them into immutable value objects at the boundary, work in immutable types in the core, and project back out at the exit. The shell is allowed to be mutable; the core is not.
+- **Inner loops where allocation dominates.** In a tight hot path (a parser tokenizing megabytes per second, a renderer building a frame, a physics step over millions of bodies), copying loses to in-place update on the only axis that matters. This is the Mike Acton territory that Axiom 1 already marked as out of scope for this book [5]: a *performance* argument, not a *complexity* one.
+- **Boundary objects you don't own.** ORM entities, framework callbacks and generated DTOs sometimes come with setters you cannot remove. Convert them into immutable records at the boundary, work with immutable types in the core, and convert back on the way out. The edges may be mutable; the core is not.
 
 ---
 
@@ -611,21 +623,18 @@ Mutable state earns its keep in two main cases.
 
 [1] **JLS / `java.lang.reflect`** and **`sun.misc.Unsafe`** are the canonical Java escape hatches; **`System.Reflection`** with `BindingFlags.NonPublic | BindingFlags.Instance` (and `FieldInfo.SetValue`) is the equivalent in .NET. Their existence means no JVM- or CLR-level guarantee of immutability is possible; the contract is enforced at the source level only.
 
-[2] **Rich Hickey**, *The Value of Values*, keynote at JaxConf 2012 (also delivered at GOTO Copenhagen 2012). Recording on InfoQ, published 14 August 2012:
-<https://www.infoq.com/presentations/Value-Values/>. The argument that values — immutable, location-independent — are what make concurrency and distribution tractable. Already cited in [Axiom 1](axiom-01-data-is-not-behavior.md) as reference [4]; cross-listed here because the argument is load-bearing for Axiom 2 as well.
+[2] **Rich Hickey**, *The Value of Values*, keynote at JaxConf 2012 (also delivered at GOTO Copenhagen 2012). Recording on InfoQ, published 14 August 2012: <https://www.infoq.com/presentations/Value-Values/>. The argument that values (immutable, location-independent) are what make concurrency and distribution manageable. Already cited in [Axiom 1](axiom-01-data-is-not-behavior.md) as reference [4]; listed again here because the argument matters just as much for Axiom 2.
 
-[3] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022 — Principle #3 ("Data is immutable") and the discussion of update ergonomics, allocation cost, and tooling friction in the corresponding chapter.
-<https://www.manning.com/books/data-oriented-programming>
+[3] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022. Principle #3 ("Data is immutable"). <https://www.manning.com/books/data-oriented-programming>
 
-[4] **Chris Okasaki**, *Purely Functional Data Structures*, Cambridge University Press, 1998. The standard reference on how to build immutable data structures (lists, queues, heaps, finger trees) with asymptotic costs comparable to their mutable counterparts — the answer to "but isn't copy-on-write slow?" for everything outside the absolute hottest loops.
+[4] **Chris Okasaki**, *Purely Functional Data Structures*, Cambridge University Press, 1998. The standard reference on how to build immutable data structures (lists, queues, heaps, finger trees) with asymptotic costs comparable to their mutable counterparts. The answer to "but isn't copy-on-write slow?" for everything outside the absolute hottest loops.
 
-[5] **Mike Acton**, *Data-Oriented Design and C++*, keynote at CppCon 2014:
-<https://www.youtube.com/watch?v=rX0ItVEVjHc>. Already cited in [Axiom 1](axiom-01-data-is-not-behavior.md) as reference [6]; relevant here as the dominant counter-argument inside performance-critical inner loops.
+[5] **Mike Acton**, *Data-Oriented Design and C++*, keynote at CppCon 2014: <https://www.youtube.com/watch?v=rX0ItVEVjHc>. Already cited in [Axiom 1](axiom-01-data-is-not-behavior.md) as reference [6]; relevant here as the dominant counter-argument inside performance-critical inner loops.
 
-[6] **Joshua Bloch**, *Effective Java*, 3rd ed., Addison-Wesley, 2018 — Item 17, "Minimize mutability". The canonical Java-specific statement of the rules listed in this axiom's *Definitions* section, with the same five-point recipe (no mutators, ensure the class cannot be extended, make all fields final, make all fields private, ensure exclusive access to any mutable components).
+[6] **Joshua Bloch**, *Effective Java*, 3rd ed., Addison-Wesley, 2018, Item 17, "Minimize mutability". The canonical Java-specific statement of the rules listed in this axiom's *Definitions* section, with the same five-point recipe (no mutators, ensure the class cannot be extended, make all fields final, make all fields private, ensure exclusive access to any mutable components).
 
-[7] **`System.Collections.Immutable`** (.NET) and **Vavr** (Java) are the mainstream persistent-collection libraries — immutable lists, maps, sets, and vectors with structural sharing built in, so you never hand-roll the trees in reference [4]. .NET: <https://learn.microsoft.com/en-us/dotnet/api/system.collections.immutable>. Vavr: <https://vavr.io>.
+[7] **`System.Collections.Immutable`** (.NET) and **Vavr** (Java) are the mainstream persistent-collection libraries: immutable lists, maps, sets, and vectors with structural sharing built in, so you never hand-roll the trees in reference [4]. .NET: <https://learn.microsoft.com/en-us/dotnet/api/system.collections.immutable>. Vavr: <https://vavr.io>.
 
 ---
 
-← Previous: [Axiom 1 — Data is not Behaviour](axiom-01-data-is-not-behavior.md) · Next: [Axiom 3 — Side effects](axiom-03-side-effects.md) →
+← Previous: [Axiom 1 — Data is not Behavior](axiom-01-data-is-not-behavior.md) · Next: [Axiom 3 — Side effects](axiom-03-side-effects.md) →
