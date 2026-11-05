@@ -11,7 +11,7 @@
 - Honesty and totality ([Axiom 6](axiom-06-honest-total-signatures.md)) limit how it reports its outcomes.
 - This axiom limits *how much it decides at all*.
 
-Honest, total **and cohesive** is the full test for a well-formed function. Of the three, cohesion gets the least help from the compiler: honesty and totality show up in the types, but "one reason to change" is a judgment about the future.
+Honest, total **and cohesive** is the full test for a well-formed function. Of the three, cohesion is the one the compiler can't help with (see *Trade-offs*).
 
 ---
 
@@ -167,7 +167,7 @@ The discipline is to wait until the reason to change shows itself before you pic
 A function with one input shape, one decision and one output shape fits in your head at once: you can read it, test it and review it without loading a second context. The honest signature of [Axiom 6](axiom-06-honest-total-signatures.md) tells you *what* outcomes exist; cohesion keeps the number of decisions behind them at one, so the signature stays small enough to be honest about. Two jobs in one function means two sets of test cases multiplied together, and a review that has to reason about how they interact.
 
 **2. Reason to change is a better metric than similarity.**
-Similarity asks "do these look alike?"; reason to change asks "will they change together?". Only the second question predicts what a future edit will cost. Code that really is one concept (it changes in one place, for one reason) earns a single home. Code that merely rhymes doesn't, and merging it buys a shared blast radius for nothing. This is the simplicity-first move: cohesion *removes* a rule ("remove duplication on sight") and replaces it with a sharper one that fires less often, and more accurately, on sameness instead of resemblance.
+As *Definitions* says, the question is whether code changes together, not whether it looks alike, and only that question predicts what a future edit will cost. Code that really is one concept (it changes in one place, for one reason) earns a single home. Code that merely rhymes doesn't, and merging it buys a shared blast radius for nothing. This is the simplicity-first move: cohesion *removes* a rule ("remove duplication on sight") and replaces it with a sharper one that fires less often, and more accurately, on sameness instead of resemblance.
 
 **3. A cohesive function is the unit that composes.**
 Functions that each answer a single question fit together; functions that each answer three resist it. When a behavior is built from small, single-purpose pieces, you can see each contract at a glance, and a changing requirement lands on the one piece that owns that reason, not on a tangle that owns several. That is why cohesion sits beside [Axiom 6](axiom-06-honest-total-signatures.md) at the foundation: an honest, total, single-purpose function is about as clean a building block as there is.
@@ -186,7 +186,7 @@ The same metric, pointed at a folder instead of a function, says that code that 
 
 ## When NOT to
 
-- **When the repetition is one real concept.** Cohesion is not a license to never share code. A single rule (money formatting, a domain calculation, one validation) that repeats and changes *for one reason* should be extracted. That is DRY being right, and reason to change agrees with it. This axiom sharpens *when* to share; it doesn't forbid sharing.
+- **When the repetition is one real concept.** Cohesion is not a license to never share code: a rule that repeats and changes *for one reason* should be extracted (see *What DRY is for*). This axiom sharpens *when* to share; it doesn't forbid sharing.
 - **When splitting would scatter one thought.** Breaking a function into a swarm of one-line helpers, each with technically "one reason to change", can leave the reader jumping around a file to piece one thought back together. Cohesion is about reasons to change, not line count. A function that does one job is allowed to be several statements long, and keeping those statements together, readable in one place, is the same instinct, not its opposite.
 
   The smell that *does* call for extraction is different: a high-level step sitting next to a fiddly mechanical detail, forcing the reader to work through the detail to follow the main thread. That detail wants a name. But extract it because it is a concept with its own reason to change, not to make every statement sit at the same level of detail. (This is where the idea of *locality of behavior* lives, "the behaviour of a unit of code should be as obvious as possible by looking only at that unit of code" [8]. It is cohesion at reading distance, not a separate rule.)
