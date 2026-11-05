@@ -84,40 +84,65 @@ Whether each effect is *necessary* or *misplaced* is a question for later axioms
 
 A reference list. You don't need to memorize it; skim it once, and come back when you're unsure whether a call is an effect.
 
-- **Mutating a static field**: direct assignment; `volatile` writes; `Interlocked.*`; `AtomicInteger.set` / `incrementAndGet` / `compareAndSet`.
-- **Mutating an instance field after construction**: setters; direct writes to public fields; any `this.x = ...` outside a constructor.
-- **Mutating a parameter**: `list.Add` / `list.add`, `Remove`, `Clear`, `Insert`, `Array.Sort`, `Collections.sort`; setters on a passed object; reassigning a `ref` / `out` parameter.
-- **Mutating a non-local collection**: writes to `ConcurrentDictionary`, `ConcurrentBag`, `BlockingCollection`, `HashMap`, `ConcurrentHashMap`, `Set`, `Queue` reachable from a static, instance, or captured variable.
-- **File I/O**: `File.ReadAllText`, `File.WriteAllText`, `FileStream`, `Directory.*`, `File.Delete`, `File.SetAttributes`; `Files.readString`, `Files.write`, `FileInputStream`, `Files.list`, `Files.delete`, `Files.setPosixFilePermissions`.
-- **Console I/O**: `Console.WriteLine`, `Console.ReadLine`, `Console.Out`, `Console.Error`; `System.out.println`, `System.err.println`, `Scanner.next`, `BufferedReader.readLine`.
-- **Network I/O**: `HttpClient.GetAsync` / `SendAsync`, `Socket.Send` / `Receive`, gRPC, SignalR, WebSocket; `HttpClient.send`, `Socket.send` / `receive`, `URLConnection`; DNS lookups (`Dns.GetHostAddresses`, `InetAddress.getByName`).
-- **Database I/O**: `SqlCommand.ExecuteReader`, `DbContext.SaveChanges`, EF / Dapper queries, `BeginTransaction` / `Commit` / `Rollback`; `PreparedStatement.executeQuery`, `EntityManager.persist`, Hibernate `flush`, JDBC `Connection.commit`.
-- **Message-broker I/O**: `channel.basicPublish` (RabbitMQ), `kafkaProducer.send`, `kafkaConsumer.poll`, consumer acknowledgements; `IMessageSession.Send` (NServiceBus), `IPublishEndpoint.Publish` (MassTransit).
-- **Process and lifecycle**: `Process.Start`, `Environment.Exit`, `AppDomain.Unload`; `Runtime.exec`, `System.exit`, `Runtime.getRuntime().addShutdownHook`; loading code at runtime (`Assembly.LoadFrom`, `NativeLibrary.Load`; `System.loadLibrary`).
-- **Environment reads**: `Environment.GetEnvironmentVariable`, `Environment.CommandLine`, `Environment.MachineName`, `Environment.UserName`; `System.getenv`, `System.getProperty`, `InetAddress.getLocalHost`.
-- **Reading the clock**: `DateTime.Now`, `DateTime.UtcNow`, `DateTimeOffset.Now`, `Stopwatch.GetTimestamp`, `Environment.TickCount`; `LocalDateTime.now()`, `Instant.now()`, `System.currentTimeMillis()`, `System.nanoTime()`, `Clock.systemDefaultZone()`.
-- **Randomness**: `Random`, `Random.Shared`, `RandomNumberGenerator.GetBytes`, `Guid.NewGuid()`; `new Random()`, `SecureRandom.nextBytes`, `ThreadLocalRandom.current()`, `UUID.randomUUID()`, `Math.random()`.
-- **Logging**: every `logger.Info` / `Debug` / `Warn` / `Error`, `Trace.WriteLine`, `Debug.WriteLine`, `EventSource.Write`; `slf4j.Logger.*`, `java.util.logging.Logger.*`, `Log4j Logger.*`; structured-logger emits and log-context (`MDC`, `LogContext`) writes.
-- **Throwing exceptions**: `throw new ...`, `throw;` rethrows; Java checked (declared in `throws`) and unchecked alike.
-- **Threading**: `new Thread().Start()`, `Task.Run`, `Task.Factory.StartNew`, `Parallel.For` / `ForEach`, `ThreadPool.QueueUserWorkItem`; `new Thread().start()`, `ExecutorService.submit`, `CompletableFuture.runAsync`, `ForkJoinPool.commonPool().submit`, virtual-thread `start()`.
-- **Sleeping / blocking**: `Thread.Sleep`, `Task.Delay`, `SpinWait`, `Monitor.Wait`; `Thread.sleep`, `LockSupport.parkNanos`, `Object.wait`, `BlockingQueue.take`.
-- **Synchronization primitives**: `lock`, `Monitor.Enter` / `Exit`, `Mutex`, `Semaphore`, `SemaphoreSlim`, `ReaderWriterLockSlim`; `synchronized`, `ReentrantLock`, `ReentrantReadWriteLock`, `CountDownLatch.await`, `Semaphore.acquire`, `CyclicBarrier.await`.
-- **Atomic / volatile / memory-barrier operations**: `Interlocked.*`, `Volatile.Read` / `Write`, `Thread.MemoryBarrier`; `AtomicReference`, `VarHandle.compareAndSet`, `volatile` reads.
-- **Externally-triggered callbacks**: `[HttpGet]`, `[HttpPost]`, ASP.NET handlers; `@GetMapping`, `@PostMapping`, Spring controllers; `@RabbitListener`, `@KafkaListener`, `@JmsListener`, `@EventListener`, `@SqsListener`; `@Scheduled`, `Timer` ticks, `ScheduledExecutorService` callbacks; signal handlers, `event += handler` subscriptions, WebSocket / SignalR callbacks.
-- **Cache reads and writes**: `IMemoryCache.Set` / `TryGetValue`, `IDistributedCache`, `LazyCache`; Caffeine `Cache.put` / `getIfPresent`, Guava `Cache`, Redisson, Jedis, Ehcache.
-- **Singletons and service locators**: `Singleton.Instance`, `getInstance()`, `IServiceProvider.GetService` / `GetRequiredService`, `ServiceLocator.Current`; `ApplicationContext.getBean`, `CDI.current().select(...)`.
-- **Connection / object pools**: `HikariDataSource.getConnection` (HikariCP), pooled `SqlConnection.Open`, `ArrayPool<T>.Shared.Rent` / `Return`, `MemoryPool<T>`; `DataSource.getConnection`.
-- **Ambient context**: `ThreadLocal<T>.Value`, `AsyncLocal<T>.Value`, `HttpContext.Current`, `OperationContext.Current`, `CallContext.LogicalGetData`; `RequestContextHolder.getRequestAttributes()`, `MDC.get` / `put`, `TransactionSynchronizationManager`.
-- **Runtime configuration reads**: `IConfiguration["..."]`, `IOptions<T>.Value`, `ConfigurationManager.AppSettings`; `@Value("${...}")`, Spring `Environment.getProperty`; feature flags (`IFeatureManager`, LaunchDarkly, GrowthBook, ConfigCat, Unleash); secrets stores (Vault, Consul, etcd, Azure Key Vault, AWS SSM).
-- **Reflection that reads or mutates**: `FieldInfo.GetValue` / `SetValue`, `PropertyInfo.SetValue`, `MethodInfo.Invoke`, `Activator.CreateInstance`; `Field.get` / `set`, `Method.invoke`, `Constructor.newInstance`.
-- **Dynamic dispatch through interfaces with side-effecting implementations**: any call through an interface whose impl performs any of the above; the static type hides the effect.
-- **Native interop**: `[DllImport]` / P/Invoke, COM calls, `Marshal.*`; JNI, JNA, Project Panama FFI, foreign linker calls.
-- **Locale- and culture-dependent calls**: `string.ToUpper()` / `ToLower()` without `CultureInfo`; `String.toUpperCase()` / `toLowerCase()` without `Locale`; `DateTime.Parse`, `decimal.Parse`, `SimpleDateFormat` defaults; reads of `CultureInfo.CurrentCulture`, `Thread.CurrentCulture`, `Locale.getDefault()`.
-- **Process / thread identity reads**: `Process.GetCurrentProcess().Id`, `Environment.ProcessId`, `Thread.CurrentThread.ManagedThreadId`; `ProcessHandle.current().pid()`, `Thread.currentThread().getId()`.
-- **GC and runtime control**: `GC.Collect`, `GC.AddMemoryPressure`, `GC.SuppressFinalize`, `GCSettings.*`; `System.gc()`, `Runtime.getRuntime().freeMemory()`, `Cleaner.register`, finalizer scheduling.
-- **Disposal and resource release**: `Dispose()`, `IAsyncDisposable.DisposeAsync`, `using` / `await using` exit; `close()`, `AutoCloseable.close()`, try-with-resources exit.
-- **Async continuation scheduling**: `await`'s `SynchronizationContext` / `TaskScheduler` capture and post-back; `CompletableFuture.thenApply` dispatching onto a captured executor.
-- **Default hashing and identity**: `object.GetHashCode()` for reference types; .NET Core's per-process randomized `string.GetHashCode()`; `Object.hashCode()` identity-based default; `WeakReference<T>.TryGetTarget`.
+### State
+
+| Category | C# | Java |
+|---|---|---|
+| Writing a static field | direct assignment, `volatile` writes, `Interlocked.*` | direct assignment, `volatile` writes, `AtomicInteger.set` / `incrementAndGet` / `compareAndSet` |
+| Writing an instance field after construction | setters, writes to public fields, any `this.x = ...` outside a constructor | setters, writes to public fields, any `this.x = ...` outside a constructor |
+| Changing a parameter | `list.Add`, `Remove`, `Clear`, `Insert`, `Array.Sort`, setters on a passed object, assigning a `ref` / `out` parameter | `list.add`, `remove`, `clear`, `Collections.sort`, `Arrays.sort`, setters on a passed object |
+| Changing a non-local collection (reachable from a static, instance or captured variable) | `List`, `Dictionary`, `ConcurrentDictionary`, `ConcurrentBag`, `BlockingCollection` | `ArrayList`, `HashMap`, `ConcurrentHashMap`, `Set`, `Queue` |
+| Cache reads and writes | `IMemoryCache.Set` / `TryGetValue`, `IDistributedCache`, LazyCache | Caffeine `Cache.put` / `getIfPresent`, Guava `Cache`, Ehcache, Redisson, Jedis |
+| Singletons and service locators | `Singleton.Instance`, `IServiceProvider.GetService` / `GetRequiredService`, `ServiceLocator.Current` | `getInstance()`, `ApplicationContext.getBean`, `CDI.current().select(...)` |
+| Ambient context | `AsyncLocal<T>.Value`, `ThreadLocal<T>.Value`, `IHttpContextAccessor.HttpContext`, `HttpContext.Current`, `OperationContext.Current`, `CallContext.LogicalGetData` | `ThreadLocal.get` / `set`, `RequestContextHolder.getRequestAttributes()`, `MDC.get` / `put`, `TransactionSynchronizationManager` |
+
+### I/O
+
+| Category | C# | Java |
+|---|---|---|
+| File | `File.ReadAllText`, `File.WriteAllText`, `FileStream`, `Directory.*`, `File.Delete`, `File.SetAttributes` | `Files.readString`, `Files.write`, `FileInputStream`, `Files.list`, `Files.delete`, `Files.setPosixFilePermissions` |
+| Console | `Console.WriteLine`, `Console.ReadLine`, `Console.Out`, `Console.Error` | `System.out.println`, `System.err.println`, `Scanner.next`, `BufferedReader.readLine` |
+| Network | `HttpClient.GetAsync` / `SendAsync`, `Socket.Send` / `Receive`, gRPC, SignalR, WebSocket, DNS lookups (`Dns.GetHostAddresses`) | `HttpClient.send`, `Socket` streams, `DatagramSocket.send` / `receive`, `URLConnection`, gRPC, WebSocket, DNS lookups (`InetAddress.getByName`) |
+| Database | `SqlCommand.ExecuteReader`, `DbContext.SaveChanges`, EF / Dapper queries, `BeginTransaction` / `Commit` / `Rollback` | `PreparedStatement.executeQuery`, `EntityManager.persist`, Hibernate `flush`, `Connection.commit` |
+| Message broker | RabbitMQ `channel.BasicPublish`, Kafka `producer.Produce` / `consumer.Consume`, `IMessageSession.Send` (NServiceBus), `IPublishEndpoint.Publish` (MassTransit), consumer acknowledgements | RabbitMQ `channel.basicPublish`, `KafkaProducer.send`, `KafkaConsumer.poll`, Spring `KafkaTemplate.send` / `RabbitTemplate.convertAndSend`, consumer acknowledgements |
+
+### Time, randomness and environment
+
+| Category | C# | Java |
+|---|---|---|
+| Reading the clock | `DateTime.Now`, `DateTime.UtcNow`, `DateTimeOffset.Now`, `Stopwatch.GetTimestamp`, `Environment.TickCount` | `LocalDateTime.now()`, `Instant.now()`, `System.currentTimeMillis()`, `System.nanoTime()`, `Clock.systemDefaultZone()` |
+| Randomness | `Random`, `Random.Shared`, `RandomNumberGenerator.GetBytes`, `Guid.NewGuid()` | `new Random()`, `SecureRandom.nextBytes`, `ThreadLocalRandom.current()`, `UUID.randomUUID()`, `Math.random()` |
+| Environment reads | `Environment.GetEnvironmentVariable`, `Environment.CommandLine`, `Environment.MachineName`, `Environment.UserName` | `System.getenv`, `System.getProperty`, `InetAddress.getLocalHost` |
+| Runtime configuration | `IConfiguration["..."]`, `IOptions<T>.Value`, `ConfigurationManager.AppSettings`, `IFeatureManager` | `@Value("${...}")`, Spring `Environment.getProperty` |
+| Feature-flag and secrets services | LaunchDarkly, GrowthBook, ConfigCat, Unleash; Vault, Consul, etcd, Azure Key Vault, AWS SSM | the same services, through their Java SDKs |
+| Culture- and locale-dependent calls | `ToUpper()` / `ToLower()` without a `CultureInfo`, `DateTime.Parse`, `decimal.Parse`, `CultureInfo.CurrentCulture`, `Thread.CurrentThread.CurrentCulture` | `toUpperCase()` / `toLowerCase()` without a `Locale`, `SimpleDateFormat` defaults, `Locale.getDefault()` |
+| Process and thread identity | `Process.GetCurrentProcess().Id`, `Environment.ProcessId`, `Thread.CurrentThread.ManagedThreadId` | `ProcessHandle.current().pid()`, `Thread.currentThread().threadId()` |
+| Default hashing and identity | default `object.GetHashCode()` for reference types, per-process randomized `string.GetHashCode()`, `WeakReference<T>.TryGetTarget` | identity-based default `Object.hashCode()`, `System.identityHashCode`, `WeakReference.get` |
+
+### Concurrency and runtime
+
+| Category | C# | Java |
+|---|---|---|
+| Starting threads and tasks | `new Thread().Start()`, `Task.Run`, `Task.Factory.StartNew`, `Parallel.For` / `ForEach`, `ThreadPool.QueueUserWorkItem` | `new Thread().start()`, `ExecutorService.submit`, `CompletableFuture.runAsync`, `ForkJoinPool.commonPool().submit`, virtual-thread `start()` |
+| Sleeping and blocking | `Thread.Sleep`, `Task.Delay`, `SpinWait`, `Monitor.Wait` | `Thread.sleep`, `LockSupport.parkNanos`, `Object.wait`, `BlockingQueue.take` |
+| Synchronization primitives | `lock`, `Monitor.Enter` / `Exit`, `Mutex`, `Semaphore`, `SemaphoreSlim`, `ReaderWriterLockSlim` | `synchronized`, `ReentrantLock`, `ReentrantReadWriteLock`, `CountDownLatch.await`, `Semaphore.acquire`, `CyclicBarrier.await` |
+| Atomics, volatile and memory barriers | `Interlocked.*`, `Volatile.Read` / `Write`, `Thread.MemoryBarrier` | `AtomicReference`, `VarHandle.compareAndSet`, `volatile` reads and writes |
+| Async continuation scheduling | `await` capturing the `SynchronizationContext` / `TaskScheduler` and posting back to it | `CompletableFuture.thenApplyAsync` running on a captured executor |
+| Connection and object pools | pooled `SqlConnection.Open`, `ArrayPool<T>.Shared.Rent` / `Return`, `MemoryPool<T>` | `DataSource.getConnection` (for example HikariCP's `HikariDataSource`) |
+| Disposal and resource release | `Dispose()`, `DisposeAsync()`, leaving a `using` / `await using` block | `close()`, leaving a try-with-resources block |
+| GC and runtime control | `GC.Collect`, `GC.AddMemoryPressure`, `GC.SuppressFinalize`, `GCSettings.*` | `System.gc()`, `Runtime.getRuntime().freeMemory()`, `Cleaner.register`, finalizers |
+| Process and lifecycle | `Process.Start`, `Environment.Exit`, `AssemblyLoadContext.Unload`, loading code at runtime (`Assembly.LoadFrom`, `NativeLibrary.Load`) | `ProcessBuilder.start`, `Runtime.exec`, `System.exit`, `Runtime.addShutdownHook`, `System.loadLibrary` |
+
+### Indirect
+
+| Category | C# | Java |
+|---|---|---|
+| Throwing exceptions | `throw new ...`, `throw;` rethrows | `throw new ...`, checked and unchecked alike |
+| Logging | `ILogger.LogInformation` / `LogWarning` / `LogError`, `Trace.WriteLine`, `Debug.WriteLine`, `EventSource.Write`, log-context writes (Serilog `LogContext`) | SLF4J `Logger.*`, `java.util.logging.Logger.*`, Log4j `Logger.*`, log-context writes (`MDC.put`) |
+| Reflection that reads or writes | `FieldInfo.GetValue` / `SetValue`, `PropertyInfo.SetValue`, `MethodInfo.Invoke`, `Activator.CreateInstance` | `Field.get` / `set`, `Method.invoke`, `Constructor.newInstance` |
+| Native interop | `[DllImport]` / `[LibraryImport]` (P/Invoke), COM calls, `Marshal.*` | JNI, JNA, the Foreign Function & Memory API (Project Panama) |
+| Externally triggered callbacks | `[HttpGet]` / `[HttpPost]` handlers, `event += handler` subscriptions, timer ticks, SignalR / WebSocket callbacks, signal handlers (`PosixSignalRegistration`) | `@GetMapping` / `@PostMapping` handlers, `@RabbitListener`, `@KafkaListener`, `@JmsListener`, `@EventListener`, `@SqsListener`, `@Scheduled`, `ScheduledExecutorService` callbacks, WebSocket callbacks |
+| Calls through an interface whose implementation has effects | any call through an interface whose implementation does any of the above: the static type hides the effect | the same |
 
 ---
 
