@@ -74,7 +74,9 @@ public Order placeOrder(String customerId, List<String> items) {
 </tr>
 </table>
 
-The signature promises `(string, List<string>) -> Order`. The body delivers eight effects beyond that promise. None of them is named in the type, and all of them are visible to the world, or to other code, outside the call. Whether each effect is *necessary* or *misplaced* is a question for later axioms. This one only asks that you can see them.
+The signature promises `(string, List<string>) -> Order`. The body delivers eight effects beyond that promise. None of them is named in the type, and all of them are visible to the world, or to other code, outside the call. One of them is also a bug: `Order` keeps a reference to `items`, so clearing the parameter empties the order's list too. A hidden write rarely stays local.
+
+Whether each effect is *necessary* or *misplaced* is a question for later axioms. This one only asks that you can see them.
 
 ---
 
@@ -140,7 +142,7 @@ A `void` return is the loudest signal, but not the only one. A method that retur
 Without side effects, a program is a mathematical function: it takes inputs, produces outputs, and changes nothing observable. Such a program is useless: it can't save a file, send a message, draw a pixel or learn the time of day. Every useful program has effects somewhere. The question, which later axioms answer, is *where*: scattered through every function, or gathered at the edges.
 
 **3. Effects are a common source of non-local bugs.**
-A function whose result depends on hidden inputs is hard to test and hard to reproduce: changing something far away changes its behavior. A function with hidden writes is the same problem in reverse: changing what it does ripples into code that never calls it. Mixing state into what should be plain values is, in Hickey's words, a root of incidental complexity [1]. Naming the category is what lets you ask *which* effects a function has, and *which* of them could move elsewhere.
+A function whose result depends on hidden inputs is hard to test and hard to reproduce: changing something far away changes its behavior. A function with hidden writes is the same problem in reverse: changing what it does ripples into code that never calls it. As Hickey argues, mixing state into what should be plain values is a root of incidental complexity [1]. Naming the category is what lets you ask *which* effects a function has, and *which* of them could move elsewhere.
 
 ---
 
