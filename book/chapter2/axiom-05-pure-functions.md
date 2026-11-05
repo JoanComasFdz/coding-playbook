@@ -16,9 +16,9 @@ In one sentence: **a function is pure when no side effect from [Axiom 3](axiom-0
 A function is pure when all of these are true:
 
 - **No effects in its body.** No clock or random read, no I/O, no logging, no parameter changes, and no `throw` on bad input: an exception is an output that bypasses the return value. None of [Axiom 3](axiom-03-side-effects.md#the-categories)'s categories appear.
-- **No effects through its calls.** Purity is deep, just like impurity. A function that does arithmetic plus one call to an impure helper is impure. Every function it calls, all the way down, must be pure too.
+- **No effects through its calls.** Purity is deep, just like impurity in [Axiom 4](axiom-04-impure-functions.md). A function that does arithmetic plus one call to an impure helper is impure. Every function it calls, all the way down, must be pure too.
 - **No hidden inputs through captures.** A captured field or reference that holds a `DbContext`, a `Random`, a settable singleton or any other mutable shared state makes the function impure. Captures are allowed, but they must be values: immutable, created once, and not shared with anything that changes.
-- **Deterministic.** Same inputs in, same output out: two calls with equal arguments must give equal results. Determinism is about *behavior*, not just *the body*: a function whose body looks effect-free but reads a mutable field is not pure.
+- **Deterministic.** Same inputs in, same output out: two calls with equal arguments must give equal results. Determinism is about *behavior*, not just *the body*: a body that looks effect-free can still read mutable state (see the CQS getter below).
 
 That last point is where purity goes further than Meyer's older **Command–Query Separation** rule [3]. CQS asks a *query* not to change anything, but still lets it *read* mutable state. So a getter that reads a mutable field is a valid CQS query, but not a pure function. Purity forbids the hidden read too, so nothing hidden goes in.
 
@@ -133,17 +133,17 @@ The cost appears as soon as you want to do anything with such a function other t
 
 One force pulls the other way, and it is real: every effect the program needs (the saved record, the published event, the log line, the response) does have to happen *somewhere*.
 
-Purity means paying that cost in one place, at the edges of the program, and getting the benefits everywhere else. This axiom doesn't claim every function should be pure. It claims that pure functions are where the program's *reasoning* lives, and that the rest of this book builds its structure and types there.
+Purity means paying that cost in one place, at the edges of the program, and getting the benefits everywhere else (see *Why*, point 4). This axiom doesn't claim every function should be pure. It claims that pure functions are where the program's *reasoning* lives, and that the rest of this book builds its structure and types there.
 
 ---
 
 ## Why
 
 **1. Nothing hidden goes in or out.**
-Every input a pure function depends on is in its parameter list, and everything it produces is in its return value. Reading the signature tells you every channel the function uses. This is what makes the rest of this book possible: a richer type can only describe *all* of a function's inputs and outcomes when the function has no other inputs or outcomes. Purity comes first; better types come after.
+Because every input is a parameter and every output is the return value (see *Definitions*), the signature shows every channel the function uses. That is what makes the rest of this book possible: a richer type can only describe *all* of a function's inputs and outcomes when the function has no other inputs or outcomes. Purity comes first; better types come after.
 
 **2. The call and its value are interchangeable.**
-You can replace a pure function call with its return value, and the program behaves the same. That is referential transparency, and caching, running in parallel, retrying and replaying all rely on it. None of these are tricks you add to pure functions. They simply work on pure functions, and can break on impure ones. The label isn't an optimization; it is what makes those optimizations safe. Hughes' classic case for functional programming, that small functions can be glued together freely, rests on the same property [1].
+Caching, running in parallel, retrying and replaying all rely on referential transparency (see *Definitions*). None of these are tricks you add to pure functions. They simply work on pure functions, and can break on impure ones. The label isn't an optimization; it is what makes those optimizations safe. Hughes' classic case for functional programming, that small functions can be glued together freely, rests on the same property [1].
 
 **3. Tests become a table.**
 Testing a pure function is as simple as tests get: pick inputs, state the expected output, run, compare. No setup, no clock to freeze, no database to seed, no mock to verify, no cleanup. The same property that makes pure functions easy to think about makes them easy to test, to specify and to keep correct over time. Normand's book is a long worked example of how separating calculations from actions changes the cost of testing and reasoning [2].
