@@ -340,7 +340,7 @@ A function whose parameter type is `AuthenticatedSession` is honest in a way a f
 A guard in N methods drifts into N slightly different guards over time. A single transition function whose return type carries the new state has one place where the rule lives. Test suites shrink because the no-longer-possible cases stop being worth testing; review surfaces shrink because the no-longer-possible classes of bug stop being worth scanning for.
 
 **4. The composition root holds the typestate value.**
-A long-lived shell ([Axiom 26](axiom-26-stateful-shell.md)) that holds an `AuthenticatedSession` instead of a nullable `User?` field has a smaller surface for the rest of the program to misuse. Stateful resources held in the shell are typed by what they are, not by what they might be — and the shell's seams to the pure core ([Axiom 12](axiom-12-impureheim.md)) carry the same guarantee.
+A long-lived shell ([Axiom 26](axiom-26-stateful-shell.md)) that holds an `AuthenticatedSession` instead of a nullable `User?` field has a smaller surface for the rest of the program to misuse. Stateful resources held in the shell are typed by what they are, not by what they might be — and the shell's seams to the pure core ([Axiom 12](axiom-12-impureim.md)) carry the same guarantee.
 
 ---
 

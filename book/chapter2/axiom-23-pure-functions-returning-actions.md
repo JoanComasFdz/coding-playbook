@@ -1,6 +1,6 @@
 # Axiom 23 — Pure functions returning actions
 
-**A pure function decides *what should happen* and returns a discriminated union of actions; the impure shell pattern-matches on the returned action and executes the side effect it names — the sandwich from [Axiom 12](axiom-12-impureheim.md) delivered in full.**
+**A pure function decides *what should happen* and returns a discriminated union of actions; the impure shell pattern-matches on the returned action and executes the side effect it names — the sandwich from [Axiom 12](axiom-12-impureim.md) delivered in full.**
 
 - The pure core's return type is a sealed DU of actions — `AddLine`, `IncreaseLine`, `Rejected`, and so on.
 - Each variant is an immutable record carrying exactly the data the shell needs to execute that arm.
@@ -8,7 +8,7 @@
 - Decision is data; execution is the boundary.
 - Decisions are business logic. Effects are infrastructure.
 
-[Axiom 21](axiom-21-discriminated-unions.md) named the general sealed-DU shape — N honest outcomes, one variant per outcome, exhaustively pattern-matched. [Axiom 12](axiom-12-impureheim.md) sketched the sandwich — effects at the edges, pure logic in the middle. This axiom is the meeting point: when the pure middle's job is to decide *what the shell should do next*, the most honest return type is a DU whose variants are the things the shell is allowed to do. The structural foreshadowing in [Axiom 5](axiom-05-pure-functions.md) — `DecideAdd(cart, product, quantity) -> CartDecision` with `AddLine | IncreaseLine | Rejected` — was this axiom. Now the pattern has its name.
+[Axiom 21](axiom-21-discriminated-unions.md) named the general sealed-DU shape — N honest outcomes, one variant per outcome, exhaustively pattern-matched. [Axiom 12](axiom-12-impureim.md) sketched the sandwich — effects at the edges, pure logic in the middle. This axiom is the meeting point: when the pure middle's job is to decide *what the shell should do next*, the most honest return type is a DU whose variants are the things the shell is allowed to do. The structural foreshadowing in [Axiom 5](axiom-05-pure-functions.md) — `DecideAdd(cart, product, quantity) -> CartDecision` with `AddLine | IncreaseLine | Rejected` — was this axiom. Now the pattern has its name.
 
 Through [Axiom 8](axiom-08-connascence.md)'s lens, this axiom weakens a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com) — the status string or flag the shell must decode back into *what to do* — into a Connascence of Type.
 
@@ -35,7 +35,7 @@ The split makes a previously-tangled choice explicit:
 - *What* should happen lives in the pure core.
 - *That it happens* lives at the boundary.
 
-A method that did both — read context, decide, act — has split in two: this is **Command–Query Separation** ([Axiom 12](axiom-12-impureheim.md)) carried to its conclusion — rather than keep one method honest, the query (`DecideAdd`, which returns a value) and the command (the shell's execute, which returns nothing) become *different functions*. The two halves now have different colours (pure / impure), different testability, and different reasons to change. The type system holds the seam: every variant the core can produce is a variant the shell must handle, and the compiler refuses anything else.
+A method that did both — read context, decide, act — has split in two: this is **Command–Query Separation** ([Axiom 12](axiom-12-impureim.md)) carried to its conclusion — rather than keep one method honest, the query (`DecideAdd`, which returns a value) and the command (the shell's execute, which returns nothing) become *different functions*. The two halves now have different colours (pure / impure), different testability, and different reasons to change. The type system holds the seam: every variant the core can produce is a variant the shell must handle, and the compiler refuses anything else.
 
 This split is the precise inversion of the OO maxim **Tell, Don't Ask** — [Axiom 1](axiom-01-data-is-not-behavior.md)'s road not taken. Tell-Don't-Ask *fuses* deciding and acting into one call: `account.withdraw(amount)` decides whether the withdrawal is allowed *and* performs it, and the whole point is that the caller never sees the decision. This axiom does the opposite on purpose — the decision (`DecideAdd`, a pure query returning a value) and the act (the shell's execute, an impure command returning nothing) become *different functions*. What Tell-Don't-Ask brands as the smell — pull the state out, decide outside the object — is here the deliberate first half of the sandwich: the gather-and-decide that produces an action value. The two are not really in conflict; they answer different premises. Tell-Don't-Ask protects *mutable* state by never letting a caller get between a read and a write; this axiom has no such gap to protect, because the gathered state is an immutable value and the only write is the shell executing the returned action. Splitting the decision back out is what makes it a value you can log, replay, and test without a database — exactly what fusing it into a self-mutating method forecloses.
 
@@ -145,7 +145,7 @@ Three arms, three effects, one expression. No `if`-ladder, no nested decision, n
 
 ## The synthesis
 
-This is the sandwich [Axiom 12](axiom-12-impureheim.md) sketched, in full: the impure shell loads state from the world, the pure core decides on an action, the impure shell dispatches the action and responds.
+This is the sandwich [Axiom 12](axiom-12-impureim.md) sketched, in full: the impure shell loads state from the world, the pure core decides on an action, the impure shell dispatches the action and responds.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -223,7 +223,7 @@ Read the picture from top to bottom and every prior axiom is visible at its post
 - **The signature is honest and total** ([Axiom 6](axiom-06-honest-total-signatures.md)). `DecideAdd` returns one of three named outcomes. There is no `null`, no exception, no out-parameter; the rejected case is *part of the return type*.
 - **Functions are values; functions over functions are the glue** ([Axiom 9](axiom-09-first-class-functions.md), [Axiom 10](axiom-10-higher-order-functions.md)). The shell's dispatch is a pattern match — equivalently, a higher-order operation that selects which effect-function to run based on the action's shape. The Java `findFirst` and C# `FirstOrDefault` used inside `DecideAdd` are HOFs over the lines.
 - **Pattern matching consumes the action** ([Axiom 11](axiom-11-pattern-matching.md)). One match, three arms; add a variant and the compiler points at every shell that does not yet handle it.
-- **The whole function is the Impureheim sandwich** ([Axiom 12](axiom-12-impureheim.md)). Load → decide → execute. The pure middle is what changes between business decisions; the impure top and bottom stay the same.
+- **The whole function is the Impureim sandwich** ([Axiom 12](axiom-12-impureim.md)). Load → decide → execute. The pure middle is what changes between business decisions; the impure top and bottom stay the same.
 - **Absence and 2-case outcomes have their named container types** ([Axiom 13](axiom-13-maybe.md), [Axiom 14](axiom-14-either.md), [Axiom 16](axiom-16-result.md)). Java's `Optional.findFirst` inside `DecideAdd` is exactly the Maybe shape — a missing line is a value, not `null`. The action DU is the same machinery generalised: where `Result<T, E>` discriminates two cases (success / failure), `CartAction` discriminates three (and could discriminate seven).
 - **Unit is the shape when nothing meaningful is returned** ([Axiom 15](axiom-15-unit.md)). Here the shell produces an `HttpResponse`; a fire-and-forget message handler would return `Unit` and the dispatcher's arms would just execute their effects.
 - **Combinators glue Result-shaped pipelines** ([Axiom 17](axiom-17-result-combinators.md), [Axiom 19](axiom-19-railway.md)). A railway returned a `Result<T, string>` and the shell did a 2-arm match: write a row, or log the reason. This axiom returns a `CartAction` and the shell does a 3-arm dispatch: insert, update, or respond. Structurally the same shape — pure core returns a sum type; impure shell dispatches each arm — just at higher arity, with each arm naming a different *effect* rather than the same effect with different data.
@@ -268,7 +268,7 @@ Swap PostgreSQL for SQLite, swap synchronous writes for an outbox table — thes
 Actions can be logged ("here is what the cart engine decided"), replayed (apply the same action against a different store), enqueued (write the action to a queue and let a worker dispatch it), or sent over the wire (serialise to JSON). None of this works on inline-effect code; all of it works on an action DU for free.
 
 **5. The shell's job becomes mechanical.**
-A pattern match over a DU is some of the most predictable code in the codebase: one arm per variant, each arm doing one thing. The shell stops being a place where logic hides and becomes a place where wiring lives. That is exactly the inversion the sandwich from [Axiom 12](axiom-12-impureheim.md) asked for — thin shell, fat core.
+A pattern match over a DU is some of the most predictable code in the codebase: one arm per variant, each arm doing one thing. The shell stops being a place where logic hides and becomes a place where wiring lives. That is exactly the inversion the sandwich from [Axiom 12](axiom-12-impureim.md) asked for — thin shell, fat core.
 
 ---
 
@@ -308,7 +308,7 @@ A pattern match over a DU is some of the most predictable code in the codebase: 
 [3] **Eric Evans**, *Domain-Driven Design: Tackling Complexity in the Heart of Software*, Addison-Wesley, 2003. Domain events as first-class values: when the domain names *the things that happen*, those things deserve to be types. An action is the imperative-tense sibling of an event (the past tense): `AddLine` describes what to do; `LineAdded` describes what just happened. Both are values; the difference is tense.
 <https://www.domainlanguage.com/ddd/>
 
-[4] **Mark Seemann**, *An Impureim Sandwich*, blog.ploeh.dk, 2020. Cross-listed from [Axiom 12](axiom-12-impureheim.md). The sandwich shape — impure / pure / impure — is the architectural form this axiom inhabits. The synthesis example above is the sandwich in its most type-driven form: the impure shell loads, the pure core decides, the impure shell dispatches an action whose type was authored by the pure core.
+[4] **Mark Seemann**, *An Impureim Sandwich*, blog.ploeh.dk, 2020. Cross-listed from [Axiom 12](axiom-12-impureim.md). The sandwich shape — impure / pure / impure — is the architectural form this axiom inhabits. The synthesis example above is the sandwich in its most type-driven form: the impure shell loads, the pure core decides, the impure shell dispatches an action whose type was authored by the pure core.
 <https://blog.ploeh.dk/2020/03/02/impureim-sandwich/>
 
 [5] **Eric Normand**, *Grokking Simplicity*, Manning Publications, 2021. Cross-listed from [Axiom 4](axiom-04-impure-functions.md) and [Axiom 5](axiom-05-pure-functions.md). Normand's *action / calculation / data* taxonomy puts the same split in three words: a calculation produces data; an action consumes it. The pure-functions-returning-actions axiom is the structural form of that taxonomy — the calculation produces a piece of *data describing an action*, and the action consumes it.

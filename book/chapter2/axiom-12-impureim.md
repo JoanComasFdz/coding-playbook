@@ -1,4 +1,4 @@
-# Axiom 12 — Impureheim
+# Axiom 12 — Impureim
 
 **Effects at the edges, decisions in the middle: read the world, decide with one pure function, then write the world.**
 
@@ -8,7 +8,7 @@
 
 [Axiom 3](axiom-03-side-effects.md) named the effects, [Axiom 4](axiom-04-impure-functions.md) the functions that carry them, [Axiom 5](axiom-05-pure-functions.md) their opposite, and [Axiom 6](axiom-06-honest-total-signatures.md) the signature the core must have. This axiom puts those pieces into one shape. It is a concept, not a construct: it shows the target the rest of this chapter builds toward, so it stays short.
 
-The shape has several names. Mark Seemann calls it the *impureim sandwich* [1], Gary Bernhardt *functional core, imperative shell* [2], and Eric Normand draws it as actions around calculations [3].
+The name is Mark Seemann's: *impureim* is his contraction of impure/pure/impure [1]. Gary Bernhardt calls the same split *functional core, imperative shell* [2], and Eric Normand draws it as actions around calculations [3].
 
 Through [Axiom 8](axiom-08-connascence.md)'s lens, the sandwich improves the *locality* of a [Connascence of Execution](axiom-08-connascence.md#connascence-of-execution-coe). The gather → decide → act order, which would otherwise be scattered through a call tree, gets one visible home. A wrong order can still be written, but a reader sees the whole order in one place.
 
@@ -28,7 +28,7 @@ Either end of the shell can be empty. A query reads, decides and returns, with n
 
 You recognize the shape by the core's signature: its parameters are the gathered values, and its return value is everything the act step needs. If the core reads the clock, logs, or throws on bad input, the sandwich collapses back into a mixed function.
 
-The shape is an older rule, lifted one level. **[Command–query separation](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation)** (CQS) asks each *method* to either return a value (a query) or change state (a command), never both [4]. Impureheim draws the same line around the whole unit of work: gather is all query, act is all command, and the line between them is a step boundary rather than a naming convention per method. The core goes further than CQS asks: a CQS query may still read mutable state, while the core reads nothing outside its parameters.
+The shape is an older rule, lifted one level. **[Command–query separation](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation)** (CQS) asks each *method* to either return a value (a query) or change state (a command), never both [4]. Impureim draws the same line around the whole unit of work: gather is all query, act is all command, and the line between them is a step boundary rather than a naming convention per method. The core goes further than CQS asks: a CQS query may still read mutable state, while the core reads nothing outside its parameters.
 
 ---
 
@@ -116,7 +116,7 @@ The cost shows up as soon as you do anything with the handler other than run it:
 - **Reusing a decision** means pulling it out of the interleaving first, which is the same work as building the sandwich.
 - **Retries, replays and concurrency** have to be thought through again for every line that touches the world.
 
-Impureheim removes none of the effects. The program still reads the cart, prices it and saves the order. It rearranges them so the decisions sit in one place and the effects in another. The price is paid at the seams (see *Trade-offs*).
+Impureim removes none of the effects. The program still reads the cart, prices it and saves the order. It rearranges them so the decisions sit in one place and the effects in another. The price is paid at the seams (see *Trade-offs*).
 
 ---
 
@@ -154,7 +154,7 @@ Two cases where the shape would be ceremony (see the [decisions-vs-ceremony test
 
 ## References
 
-[1] **Mark Seemann**, *Impureim Sandwich*, ploeh blog, 2 March 2020. Names the shape: gather data from impure sources, call a pure function, then act on its result through impure code. *Impureim* is his contraction of impure/pure/impure.
+[1] **Mark Seemann**, *Impureim Sandwich*, ploeh blog, 2 March 2020. Names the shape: gather data from impure sources, call a pure function, then act on its result through impure code.
 <https://blog.ploeh.dk/2020/03/02/impureim-sandwich/>
 
 [2] **Gary Bernhardt**, *Functional Core, Imperative Shell*, Destroy All Software screencast, 12 July 2012. The same split under the name most people know: "This functional core is surrounded by a shell of imperative code."
