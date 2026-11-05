@@ -34,8 +34,8 @@ A shopping cart, first fused, then separated:
 <td>
 
 ```csharp
-// ❌ fused: the state is hidden, and the
-// methods change it in place
+// ❌ fused: the state is hidden,
+// and Add changes it in place
 class Cart
 {
     private readonly List<Line> _lines = new();
@@ -51,8 +51,8 @@ class Cart
 <td>
 
 ```java
-// ❌ fused: the state is hidden, and the
-// methods change it in place
+// ❌ fused: the state is hidden,
+// and Add changes it in place
 class Cart {
     private final List<Line> lines = new ArrayList<>();
 
@@ -75,7 +75,7 @@ class Cart {
 ```csharp
 // ✅ separate: the data is a plain fact...
 record Line(string Product, decimal Price, int Quantity);
-record Cart(IReadOnlyList<Line> Lines);
+record Cart(ImmutableList<Line> Lines);
 
 // ...and the behavior is a function over it
 static class Pricing
@@ -91,7 +91,9 @@ static class Pricing
 ```java
 // ✅ separate: the data is a plain fact...
 record Line(String product, BigDecimal price, int quantity) {}
-record Cart(List<Line> lines) {}
+record Cart(List<Line> lines) {
+    Cart { lines = List.copyOf(lines); }
+}
 
 // ...and the behavior is a function over it
 final class Pricing {
@@ -130,7 +132,7 @@ The OO practice built on that force has a name: **Tell, Don't Ask**. Don't pull 
 
 ## Why
 
-**1. Complexity is the tiebreaker.**
+**1. It reduces complexity.**
 Fusing code and data produces something harder to understand than its parts. Separating them lets code be reused in different contexts and tested in isolation, and tends to make systems less complex overall. In my experience it is one of the cheapest large reductions in complexity available, which is why it comes first.
 
 **2. Data is the durable half; behavior is the volatile half.**
@@ -140,12 +142,12 @@ The data model *is* the design:
 - Pike: "Data dominates" [2].
 - Torvalds: good programmers worry about data structures and their relationships, not the code [3].
 
-And the data model changes far more slowly than the logic does. So let the stable part drive, and keep the volatile part separate and replaceable. This is the durable-vs-volatile split, applied inside a single module.
+And the data model changes far more slowly than the logic does. So let the stable part drive, and keep the volatile part separate and replaceable.
 
 **3. Values, not places (Hickey).**
 The deeper reason data should not carry behavior is that data should be an *immutable value*, and values are inert. Fusing data with behavior comes from what Hickey calls *place-oriented programming* [4]: treating a fact as a mutable cell, where new information overwrites old. It is a habit from an era when memory was scarce.
 
-A value means the same thing everywhere, forever, with no coordination. That is exactly what makes concurrency and distribution manageable. Once your data is a value, behavior *cannot* live inside it; the separation comes for free.
+A value means the same thing everywhere, forever, with no coordination. That is exactly what makes concurrency and distribution manageable. Once your data is a value, behavior that changes it *cannot* live inside it; the separation comes for free.
 
 **4. Only data crosses boundaries.**
 A value can travel between services, between languages, and across years of storage. An in-process method cannot travel at all. Welding behavior onto data ties the one thing that can travel (data) to the one thing that can't (in-process behavior).
