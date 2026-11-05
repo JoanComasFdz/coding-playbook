@@ -78,9 +78,9 @@ Functions over functions.
 
 Branch on a value's shape.
 
-***Leads to Impureheim:*** *With pure and impure understood, criteria for good functions, and a way to branch, we can now sketch the target we're building toward.*
+***Leads to Impureim:*** *With pure and impure understood, criteria for good functions, and a way to branch, we can now sketch the target we're building toward.*
 
-### 12. [Impureheim](axiom-12-impureheim.md)
+### 12. [Impureim](axiom-12-impureim.md)
 
 Effects at the edges, pure logic in the middle. The north star: a concept, not a construct.
 
@@ -148,7 +148,7 @@ Model a thing with several states as one record per state, not one record full o
 
 ### 23. [Pure functions returning actions](axiom-23-pure-functions-returning-actions.md)
 
-The pure core decides, the impure shell executes. This delivers the sandwich from [12](axiom-12-impureheim.md).
+The pure core decides, the impure shell executes. This delivers the sandwich from [12](axiom-12-impureim.md).
 
 ***Leads to State machines:*** *Generalize "decide an action" into "decide the next state."*
 
@@ -182,7 +182,7 @@ Most *Leads to* lines are strict dependencies: the next axiom needs the previous
 
 - **Ubiquitous Language ([0](axiom-00-ubiquitous-language.md))** opens the chapter because it is the discipline the rest enforce. Nothing structurally depends on it, but every type, signature and case that follows is where one of the domain's names ends up in the code.
 - **Connascence ([8](axiom-08-connascence.md))** is an evaluative lens set beside Cohesion. The tools after it do not depend on it, but it names what each of them is doing.
-- **Impureheim ([12](axiom-12-impureheim.md))** comes early as the north star, so the tool-building that follows has a clear purpose. It is delivered in [23](axiom-23-pure-functions-returning-actions.md).
+- **Impureim ([12](axiom-12-impureim.md))** comes early as the north star, so the tool-building that follows has a clear purpose. It is delivered in [23](axiom-23-pure-functions-returning-actions.md).
 - **Typestate ([27](axiom-27-typestate.md))** is the one item outside the arc. It is a niche tool, placed last so it does not interrupt the everyday material before it.
 
 ---

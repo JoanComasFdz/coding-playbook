@@ -199,7 +199,7 @@ You rarely hear about SOLID in functional code, and Mikulski, above, notes it do
 | **O** | Changing behavior by editing or subclassing | Pass a [function](../chapter2/axiom-09-first-class-functions.md); no base class to inherit | Knowing which part will vary, still only after the fact |
 | **L** | Subclasses breaking their parent's promises | No subclasses, but interfaces and type classes still have laws | Laws can still be broken → [honest signatures](../chapter2/axiom-06-honest-total-signatures.md) and tests |
 | **I** | Fat interfaces forcing unused methods on clients | A function parameter asks for exactly one operation | Fat parameters: passing a whole record when one field is needed |
-| **D** | Policy code creating or reaching for its details | Dependencies are passed in as values or functions | Direction still matters → the [Impureheim sandwich](../chapter2/axiom-12-impureheim.md) gives it a shape, no container needed |
+| **D** | Policy code creating or reaching for its details | Dependencies are passed in as values or functions | Direction still matters → the [Impureim sandwich](../chapter2/axiom-12-impureim.md) gives it a shape, no container needed |
 
 Even Seemann, a careful defender of SOLID, argues that SOLID taken seriously leads to FP: push ISP to role interfaces and you end up with single-method interfaces, which *are* functions ([Seemann, *SOLID: the next step is Functional*](https://blog.ploeh.dk/2014/03/10/solid-the-next-step-is-functional/)).
 
@@ -214,7 +214,7 @@ Criticism is only fair if it also says what works. SOLID got a lot right:
 - **It asked the right questions.** Every concern in the "What remains" column above is a SOLID concern: one reason to change, safe substitution, small interfaces, dependency direction. This book keeps all of them. My critique is about how SOLID answers them, not about what it asks.
 - **It made design something teams talk about.** For many teams, the five letters were the first shared words for design. Even a vague vocabulary starts the conversation.
 - **It pushed back on inheritance.** Uncle Bob's version of OCP, and LSP, steered people toward composition and interfaces, away from deep class hierarchies.
-- **DIP at real boundaries is sound.** Policy should not depend on details. The [Impureheim sandwich](../chapter2/axiom-12-impureheim.md) keeps exactly that rule. It just gets there with a code shape instead of a container.
+- **DIP at real boundaries is sound.** Policy should not depend on details. The [Impureim sandwich](../chapter2/axiom-12-impureim.md) keeps exactly that rule. It just gets there with a code shape instead of a container.
 
 ### When SOLID still fits
 
@@ -269,7 +269,7 @@ Every property maps to something I already reason with, or to a level above this
 
 Two properties need more than a table cell:
 
-- **Minimal dependencies.** At the level of a single function, it is *similar to*, but not the same as, two axioms: [purity](../chapter2/axiom-05-pure-functions.md) (the function depends only on its arguments) and [Impureheim](../chapter2/axiom-12-impureheim.md) (dependencies are handed in from the shell, never fetched).
+- **Minimal dependencies.** At the level of a single function, it is *similar to*, but not the same as, two axioms: [purity](../chapter2/axiom-05-pure-functions.md) (the function depends only on its arguments) and [Impureim](../chapter2/axiom-12-impureim.md) (dependencies are handed in from the shell, never fetched).
 - **Idiomatic.** My axioms sometimes go *against* the local idiom: `Result<int, string>` instead of the idiomatic `bool TryParse(string, out int)`.
   - I trade idiom for honesty (simplicity first: honest before familiar).
   - I pay the idiom back in the mechanics: records, `switch` expressions, pattern matching, LINQ.

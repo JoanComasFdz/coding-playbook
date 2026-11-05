@@ -16,7 +16,7 @@ Lives in [Chapter 1](chapter1/README.md) — the motivating hook: SOLID names th
 
 Several SOLID letters already land elsewhere, usually sharper at code level —
 - **S**RP ≈ [Cohesion](chapter2/axiom-07-cohesion.md) ("one reason to change", but at function grain).
-- **D**IP ≈ Impureheim + the composition root.
+- **D**IP ≈ Impureim + the composition root.
 - **I**SP ≈ honest / small surface area.
 - **O**/**L** are mostly about inheritance hierarchies, which this book's FP-leaning register sidesteps.
 
@@ -104,9 +104,9 @@ Source: Dan North, "CUPID — for joyful coding" (2022), dannorth.net; cupid.dev
 
 ---
 
-## Impureheim: the impure–pure–impure sandwich — [✅ AXIOMATIZED]
+## Impureim: the impure–pure–impure sandwich — [✅ AXIOMATIZED]
 
-- [Axiom 12 — Impureheim](chapter2/axiom-12-impureheim.md)
+- [Axiom 12 — Impureim](chapter2/axiom-12-impureim.md)
 
 ---
 
@@ -265,7 +265,7 @@ Deeply nested `if`/`try` blocks marching rightward — each success opens anothe
 Handle the exceptional case first and bail, leaving the happy path un-indented. The *flattened* twin of [Arrow / Pyramid of Doom](#arrow-anti-pattern--pyramid-of-doom--folded).
 
 - [Axiom 19 — Railway](chapter2/axiom-19-railway.md) / [Axiom 17 — Result combinators](chapter2/axiom-17-result-combinators.md) — already the **named foil** in both: the `if (result.IsFailure) return result; …` ladder is the right shape for a single non-uniform step and noise once several run back-to-back — which is exactly when the railway/combinators name the dance once.
-- [Axiom 12 — Impureheim](chapter2/axiom-12-impureheim.md) — gather-and-bail at the top of the sandwich: validate, return early, keep the core's body straight.
+- [Axiom 12 — Impureim](chapter2/axiom-12-impureim.md) — gather-and-bail at the top of the sandwich: validate, return early, keep the core's body straight.
 
 **Source:** Martin Fowler, *Refactoring* (1999) — "Replace Nested Conditional with Guard Clauses."
 
@@ -332,7 +332,7 @@ Building for a future that hasn't arrived — a feature (**YAGNI**), a faster pa
 Single Level of Abstraction Per function. Both useful halves already live elsewhere; the only standalone residue rests on an undefined "level of abstraction" the playbook declines.
 
 - [Axiom 7 — Cohesion](chapter2/axiom-07-cohesion.md) — the "each function does one job" half *is* cohesion; its *When NOT to* carries the reading-smell kernel: a body that forces mental inlining wants a *named* extraction — extract when the detail is a concept with its own reason to change, not to hit an altitude quota.
-- [Axiom 12 — Impureheim](chapter2/axiom-12-impureheim.md) — the "read the body as a paragraph of same-level steps" half is a byproduct of the gather→decide→act step-down, not a separate law.
+- [Axiom 12 — Impureim](chapter2/axiom-12-impureim.md) — the "read the body as a paragraph of same-level steps" half is a byproduct of the gather→decide→act step-down, not a separate law.
 
 **Why no axiom of its own** — the residue ("match every statement to one altitude") rests on a "level of abstraction" that nothing — not even SLAP's own references — defines; applied mechanically it yields *extract-till-you-drop*, the mental-inlining smell [Axiom 7](chapter2/axiom-07-cohesion.md) already guards (and the deep-vs-shallow-modules tension noted below).
 
@@ -366,7 +366,7 @@ The Robustness Principle — *"be conservative in what you do, be liberal in wha
 
 A method returns a value (query) *xor* changes state (command), never both — the OO ancestor of the pure/impure split. Purity is strictly stronger: a CQS "query" may still read mutable globals.
 
-- [Axiom 12 — Impureheim](chapter2/axiom-12-impureheim.md) — the primary home: Impureheim *is* CQS promoted from the method to the unit of work (gather = query, act = command), the seam a layer boundary rather than a naming convention. Meyer is ref [3].
+- [Axiom 12 — Impureim](chapter2/axiom-12-impureim.md) — the primary home: Impureim *is* CQS promoted from the method to the unit of work (gather = query, act = command), the seam a layer boundary rather than a naming convention. Meyer is ref [3].
 - [Axiom 5 — Pure functions](chapter2/axiom-05-pure-functions.md) — the query half: purity outruns it, forbidding even the *read* of mutable state a CQS query still permits.
 - [Axiom 23 — Pure functions returning actions](chapter2/axiom-23-pure-functions-returning-actions.md) — the command half: the would-be command splits into a pure `Decide` (returns a value) and an impure execute (returns nothing).
 
@@ -542,7 +542,7 @@ Echoes the [SOLID critique](#solid-critique)'s note that the **O**/**L** letters
 
 - [Axiom 7](chapter2/axiom-07-cohesion.md) — group by reason to change, pointed at a folder.
 - [Axiom 8](chapter2/axiom-08-connascence.md) — high locality inside a slice, low degree between slices.
-- [Axiom 12](chapter2/axiom-12-impureheim.md) — each slice is one Impureheim sandwich.
+- [Axiom 12](chapter2/axiom-12-impureim.md) — each slice is one Impureim sandwich.
 - [Chapter 1](chapter1/README.md#ocp-did-not-die-it-moved-up-the-stack) — where OCP's intent survives.
 
 **Source:** Bogard, [*Vertical Slice Architecture*](https://www.jimmybogard.com/vertical-slice-architecture/).
@@ -588,7 +588,7 @@ An abstraction whose underlying detail shows through — the caller must know wh
 
 🔍 **Open** — record the boundary only.
 
-Note (from research): CQRS is system topology = **out of scope** (it's a *consumer* of the building blocks, not one). Its code-level sibling is **CQS** (see the Command–Query Separation entry above) — a method returns a value *xor* changes state — and that one is now folded into [Axiom 12 — Impureheim](chapter2/axiom-12-impureheim.md) (and named in [Axiom 5](chapter2/axiom-05-pure-functions.md) and [Axiom 23](chapter2/axiom-23-pure-functions-returning-actions.md)). Keep this section only to *record the boundary*, not to write an axiom.
+Note (from research): CQRS is system topology = **out of scope** (it's a *consumer* of the building blocks, not one). Its code-level sibling is **CQS** (see the Command–Query Separation entry above) — a method returns a value *xor* changes state — and that one is now folded into [Axiom 12 — Impureim](chapter2/axiom-12-impureim.md) (and named in [Axiom 5](chapter2/axiom-05-pure-functions.md) and [Axiom 23](chapter2/axiom-23-pure-functions-returning-actions.md)). Keep this section only to *record the boundary*, not to write an axiom.
 
 ---
 

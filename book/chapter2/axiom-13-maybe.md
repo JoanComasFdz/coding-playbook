@@ -499,4 +499,4 @@ Picking one is an ADR-level call, not a principle-level one — it depends on th
 
 ---
 
-← Previous: [Axiom 12 — Impureheim](axiom-12-impureheim.md) · Next: [Axiom 14 — Either](axiom-14-either.md) →
+← Previous: [Axiom 12 — Impureim](axiom-12-impureim.md) · Next: [Axiom 14 — Either](axiom-14-either.md) →

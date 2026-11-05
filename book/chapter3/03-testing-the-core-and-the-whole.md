@@ -2,7 +2,7 @@
 
 > **Placeholder.** This Play collects the author's position and the open questions around it. The full write-up, examples and sources are still to do.
 
-The split between pure and impure code ([Axiom 4](../chapter2/axiom-04-impure-functions.md), [Axiom 5](../chapter2/axiom-05-pure-functions.md), [Axiom 12](../chapter2/axiom-12-impureheim.md)) decides three things at once: what to share, what to abstract, and what to test, and how.
+The split between pure and impure code ([Axiom 4](../chapter2/axiom-04-impure-functions.md), [Axiom 5](../chapter2/axiom-05-pure-functions.md), [Axiom 12](../chapter2/axiom-12-impureim.md)) decides three things at once: what to share, what to abstract, and what to test, and how.
 
 | | Pure core | Impure shell |
 |---|---|---|
@@ -25,7 +25,7 @@ The three rows hold each other up. A repository interface usually exists so a un
 - **Test in two layers:**
   - pure functions: traditional unit tests;
   - the whole service, module or app: real dependencies (for example a real database in a container) and simulators for third-party systems.
-- **No unit tests for controllers.** The controller is the orchestrator of the Impureheim sandwich; the whole-service tests cover it.
+- **No unit tests for controllers.** The controller is the orchestrator of the Impureim sandwich; the whole-service tests cover it.
 
 ## Why
 
@@ -52,4 +52,4 @@ The three rows hold each other up. A repository interface usually exists so a un
 ## Open questions
 
 - **Repository section of the DDD Play.** [DDD tactical patterns](01-DDD-tactical-patterns.md#repository) currently defines a repository as `LoadOrder` / `SaveOrder` delegates, an abstraction this Play argues against. Decide whether it goes, or when a named load/save function earns its place (for example, a query many handlers share).
-- **Sources to verify before citing:** Gary Bernhardt, *Boundaries* (2012) — functional core, imperative shell: unit-test the core, integration-test the shell; Spotify's "testing honeycomb" (2018).
+- **Sources to verify before citing:** Gary Bernhardt, *Boundaries* (SCNA 2012) — unit-test the core, integration-test the shell (his *Functional Core, Imperative Shell* screencast is verified and cited in [Axiom 12](../chapter2/axiom-12-impureim.md)); Spotify's "testing honeycomb" (2018).

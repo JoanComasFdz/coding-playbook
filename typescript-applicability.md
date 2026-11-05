@@ -40,7 +40,7 @@ But four of the playbook's load-bearing guarantees lean on **nominal typing** an
 | [9 First-class functions](book/chapter2/axiom-09-first-class-functions.md) | ✅ **stronger** | TS/JS has the cleanest story of the three — no `Func<>` / delegate ceremony, native closures. |
 | [10 Higher-order functions](book/chapter2/axiom-10-higher-order-functions.md) | ✅ **stronger** | Native `map`/`filter`/`reduce`; less inference friction than the axiom warns about. |
 | [11 Pattern matching](book/chapter2/axiom-11-pattern-matching.md) | ⚠️ **different** | No native pattern matching / no `switch` *expression*. Discriminant-`switch` + `never`, or `ts-pattern`. The `Match`-method form works. |
-| [12 Impureheim](book/chapter2/axiom-12-impureheim.md) | ✅ unchanged | Same sandwich; gather is usually `await`ed. |
+| [12 Impureim](book/chapter2/axiom-12-impureim.md) | ✅ unchanged | Same sandwich; gather is usually `await`ed. |
 | [13 Maybe](book/chapter2/axiom-13-maybe.md) | ✅ **stronger** | `T \| undefined` under `strict` is structural + compile-enforced *and* allocation-free — it lands **above C# NRT** (advisory) and matches Java `Optional`'s enforcement. The "no Optional in fields/collections" caveats are largely Java-specific (`field?: T` is idiomatic in TS). |
 | [14 Either](book/chapter2/axiom-14-either.md) | ✅ **stronger** | Trivial DU; the `out`-param critique is moot. |
 | [15 Unit](book/chapter2/axiom-15-unit.md) | ➖ partly dissolves | TS `void` *is* a type and `undefined` is a one-value type — most of the "void isn't first-class" problem the axiom solves doesn't exist in TS. |
@@ -278,7 +278,7 @@ The frontend code the playbook *doesn't* touch — DOM, reactivity, component li
 
 - **A — Parallel/comparable (the current device).** Same example, side-by-side columns; keeps "same axiom, every language" visible. The thing that makes the book work as a multi-language text.
 - **B — Native-idiom per language.** C# = backend service, TS = React component. Authentic, but loses comparability *and* drags framework noise into every example — the reader now learns React alongside the axiom, diluting it.
-- **C — Hybrid (recommended).** Keep the **pure-core examples parallel and comparable** across all languages (cart, order, validation, FSM). Vary **only the shell**, and only in the synthesis examples where a shell appears (Axioms [12](book/chapter2/axiom-12-impureheim.md), [16](book/chapter2/axiom-16-result.md), [19](book/chapter2/axiom-19-railway.md), [23](book/chapter2/axiom-23-pure-functions-returning-actions.md), [24](book/chapter2/axiom-24-state-machines.md), [26](book/chapter2/axiom-26-stateful-shell.md)), toward the reader's native idiom — and even then, keep it framework-light.
+- **C — Hybrid (recommended).** Keep the **pure-core examples parallel and comparable** across all languages (cart, order, validation, FSM). Vary **only the shell**, and only in the synthesis examples where a shell appears (Axioms [12](book/chapter2/axiom-12-impureim.md), [16](book/chapter2/axiom-16-result.md), [19](book/chapter2/axiom-19-railway.md), [23](book/chapter2/axiom-23-pure-functions-returning-actions.md), [24](book/chapter2/axiom-24-state-machines.md), [26](book/chapter2/axiom-26-stateful-shell.md)), toward the reader's native idiom — and even then, keep it framework-light.
 
 Model C honours the book's own philosophy directly — **thin shell, fat core**: the shell is where idioms legitimately differ; the core is universal. Adapt the part that is *meant* to be environment-specific, leave the part that is *meant* to be portable alone.
 
@@ -297,7 +297,7 @@ This is why UI-rendering examples are unnecessary to make the edition land:
 
 - A Redux / `useReducer` reducer is `(state, action) => state` — **literally [Axiom 24](book/chapter2/axiom-24-state-machines.md)'s `Transition`**, with the store as the shell. No JSX required.
 - `react-hook-form` + Zod is **Axioms [18](book/chapter2/axiom-18-value-objects.md) + [20](book/chapter2/axiom-20-validation.md)** out of the box.
-- A TanStack Query `queryFn` that fetches-then-decodes is **[Axiom 12](book/chapter2/axiom-12-impureheim.md)'s gather + [Axiom 18](book/chapter2/axiom-18-value-objects.md)'s parse.**
+- A TanStack Query `queryFn` that fetches-then-decodes is **[Axiom 12](book/chapter2/axiom-12-impureim.md)'s gather + [Axiom 18](book/chapter2/axiom-18-value-objects.md)'s parse.**
 
 A frontend reader recognises the examples *as their own work* without the book ever rendering a component.
 

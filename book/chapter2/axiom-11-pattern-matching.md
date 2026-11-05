@@ -343,4 +343,4 @@ A property access (`x.Status`) is fine to inline; the rule is about real *calls*
 
 ---
 
-← Previous: [Axiom 10 — Higher-order functions](axiom-10-higher-order-functions.md) · Next: [Axiom 12 — Impureheim](axiom-12-impureheim.md) →
+← Previous: [Axiom 10 — Higher-order functions](axiom-10-higher-order-functions.md) · Next: [Axiom 12 — Impureim](axiom-12-impureim.md) →

@@ -17,7 +17,7 @@ Like every Play, this adds no new principle. It is [Cohesion](../chapter2/axiom-
 ## What I do today
 
 - Group code by feature, not by technical layer: one folder per slice.
-- Make each slice one [Impureheim sandwich](../chapter2/axiom-12-impureheim.md): the handler gathers the data, calls a pure decision, and acts on the result.
+- Make each slice one [Impureim sandwich](../chapter2/axiom-12-impureim.md): the handler gathers the data, calls a pure decision, and acts on the result.
 - Share only the stable domain concepts across slices: [value objects](../chapter2/axiom-18-value-objects.md) and [aggregates](01-DDD-tactical-patterns.md#aggregate). Tolerate duplication in the volatile workflow.
 - Add a feature by adding a slice. When a change touches several slices, ask why.
 
