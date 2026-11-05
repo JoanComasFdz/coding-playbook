@@ -24,7 +24,7 @@ The classic teaching names "low coupling" and "high cohesion" as two separate go
 
 - **Strength:** how hard the dependency is to find and to change safely. The deciding question is whether the *compiler* enforces the agreement or a *convention* does. A shared *name* or *type* breaks the build the moment it is violated, so a violation can't ship. A shared *meaning*, *position* (of values with the same type), *algorithm* or *call order* is silent at compile time; the mismatch shows up only when something runs, in a failing test or for a customer. The forms carried by convention are the strong ones.
 - **Degree:** how many units share the dependency. The same convention agreed by two units is a smaller risk than one agreed by twelve. Degree is the size of the blast radius when it goes off.
-- **Locality:** how far apart the connascent units are. Two fields in one record that must change together are trivially connascent and trivially fixed. The same dependency split across two services is the one that rots, because whoever changes one side can't see the other. *High locality makes strong connascence tolerable.* This is the bridge back to [Axiom 7](axiom-07-cohesion.md): connascence at reading distance is just cohesion.
+- **Locality:** how far apart the connascent units are. Two fields in one record that must change together are trivially connascent and trivially fixed. The same dependency split across two services is the one that rots, because whoever changes one side can't see the other. *High locality makes strong connascence tolerable* (see *Why*, point 4).
 
 **The forms, weakest to strongest.** Page-Jones splits them into *static* forms, which you can find by reading the source, and *dynamic* forms, which only show up at runtime [1][2]. The static forms, weakest first:
 
@@ -365,7 +365,7 @@ It is also the one this book is built to *remove* rather than weaken. Immutable 
 
 ## Problem / forces
 
-Strong connascence is **invisible when you create it**. CoN and CoT announce themselves: the build breaks the moment they are violated, so you can't ship a violation. CoM, a same-typed CoP, CoA, CoE, CoV and CoI are silent. The program compiles, the happy path passes, and the dependency only speaks up when a future change touches one unit and not its partner. This is the same gap [Axiom 6](axiom-06-honest-total-signatures.md) describes between honest and dishonest signatures, now across units: a dependency the type system can see is one you can't forget.
+Strong connascence is **invisible when you create it**. Only CoN and CoT break the build when violated (see the compiler line in *Definitions*). The others compile, the happy path passes, and the dependency only speaks up when a future change touches one unit and not its partner.
 
 The competing force is that **strong connascence is the easy path, and it works**, until it doesn't:
 
@@ -375,7 +375,7 @@ The competing force is that **strong connascence is the easy path, and it works*
 
 Each shortcut buys speed now, against a debt paid later by whoever changes one side of the agreement and discovers (at runtime, or never) that the other side needed changing too.
 
-A second force is **over-correction**. Not every connascence is a problem. Most code is held together by large amounts of CoN and CoT, and that's fine: those are the *weak* forms, the ones tooling manages for you. The goal is not "remove all connascence"; that is impossible, and trying produces its own tangle of indirection. The goal is: *don't pay in strong forms what you could pay in weak ones*, and keep connascent units close. Locality is the release valve: a strong connascence between two neighboring lines isn't worth a new type, because whoever changes one sees the other anyway.
+A second force is **over-correction**. Not every connascence is a problem. Most code is held together by large amounts of CoN and CoT, and that's fine: those are the *weak* forms, the ones tooling manages for you. The goal is not "remove all connascence"; that is impossible, and trying produces its own tangle of indirection. The goal is: *don't pay in strong forms what you could pay in weak ones*, and keep connascent units close (see *When NOT to*).
 
 ---
 
@@ -385,7 +385,7 @@ A second force is **over-correction**. Not every connascence is a problem. Most 
 "These two classes are too coupled" is a feeling. "These two classes share a Connascence of Meaning on the status codes, with degree six, spread across three packages" is a diagnosis with a treatment. The taxonomy turns a vague unease into a named kind with a known way to weaken it, the same way [Axiom 7](axiom-07-cohesion.md) turned "this function does too much" into "this function has two reasons to change". A lens you can name is a lens you can teach, review against and argue with. Weirich's talks made exactly this case: improve a system by weakening its connascence [3].
 
 **2. Weakening connascence moves failures from runtime to compile time.**
-The strength axis is the same axis [Axiom 6](axiom-06-honest-total-signatures.md) is built on: a dependency carried by a type fails when you build; a dependency carried by a convention fails when you run. Every move from strong to weak (a magic value lifted into a type, a wrong-order call made impossible to write) buys the same thing: the compiler starts enforcing an agreement that people were enforcing from memory.
+Every move from strong to weak (a magic value lifted into a type, a wrong-order call made impossible to write) moves a failure from runtime to compile time: the compiler starts enforcing an agreement that people were enforcing from memory.
 
 **3. It is the thread that ties the coming tools together.**
 Read ahead, and this chapter keeps making one move under different names:
@@ -397,7 +397,7 @@ Read ahead, and this chapter keeps making one move under different names:
 Each tool is introduced for its own reasons and stands on its own. But through this lens they are one idea, *weaken the connascence*, applied to values, to the shape of data and to the order of calls.
 
 **4. Locality connects it to cohesion instead of competing with it.**
-The locality axis is the hinge between the two lenses. Strong connascence inside one cohesive unit is cheap, because the unit is read as a whole: the agreement and both of its sides are in view at once. Strong connascence *across* units is expensive, because nothing shows both sides together. So "high cohesion" and "weak, local connascence" are not two goals to trade off. They are the same goal, *keep what changes together where it can be read together*, stated from the inside and from the outside.
+The locality axis is the hinge between the two lenses: connascence at reading distance is just [cohesion](axiom-07-cohesion.md). Strong connascence inside one cohesive unit is cheap, because the unit is read as a whole: the agreement and both of its sides are in view at once. Strong connascence *across* units is expensive, because nothing shows both sides together. So "high cohesion" and "weak, local connascence" are not two goals to trade off. They are the same goal, *keep what changes together where it can be read together*, stated from the inside and from the outside.
 
 **5. The lens scales past the module, but this axiom stops at the code.**
 Point connascence at services instead of functions and it still holds: two systems that must agree on a message format are connascent, and the same three moves apply. That is a real and useful reading, but it is *system topology*, which is out of scope for this book. This axiom covers only connascence in code: between signatures, records, call sites, the meanings of values, and the order of calls *within a module*. The cross-service distances mentioned under *locality* mark the far end of the scale; they are not an invitation to design systems with this lens.
@@ -406,8 +406,8 @@ Point connascence at services instead of functions and it still holds: two syste
 
 ## Trade-offs
 
-- **Connascence is a judgment call, like cohesion, and the compiler won't grade it for you where it matters most.** It knows a CoN or CoT exists, since it tracks names and types. But it can't tell you a CoM is hiding in your status codes, because to the compiler an `int` is just an `int`. The strong forms, the ones worth hunting, are exactly the ones the type system can't see. This axiom gives you the categories; spotting an instance in your own code is still up to you. A compact reference helps once the vocabulary is familiar [4].
-- **Weakening isn't free.** Lifting a magic value into a type means writing the type. Giving two same-typed arguments distinct types means writing those types. Making a wrong-order call impossible means a type per state and a transition between them. Every step up the strength axis costs code that didn't exist before. For a strong connascence between two distant, often-changed units, the cost is clearly worth it. For one between two neighboring lines that haven't changed in a year, it is ceremony. Locality decides: the farther apart and the more numerous the connascent units, the more a weakening pays for itself.
+- **Connascence is a judgment call, like cohesion.** The compiler only sees the weak forms (see *Definitions*); the strong ones, the ones worth hunting, are exactly what it can't see, because to the compiler an `int` status code is just an `int`. This axiom gives you the categories; spotting an instance in your own code is still up to you. A compact reference helps once the vocabulary is familiar [4].
+- **Weakening isn't free.** Lifting a magic value into a type means writing the type. Giving two same-typed arguments distinct types means writing those types. Making a wrong-order call impossible means a type per state and a transition between them. Every step up the strength axis costs code that didn't exist before. For a strong connascence between two distant, often-changed units, the cost is clearly worth it. Locality decides: the farther apart and the more numerous the connascent units, the more a weakening pays for itself.
 
 ---
 
