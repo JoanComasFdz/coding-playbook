@@ -5,7 +5,7 @@
 - Model facts as plain, immutable data.
 - Put business logic in functions whose result depends only on the data handed to them.
 
-Most of the axioms that follow build on this one.
+[Axiom 0](axiom-00-ubiquitous-language.md) gave each concept one name. The first thing the code decides about a named concept is what it fundamentally is, and the answer is inert data, not behavior. Most of the axioms that follow build on this one.
 
 ---
 
