@@ -139,6 +139,24 @@ The cost comes when the reflex fires too early, on **similarity that isn't yet s
 
 The merge that was meant to reduce duplication has instead tied together two things that wanted to move independently. As Sandi Metz puts it, "duplication is far cheaper than the wrong abstraction" [1]: duplication is local and visible, while the wrong abstraction is a shared dependency that fights every future change.
 
+### What DRY is for
+
+In practice, the knowledge DRY protects is the business rules. In this book, those live in pure functions ([Axiom 5](axiom-05-pure-functions.md)):
+
+- input validation;
+- transformations from one shape to another;
+- decisions.
+
+Share those. A rule that lives in one place changes in one place.
+
+Impure orchestration ([Axiom 4](axiom-04-impure-functions.md)) is different. Three handlers that each load data, transform it, and then save, publish or return the result look alike. But they share a *shape*, not knowledge: each changes for its own reasons, with its own data, its own consumers, its own endpoint. Let them repeat. Share the pure parts they call (the validation, the transformation), not the plumbing around them.
+
+Merging them into one generic handler that takes the transformation as a parameter doesn't fix this. It is the `bool isReceipt` flag from the example in disguise: a parameter that picks the behavior, with three reasons to change behind one body.
+
+The exception is infrastructure written once for many applications, like a framework or a library. It is its own product, with its own single reason to change.
+
+### Wait before you share
+
 The discipline is to wait until the reason to change shows itself before you pick a shape. That is the [**rule of three**](https://en.wikipedia.org/wiki/Rule_of_three_(computer_programming)) [4]: put up with the duplication until you have seen the same thing change, for the same reason, often enough to be sure it is one concept and not two that happen to rhyme.
 
 ---

@@ -138,6 +138,8 @@ So you rarely write a thing called a "domain service." You write a pure function
 
 ## Repository
 
+> **Under review.** The [Testing the core and the whole](03-testing-the-core-and-the-whole.md) placeholder argues against wrapping the database behind a repository abstraction. This section will be revisited when that Play is written.
+
 A repository is the boundary where you load and save aggregates. The domain knows nothing about storage. This is called persistence ignorance, and it comes for free because the domain is pure data and pure functions.
 
 In the immutable world a repository is two functions at the edge: one loads an aggregate by ID, one saves it. Both touch storage, so both can fail, and that failure belongs in the return type as a value, not behind a bare `Task` that can only throw. So each returns a `Result` ([Axiom 16](../chapter2/axiom-16-result.md)). Load has a second outcome that is not a failure: the row may simply not exist. That is absence, not an error, so it is a `Maybe` ([Axiom 13](../chapter2/axiom-13-maybe.md)) inside the `Result`, which keeps the three cases separate: storage failed, no such order, here is the order. Save has nothing to return on success, so it returns `Unit` ([Axiom 15](../chapter2/axiom-15-unit.md)).

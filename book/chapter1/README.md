@@ -106,7 +106,7 @@ This is a known and debated pattern. DHH calls it *test-induced design damage*: 
 
 Both are right, and the difference is the one in [Enforce decisions, not ceremony](#enforce-decisions-not-ceremony). Letting tests shape the design is good when the change carries information: splitting the pure decision from the I/O makes code easier to test *and* shows the reader where the side effects are. It is damage when the change exists only so the test can intervene: an `IFoo` whose only other implementation is a mock.
 
-This matters for the rest of this book: a pure core, tested with plain values, does not need mocks. Without mocks, most of that interface layer loses its reason to exist.
+This matters for the rest of this book: a pure core, tested with plain values, does not need mocks. Without mocks, most of that interface layer loses its reason to exist. The [Testing the core and the whole](../chapter3/03-testing-the-core-and-the-whole.md) Play (Chapter 3) develops this.
 
 ### The letters survive mostly as symptoms, rarely by name
 
