@@ -52,4 +52,4 @@ The three rows hold each other up. A repository interface usually exists so a un
 ## Open questions
 
 - **Repository section of the DDD Play.** [DDD tactical patterns](01-DDD-tactical-patterns.md#repository) currently defines a repository as `LoadOrder` / `SaveOrder` delegates, an abstraction this Play argues against. Decide whether it goes, or when a named load/save function earns its place (for example, a query many handlers share).
-- **Sources to verify before citing:** Gary Bernhardt, *Boundaries* (2012) — functional core, imperative shell: unit-test the core, integration-test the shell; Spotify's "testing honeycomb" (2018).
+- **Sources to verify before citing:** Gary Bernhardt, *Boundaries* (SCNA 2012) — unit-test the core, integration-test the shell (his *Functional Core, Imperative Shell* screencast is verified and cited in [Axiom 12](../chapter2/axiom-12-impureheim.md)); Spotify's "testing honeycomb" (2018).
