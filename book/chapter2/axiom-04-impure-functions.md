@@ -28,7 +28,7 @@ When that effect is a *read* (the clock, a random source, a mutable singleton, t
 
 A function is impure when any of these is true:
 
-- **A line in its body matches a category from Axiom 3:** a clock read, a logger call, a `throw`, a parameter change, a database call, a singleton lookup.
+- **A line in its body matches a category from [Axiom 3](axiom-03-side-effects.md#the-categories):** a clock read, a logger call, a `throw`, a parameter change, a database call, a singleton lookup.
 - **A function it calls is impure.** Impurity spreads upward. A function that does arithmetic plus a single `logger.info` is impure, and so is its caller, and so is the caller's caller.
 - **A field or reference it captures is impure.** Capturing a `DbContext`, an `HttpClient` or a `Random` taints the function as much as creating one inline.
 
@@ -108,7 +108,7 @@ public boolean isValid(Token token) {
 </tr>
 </table>
 
-One line, one comparison, nothing that announces *I touch the world*. The function is impure all the same: `DateTime.UtcNow` / `Instant.now()` reads the system clock (Axiom 3's *Reading the clock*), so two calls with the same `token` will eventually disagree. Spotting this case is the reason the category needs a name. The loud function is easy to recognize; the quiet one is what the skill is for.
+One line, one comparison, nothing that announces *I touch the world*. The function is impure all the same: `DateTime.UtcNow` / `Instant.now()` reads the system clock ([Axiom 3](axiom-03-side-effects.md#time-randomness-and-environment)'s *Reading the clock*), so two calls with the same `token` will eventually disagree. Spotting this case is the reason the category needs a name. The loud function is easy to recognize; the quiet one is what the skill is for.
 
 ---
 

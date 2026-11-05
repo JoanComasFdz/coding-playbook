@@ -545,7 +545,7 @@ One force pulls the other way: **ergonomics**. Updating in place reads naturally
 ## Why
 
 **1. A value is a fact, and facts do not change.**
-Data represents facts about the world, and facts do not change after they happen. The order *was* placed at 14:03. The customer's birthday *is* 1987-04-12. Overwriting a memory cell with new information does not change the old fact; it only loses your reference to it. This is Hickey's critique of place-oriented programming [2], and it is what Axiom 1 was already pointing at when it called data a *value*. This axiom enforces that claim.
+Data represents facts about the world, and facts do not change after they happen. The order *was* placed at 14:03. The customer's birthday *is* 1987-04-12. Overwriting a memory cell with new information does not change the old fact; it only loses your reference to it. This is Hickey's critique of place-oriented programming [2], and it is what [Axiom 1](axiom-01-data-is-not-behavior.md) was already pointing at when it called data a *value*. This axiom enforces that claim.
 
 **2. No action at a distance.**
 One of the most expensive kinds of bug in OO code is one piece of code changing an object that another piece is still using. Immutability removes that whole kind:
@@ -614,7 +614,7 @@ How these are built (finger trees, amortized versus worst-case bounds) is Okasak
 
 Mutable state earns its place in two cases:
 
-- **Inner loops where allocation dominates.** In a tight hot path (a parser tokenizing megabytes per second, a renderer building a frame, a physics step over millions of bodies), copying loses to in-place update on the only axis that matters. This is the Mike Acton territory that Axiom 1 already marked as out of scope for this book [5]: a *performance* argument, not a *complexity* one.
+- **Inner loops where allocation dominates.** In a tight hot path (a parser tokenizing megabytes per second, a renderer building a frame, a physics step over millions of bodies), copying loses to in-place update on the only axis that matters. This is the Mike Acton territory that [Axiom 1](axiom-01-data-is-not-behavior.md) already marked as out of scope for this book [5]: a *performance* argument, not a *complexity* one.
 - **Boundary objects you don't own.** ORM entities, framework callbacks and generated DTOs sometimes come with setters you cannot remove. Convert them into immutable records at the boundary, work with immutable types in the core, and convert back on the way out. The edges may be mutable; the core is not.
 
 ---
