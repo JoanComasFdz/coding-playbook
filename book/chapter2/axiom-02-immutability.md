@@ -567,10 +567,9 @@ When the inputs cannot change, a test only has to set them up and check the resu
 
 Immutable types cost you:
 
-- **Ergonomics on update.** Changing a field means producing a new value. C# has `person with { Name = "x" }`; in Java you write `withName(...)` methods or use a builder. Both are more verbose than `person.Name = "x"`.
+- **Ergonomics on update.** Changing a field means producing a new value. C# has `person with { Name = "x" }`, which is short. In Java you write `withName(...)` methods or a builder, extra code that sits where a setter used to be. Both are more verbose than `person.Name = "x"`.
 - **Tooling friction.** ORMs (Hibernate, EF) and some serializers were designed for mutable entities and need adapting.
 - **Some allocation pressure.** You cannot change things in place. Modern garbage collectors absorb most of this, but in tight loops it matters [5].
-- **More code for updates.** A builder or a set of `with` methods sits where a setter used to be.
 
 These costs buy what *Why* lists above. For line-of-business code the trade is almost always worth it. For inner loops it sometimes isn't (see *When NOT to*).
 
