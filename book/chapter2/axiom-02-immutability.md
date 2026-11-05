@@ -379,7 +379,7 @@ public final class Person {
 <td>
 
 ```csharp
-record Person(DateOnly Birthdate);
+sealed record Person(DateOnly Birthdate);
 ```
 
 </td>
@@ -393,7 +393,7 @@ record Person(LocalDate birthdate) {}
 </tr>
 </table>
 
-✅ Immutable. `record` makes the wrapper a value, and `DateOnly` / `LocalDate` is itself a value.
+✅ Immutable. `record` makes the wrapper a value, and `DateOnly` / `LocalDate` is itself a value. Java records are always final. C# records can be inherited, so they need `sealed` to meet the first rule of the checklist.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -401,7 +401,7 @@ record Person(LocalDate birthdate) {}
 <td>
 
 ```csharp
-record Person(List<string> Friends);
+sealed record Person(List<string> Friends);
 ```
 
 </td>
@@ -427,7 +427,7 @@ var person = new Person("Alice");
 var nameProperty = typeof(Person).GetProperty("Name");
 nameProperty!.SetValue(person, "Bob");
 
-record Person(string Name);
+sealed record Person(string Name);
 ```
 
 </td>

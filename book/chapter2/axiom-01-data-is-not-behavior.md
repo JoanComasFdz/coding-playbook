@@ -74,8 +74,8 @@ class Cart {
 
 ```csharp
 // ✅ separate: the data is a plain fact...
-record Line(string Product, decimal Price, int Quantity);
-record Cart(ImmutableList<Line> Lines);
+sealed record Line(string Product, decimal Price, int Quantity);
+sealed record Cart(ImmutableList<Line> Lines);
 
 // ...and the behavior is a function over it
 static class Pricing
