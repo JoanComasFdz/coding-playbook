@@ -1,12 +1,12 @@
 # Axiom 9 — First-class functions
 
-**A function is a value — it can be assigned to a variable, stored in a collection, passed as an argument, and returned as a result.**
+**A function is a value: it can be assigned to a variable, stored in a collection, passed as an argument and returned as a result.**
 
 - A function value is the same kind of thing as a number or a record: created somewhere, named, moved around, called when needed.
 
-[Axiom 6](axiom-06-honest-total-signatures.md) set the criterion for a function worth keeping — every outcome named in the return, every input the type admits accepted by the body. This axiom names the property that lets two such functions be composed at all: a function is not only something a program *does* — it is a *value* the program can hold, store, move, and pass.
+Axioms [5](axiom-05-pure-functions.md) to [8](axiom-08-connascence.md) set the criteria for a well-formed function: pure, honest, total, cohesive and weakly coupled. This axiom names the property that lets two such functions be combined at all: a function is not only something a program *does*. It is a *value* the program can hold, store, move and pass.
 
-Through [Axiom 8](axiom-08-connascence.md)'s lens, this axiom weakens no connascence on its own — it is the *carrier* the later weakenings ride on. Once a function is a value, the operation that composes functions is a value too, and a dispatch once carried by a stringly-keyed `switch` (a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com)) can become a typed lookup the compiler checks. First-class functions don't make that move; they make it *available*.
+Through [Axiom 8](axiom-08-connascence.md)'s lens, this axiom weakens no connascence on its own. It is the *carrier* that later weakenings ride on. Once a function is a value, a dispatch carried by a `switch` on strings (a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com)) can become a lookup keyed by a type, such as an enum, that the compiler checks. First-class functions don't make that move; they make it *possible*.
 
 ---
 
@@ -14,20 +14,20 @@ Through [Axiom 8](axiom-08-connascence.md)'s lens, this axiom weakens no connasc
 
 A language has first-class functions when a function value is treated the same way as any other value. Concretely, a function can be:
 
-- **assigned to a variable** — the function lives in a local or a field like any other value.
-- **stored in a data structure** — a list, a map, a record field; the function value is what is held.
-- **passed as an argument** — to another function that will call it when ready.
-- **returned as a result** — built dynamically and handed back to the caller, often closing over local state.
+- **assigned to a variable:** the function lives in a local variable or a field, like any other value;
+- **stored in a data structure:** a list, a map, a record field;
+- **passed as an argument:** to another function that calls it when ready;
+- **returned as a result:** built at runtime and handed back to the caller, often capturing values from the scope that built it.
 
-A function value carries two things at once: the operation it performs and any state it has closed over from the scope that built it. A *lambda* is the most compact way to create one — an anonymous function expression that evaluates to a value of a function type — but a named static method or a method reference is the same kind of value. Whether it has a name or not, the thing being moved around is the function. Calling it is the only thing that *runs* it; until that call happens, the function value is just data, like any other.
+A function value carries two things: the operation it performs, and any values it captured from the scope that built it (a [*closure*](https://en.wikipedia.org/wiki/Closure_(computer_programming))). A [*lambda*](https://en.wikipedia.org/wiki/Anonymous_function) is the most compact way to create one: an anonymous function expression that evaluates to a value of a function type. But a named static method or a method reference is the same kind of value. Named or not, the thing being moved around is the function. Only calling it *runs* it; until then, the function value is just data, like any other.
 
-Both C# (delegates, `Func<>`, `Action<>`, lambdas) and Java (functional interfaces — `Function<T, R>`, `Predicate<T>`, `Supplier<T>`, lambdas, method references) support all four uses natively. The capability is not in question; the discipline is whether the codebase *treats* functions as values, or only as declarations that happen to compile.
+C# (delegates, `Func<>`, `Action<>`, lambdas) and Java (functional interfaces such as `Function<T, R>`, `Predicate<T>` and `Supplier<T>`, lambdas, method references) both support all four uses. The capability isn't in question. The question is whether the codebase *treats* functions as values, or only as declarations that happen to compile.
 
 ---
 
 ## Example
 
-A function value can be named, called, passed, and stored — like a value of any other type.
+A function value can be named, called, passed and stored, like a value of any other type.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -71,7 +71,7 @@ List<Function<Integer, Integer>> operations = List.of(square, x -> x + 1);
 
 `square` is a value of type `Func<int, int>` / `Function<Integer, Integer>`. It can be applied immediately, given to a method that wants a function, or kept in a list. The type names what goes in and what comes out; the value is the function itself.
 
-A more interesting case: a function that builds and returns a function, closing over state from the surrounding scope.
+A more interesting case: a function that builds and returns a function, capturing a value from the surrounding scope.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -111,57 +111,58 @@ Function<BigDecimal, BigDecimal> halfPriceWithVat =
 </tr>
 </table>
 
-`Multiplier` is a factory: each call returns a new function value whose body still refers to the `factor` from the call that built it. The `factor` is not stored in any object's field — it travels with the function value through the *closure*. Once those functions exist, building a third by composing two of them is as straightforward as any other value-level operation.
+`Multiplier` is a factory: each call returns a new function value whose body still refers to the `factor` from the call that built it. The `factor` isn't stored in any object's field; it travels with the function value, in its closure. Once those functions exist, building a third from two of them is as simple as any other operation on values.
 
 ---
 
 ## Problem / forces
 
-The competing force is **the habit of seeing behaviour as something that requires a host**. In OO codebases the reflex is to express a piece of logic as a class — a strategy, a handler, a command — even when the logic is one line and has no state of its own. This axiom is the prior step that says behaviour is a *value* before it is anything else: a thing the program can name, hold, and pass around, just like a number or a record. The class becomes a choice the design makes when behaviour and the data it operates on form a thing worth naming together, not a default the language imposes.
+In OO codebases, the reflex is to express a piece of logic as a class (a strategy, a handler, a command) even when the logic is one line and has no state of its own. Many classic design patterns become simpler, or disappear, in languages with function values [1][2]. The result is a class, an interface and a registration for what could be one expression.
 
-A second force is **discoverability**. A function with a name shows up in the symbol index, in `Find Usages`, in the package list. An anonymous lambda inside an expression does not. The trade-off is real, but it bites only when the behaviour deserves a name — for a small transformation that the surrounding code already organises (a row in a map, a step in a pipeline), no extra name is owed.
+This axiom is the step before that: behavior is a *value* first, something the program can name, hold and pass around, like a number or a record. A class becomes a choice you make when the behavior and its data form something worth naming together, not a default the language imposes.
+
+One force pulls the other way: **discoverability**. A named function shows up in the symbol index and in *Find Usages*; a lambda inside an expression doesn't (see *Trade-offs*).
 
 ---
 
 ## Why
 
-**1. A behaviour can be named and reused at its actual size.**
-The shortest expression of "multiply by 1.20" is `a => a * 1.20m` — one line, one expression. As a value, that line can be given a name (`var withVat = a => a * 1.20m;`) and reused in many places, or left anonymous inside a larger expression when it does not earn a name. The size of the unit no longer has a floor set by the host construct that carries it; behaviour can be as small as the work it does, and as named or unnamed as the surrounding code wants.
+**1. Behavior can be named and reused at its actual size.**
+The shortest way to say "multiply by 1.20" is `a => a * 1.20m`: one line, one expression. As a value, that line can be given a name (`Func<decimal, decimal> withVat = a => a * 1.20m;`) and reused in many places, or left anonymous inside a larger expression when it doesn't deserve a name. The unit no longer has a minimum size set by the class that hosts it: behavior can be as small as the work it does, and named or not as the surrounding code needs.
 
 **2. A function value moves like data.**
-Once a behaviour is a value, it lives wherever any other value can live: in a `Map<Key, Function<T, R>>`, in a record field, in a configuration object, in a queue. Dispatch becomes a lookup; registration becomes a put. Behaviour and data flow through the same shapes — there is no separate world of "things that do," running in parallel to the structures that hold "things that are."
+Once behavior is a value, it can live wherever any other value can: in a `Map<Key, Function<T, R>>`, in a record field, in a configuration object, in a queue. Dispatch becomes a lookup; registration becomes adding an entry. Behavior and data flow through the same shapes; there is no separate world of "things that do" next to the structures that hold "things that are".
 
-**3. Closures carry state along with the function.**
-A function value can capture variables from the scope that built it. In `Multiplier`, the returned lambda's body refers to `factor` — a value from the calling scope — and the function value remembers it for every later call, no matter where that call happens. The function value plus those captured bindings is what the language calls a **closure**. State and operation arrive at the call site together, as a single value; the function does not need to look anywhere outside itself to find the data it depends on.
+**3. Closures carry data along with the function.**
+A function value can capture variables from the scope that built it. In `Multiplier`, the returned lambda refers to `factor`, a value from the calling scope, and remembers it for every later call, wherever that call happens. The function value plus those captured values is the **closure**. Data and operation arrive at the call site together, as one value; the function doesn't need to look anywhere outside itself for the data it depends on.
 
-The captured bindings have to be values in the sense of [Axiom 5](axiom-05-pure-functions.md) — themselves immutable, produced once, not aliased to mutable shared state — or the function value silently becomes impure. Closure is a mechanism for carrying data *into* a function value; it is not a license for the function value to reach *out*.
+The captured values have to be values in the sense of [Axiom 5](axiom-05-pure-functions.md): immutable, created once, and not shared with anything mutable. Otherwise the function value silently becomes impure. A closure is a way to carry data *into* a function value; it isn't a license for the function to reach *out*.
 
 **4. It is the prerequisite for composition.**
-Until a function can be passed as a value, composing two functions means calling one from the body of the other — a hard-coded chain. Once functions are values, the *composing operation itself* becomes a function: one that takes two functions and returns the function that applies them in sequence. Composition becomes something the program can express, not just something the programmer can write out by hand.
+Until a function can be passed as a value, combining two functions means calling one from the body of the other: a hard-coded chain. Once functions are values, the *combining itself* can be a function: one that takes two functions and returns a function that applies them in sequence. Composition becomes something the program can express, not just something the programmer writes out by hand.
 
 ---
 
 ## Trade-offs
 
-The honest cost is **navigability**. A lambda inside an expression is not a named declaration; it does not appear in the symbol index, and `Find Usages` does not point at it. For a single throwaway transformation, this is fine. For a function used in several places, it is usually time to give it a name — but a `static` method or a named local function is enough; the name is the point, not the host. The discipline is "name the function when it earns a name," not "always wrap it in something larger" and not "always inline a lambda."
+- **Navigability.** A lambda inside an expression isn't a named declaration: it doesn't appear in the symbol index, and *Find Usages* doesn't point at it. For a one-off transformation, that's fine. For a function used in several places, it is usually time to give it a name. A `static` method or a named local function is enough; the name is the point, not a class around it. The rule is "name a function when it deserves a name", not "always wrap it in something bigger" and not "always inline a lambda".
 
 ---
 
 ## When NOT to
 
-Two cases where the function-value reflex is the wrong reflex:
+Two cases where reaching for a function value is the wrong reflex:
 
-- **Behaviour that must be discoverable at runtime by name from outside the program.** A plugin system that loads handlers by string identifier needs each handler to be a thing the runtime can locate — a fully qualified class name, an `@Component`-scanned bean, an assembly export. A `Map<String, Function<...>>` works inside a single module; once a third party registers from outside, the runtime needs a handle the function value alone does not offer.
-- **Behaviour whose framework integration needs the class as the unit.** Annotation/attribute-driven scanning (`@Transactional`, `[Authorize]`), AOP proxies, and lifecycle callbacks like `@PostConstruct` or `IDisposable` all key off a class. A function value can still be registered and resolved from a DI container (both .NET's `IServiceCollection` and Spring's `@Bean` machinery handle `Func<>` / `Function<T, R>` fine), but the framework's class-level hooks won't fire for it. Where those hooks are doing the work, the class is not optional.
+- **Behavior that must be found at runtime, by name, from outside the program.** A plugin system that loads handlers by a string identifier needs each handler to be something the runtime can locate: a fully qualified class name, an `@Component`-scanned bean, an assembly export. A `Map<String, Function<...>>` works inside one module; once a third party registers from outside, the runtime needs a handle that a function value alone doesn't provide.
+- **Behavior whose framework integration needs a class.** Annotation- and attribute-driven scanning (`@Transactional`, `[Authorize]`), AOP proxies and lifecycle callbacks like `@PostConstruct` or `IDisposable` all work on classes. A function value can still be registered in and resolved from a DI container (both .NET's `IServiceCollection` and Spring's `@Bean` handle `Func<>` / `Function<T, R>` fine), but the framework's class-level hooks won't fire for it. Where those hooks do the work, the class isn't optional.
 
 ---
 
 ## References
 
-[1] **Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides**, *Design Patterns: Elements of Reusable Object-Oriented Software*, Addison-Wesley, 1994. The book whose Strategy, Command, and Visitor patterns are the ones first-class functions most directly collapse. Reading it today reveals how many of its patterns are workarounds for the absence of function values in early C++ and Smalltalk.
+[1] **Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides**, *Design Patterns: Elements of Reusable Object-Oriented Software*, Addison-Wesley, 1994. Its Strategy, Command and Visitor patterns are the ones first-class functions most directly replace. Many of its examples are in C++, which at the time had no lambdas, and several patterns work around exactly that.
 
-[2] **Peter Norvig**, *Design Patterns in Dynamic Languages*, OOPSLA tutorial, 1996. The classic talk that observed that 16 of the 23 GoF patterns become "invisible, simpler, or partly built into the language" once functions are first-class. The patterns that survive are the ones that organise *more than one* related behaviour.
-<https://norvig.com/design-patterns/>
+[2] **Peter Norvig**, *Design Patterns in Dynamic Languages*, OOPSLA tutorial, 1996. The classic talk observing that 16 of the 23 GoF patterns become invisible or simpler in languages with features like first-class functions. <https://norvig.com/design-patterns/>
 
 ---
 
