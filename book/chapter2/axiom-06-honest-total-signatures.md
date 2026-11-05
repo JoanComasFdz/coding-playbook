@@ -22,7 +22,7 @@ Two properties of a signature, both visible *without* running the program.
 
 A signature is **honest** when:
 
-- **Every outcome is represented in the return type.** A function that returns `-1` for "not found" is dishonest: the return type is `int`, but the *value* is really one of two things, which the caller decodes by convention. Returning `null` for "not found", or an empty string for "no value", is the same problem.
+- **Every outcome is represented in the return type.** A value that really means one of two things, decoded by the caller by convention, is dishonest (see the sentinels and nulls below).
 - **No outcome comes through a side channel.** Throwing to signal an *expected* outcome is dishonest in the same way: the type says one thing, the runtime delivers another. (Purity already rules this out inside a pure function; honesty makes it explicit in the signature.)
 - **No hidden return values in parameters.** An `out` or `ref` parameter is a second return value the signature doesn't admit to.
 
@@ -42,7 +42,7 @@ This axiom departs from four common defaults:
 - **[Sentinel values](https://en.wikipedia.org/wiki/Sentinel_value).** `IndexOf` returning `-1`; `Array.BinarySearch` returning a negative number; "the empty string means absent". A magic value smuggles a second outcome through a type that has no room for it. The compiler can't make callers check, and production finds the cases the tests missed.
 - **`null` as a silent second meaning.** A `User` is "really" `User` or `null`, but the signature doesn't say which methods return which. Every caller pays for that silence, either by checking too much (defensive `?.` everywhere) or too little (a `NullReferenceException` at 3 a.m.).
 - **`out` / `ref` for "did it work".** `TryGetValue`, `int.TryParse(s, out var i)`. These were useful idioms before nullable references and richer return types, but each one pretends the result is a `bool` while a second value comes out on the side. (Java has no `out` parameters, but a mutable "holder" argument does the same.)
-- **Implicit partiality.** A body that assumes some inputs "won't happen": the denominator isn't zero, the list isn't empty, the string is well-formed. The assumption lives in someone's head, not in the type system, and the next caller has no way to know it.
+- **Implicit partiality.** A body that assumes some inputs "won't happen", like the zero divisor or the empty list above, or a malformed string. The assumption lives in someone's head, not in the type system, and the next caller has no way to know it.
 
 ---
 
@@ -185,8 +185,8 @@ Each is total not because its output was widened or its input narrowed, but beca
 
 A dishonest signature costs you later, in two places:
 
-- **The next caller.** Three months on, in another file, copying the call from somewhere else, they can't learn the convention from the type. The IDE shows `int`; it doesn't show "careful, `-1` means not found". Comments help once, then drift.
-- **Refactoring.** When the function later needs a new outcome, an honest signature forces every caller to handle it, because the return type changed. A dishonest signature has nowhere to put it, except another sentinel or quietly folding it into an existing one. The bug ships.
+- **The next caller.** Three months on, in another file, copying the call from somewhere else, they can't learn the convention from the type. The IDE shows `int`; it doesn't show "careful, `-1` means not found" (see *Why*, point 1).
+- **Refactoring.** When the function later needs a new outcome, a dishonest signature has nowhere to put it except another sentinel, and the bug ships (see *Why*, point 2).
 
 One force pulls the other way: **brevity in the small**. `return -1` is shorter than wrapping the result in a named type, and `return null` is shorter still. In a method called from three places, all written by the same person in the same week, the dishonest signature works fine: everyone remembers the convention because they just wrote it.
 
@@ -213,7 +213,7 @@ Chaining functions that each "might return `-1`" produces code that branches mor
 ## Trade-offs
 
 - **Shape.** An honest, total signature is wider than its dishonest version. Where `int FindIndex(...)` returned a primitive, the honest version returns a small named type, and the caller writes a branch instead of `if (i == -1)`. At one call site, that looks like ceremony. Across a codebase it goes the other way: a dishonest signature taxes every caller forever; an honest one taxes the author once.
-- **Pushing checks upstream.** Making a function total often means using stronger input types: a `NonZeroInt` instead of an `int` where division needs it, or a type whose values are guaranteed well-formed instead of a raw `string` where the format matters. That work is real, and it falls on whoever creates those values. In return, it happens *once*, at the boundary; partial functions spread the same work across every caller and every test.
+- **Pushing checks upstream.** Making a function total often means using stronger input types: a `NonZeroInt` instead of an `int` where division needs it, or a type whose values are guaranteed well-formed instead of a raw `string` where the format matters. That work is real, and it falls on whoever creates those values (the benefit is in *Why*, point 3).
 
 ---
 
