@@ -79,12 +79,12 @@ A more interesting case: a function that builds and returns a function, capturin
 <td>
 
 ```csharp
-public static Func<decimal, decimal> Multiplier(decimal factor) =>
+public static Func<decimal, decimal> MultiplyBy(decimal factor) =>
     amount => amount * factor;
 
 // Two functions built from the same factory, each closing over its own factor.
-var withVat    = Multiplier(1.20m);
-var halfPrice  = Multiplier(0.50m);
+var withVat    = MultiplyBy(1.20m);
+var halfPrice  = MultiplyBy(0.50m);
 
 // A third function built by hand, calling the first two in sequence.
 Func<decimal, decimal> halfPriceWithVat = amount => halfPrice(withVat(amount));
@@ -94,13 +94,13 @@ Func<decimal, decimal> halfPriceWithVat = amount => halfPrice(withVat(amount));
 <td>
 
 ```java
-public static Function<BigDecimal, BigDecimal> multiplier(BigDecimal factor) {
+public static Function<BigDecimal, BigDecimal> multiplyBy(BigDecimal factor) {
     return amount -> amount.multiply(factor);
 }
 
 // Two functions built from the same factory, each closing over its own factor.
-var withVat   = multiplier(new BigDecimal("1.20"));
-var halfPrice = multiplier(new BigDecimal("0.50"));
+var withVat   = multiplyBy(new BigDecimal("1.20"));
+var halfPrice = multiplyBy(new BigDecimal("0.50"));
 
 // A third function built by hand, calling the first two in sequence.
 Function<BigDecimal, BigDecimal> halfPriceWithVat =
@@ -111,7 +111,7 @@ Function<BigDecimal, BigDecimal> halfPriceWithVat =
 </tr>
 </table>
 
-`Multiplier` is a factory: each call returns a new function value whose body still refers to the `factor` from the call that built it. The `factor` isn't stored in any object's field; it travels with the function value, in its closure. Once those functions exist, building a third from two of them is as simple as any other operation on values.
+`MultiplyBy` is a factory: each call returns a new function value whose body still refers to the `factor` from the call that built it. The `factor` isn't stored in any object's field; it travels with the function value, in its closure. Once those functions exist, building a third from two of them is as simple as any other operation on values.
 
 ---
 
@@ -134,7 +134,7 @@ The shortest way to say "multiply by 1.20" is `a => a * 1.20m`: one line, one ex
 Once behavior is a value, it can live wherever any other value can: in a `Map<Key, Function<T, R>>`, in a record field, in a configuration object, in a queue. Dispatch becomes a lookup; registration becomes adding an entry. Behavior and data flow through the same shapes; there is no separate world of "things that do" next to the structures that hold "things that are".
 
 **3. Closures carry data along with the function.**
-As `Multiplier` shows in the *Example*, a closure brings its data and its operation to the call site together, as one value. The function doesn't need to look anywhere outside itself for the data it depends on.
+As `MultiplyBy` shows in the *Example*, a closure brings its data and its operation to the call site together, as one value. The function doesn't need to look anywhere outside itself for the data it depends on.
 
 The captured values have to be values in the sense of [Axiom 5](axiom-05-pure-functions.md): immutable, created once, and not shared with anything mutable. Otherwise the function value silently becomes impure. A closure is a way to carry data *into* a function value; it isn't a license for the function to reach *out*.
 

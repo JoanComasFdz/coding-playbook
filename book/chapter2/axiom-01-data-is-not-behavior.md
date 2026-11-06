@@ -20,6 +20,10 @@ It says one structural thing: **do not hide state behind behavior.**
 - **Data** is a *value*: a representation of something that is true, like a name, a set of line items or a timestamp. It *is* a fact; it does not act.
 - **Behavior** is an *operation*: data goes in, and data may come out. It *acts*; it holds no state of its own.
 
+**Names follow the split.** Data is named with nouns, behavior with verbs, so the words from [Axiom 0](axiom-00-ubiquitous-language.md) take the right grammatical form: `Cart` and `Line` are things, while `CalculateTotal` and `PlaceOrder` are things you do. The C# and Java guidelines say the same: "Because methods are the means of taking action, the design guidelines require that method names be verbs or verb phrases" [8], and "Methods should be verbs" [9]. A function named like data (`Total`, `Area`) reads like something you hold, not something you call.
+
+Not every convention draws the line here. Swift's guidelines name a function by whether calling it changes anything: one that only computes an answer reads as a noun phrase (`x.distance(to: y)`), and verbs are kept for calls that change something (`x.sort()`) [10]. The name then tells the reader whether a call can change the world, a distinction later axioms care about a great deal. This book follows C# and Java: every function gets a verb.
+
 This axiom departs from the common OO default of **fusing** the two: an object that owns mutable state *and* the methods that quietly change it.
 
 ---
@@ -42,7 +46,7 @@ class Cart
 
     public void Add(Line line) => _lines.Add(line);
 
-    public decimal Total() =>
+    public decimal CalculateTotal() =>
         _lines.Sum(l => l.Price * l.Quantity);
 }
 ```
@@ -58,7 +62,7 @@ class Cart {
 
     public void add(Line line) { lines.add(line); }
 
-    public BigDecimal total() {
+    public BigDecimal calculateTotal() {
         var sum = BigDecimal.ZERO;
         for (var l : lines)
             sum = sum.add(l.price().multiply(BigDecimal.valueOf(l.quantity())));
@@ -80,7 +84,7 @@ sealed record Cart(ImmutableList<Line> Lines);
 // ...and the behavior is a function over it
 static class Pricing
 {
-    public static decimal Total(Cart cart) =>
+    public static decimal CalculateTotal(Cart cart) =>
         cart.Lines.Sum(l => l.Price * l.Quantity);
 }
 ```
@@ -97,7 +101,7 @@ record Cart(List<Line> lines) {
 
 // ...and the behavior is a function over it
 final class Pricing {
-    static BigDecimal total(Cart cart) {
+    static BigDecimal calculateTotal(Cart cart) {
         var sum = BigDecimal.ZERO;
         for (var l : cart.lines())
             sum = sum.add(l.price().multiply(BigDecimal.valueOf(l.quantity())));
@@ -110,7 +114,7 @@ final class Pricing {
 </tr>
 </table>
 
-In the second version, `Cart` says what a cart *is*, and `Total` says what you *do* with one. You can read a `Cart` without tracing its history, test `Total` by handing it a value, and change either one without touching the other.
+In the second version, `Cart` says what a cart *is*, and `CalculateTotal` says what you *do* with one. You can read a `Cart` without tracing its history, test `CalculateTotal` by handing it a value, and change either one without touching the other.
 
 ---
 
@@ -213,6 +217,15 @@ Same benefits (one home for the rule, no reaching into objects), different mecha
 [6] **Mike Acton**, *Data-Oriented Design and C++*, keynote at CppCon 2014: <https://www.youtube.com/watch?v=rX0ItVEVjHc>. Argues for designing code around the data, its transformations, and the hardware that runs them (cache locality, structure-of-arrays). Same slogan as Sharvit's DOP, different argument: this branch is about *performance*, not complexity.
 
 [7] **Andrew Hunt & David Thomas**, *The Pragmatic Programmer*, Addison-Wesley, 1999 (20th-anniversary ed. 2019). Hunt and Thomas popularized the *Tell, Don't Ask* maxim. See also **Martin Fowler**, *TellDontAsk*, martinfowler.com (bliki), which frames it as bundling data with the functions that operate on it and is careful to call it a reminder, not a rule to apply dogmatically. <https://martinfowler.com/bliki/TellDontAsk.html>
+
+[8] **Krzysztof Cwalina and Brad Abrams**, *Framework Design Guidelines* (2nd ed.), Addison-Wesley, 2008, "Names of Type Members": "✔️ DO give methods names that are verbs or verb phrases."
+<https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/names-of-type-members>
+
+[9] **Sun Microsystems (now Oracle)**, *Code Conventions for the Java Programming Language*, section 9, "Naming Conventions": "Class names should be nouns" and "Methods should be verbs".
+<https://www.oracle.com/java/technologies/javase/codeconventions-namingconventions.html>
+
+[10] **Swift.org**, *API Design Guidelines*. Functions that only compute an answer "should read as noun phrases, e.g. `x.distance(to: y)`, `i.successor()`"; functions that change something read as imperative verb phrases, e.g. `print(x)`, `x.sort()`.
+<https://www.swift.org/documentation/api-design-guidelines/>
 
 ---
 

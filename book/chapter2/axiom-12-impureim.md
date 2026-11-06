@@ -50,14 +50,14 @@ public async Task PriceOrderAsync(OrderId id)
     var now   = clock.GetUtcNow();
 
     // Pure — decide
-    var priced = Price(cart, rules, now);
+    var priced = CalculatePrice(cart, rules, now);
 
     // Impure — act
     await orderStore.SaveAsync(priced);
     logger.LogInformation("Priced order {Id} at {Total}", priced.Id, priced.Total);
 }
 
-private static PricedOrder Price(
+private static PricedOrder CalculatePrice(
     Cart cart, DiscountRules rules, DateTimeOffset now)
 {
     var subtotal = cart.Lines.Sum(l => l.UnitPrice * l.Quantity);
@@ -79,14 +79,14 @@ public void priceOrder(OrderId id) {
     Instant now = clock.instant();
 
     // Pure — decide
-    PricedOrder priced = price(cart, rules, now);
+    PricedOrder priced = calculatePrice(cart, rules, now);
 
     // Impure — act
     orderStore.save(priced);
     logger.info("Priced order {} at {}", priced.id(), priced.total());
 }
 
-private static PricedOrder price(
+private static PricedOrder calculatePrice(
         Cart cart, DiscountRules rules, Instant now) {
     BigDecimal subtotal = cart.lines().stream()
         .map(l -> l.unitPrice().multiply(BigDecimal.valueOf(l.quantity())))
@@ -102,7 +102,7 @@ private static PricedOrder price(
 </tr>
 </table>
 
-The handler has six lines that matter: three reads, one pure call, two writes. Move the clock read into `Price`, or an eligibility check into the handler, and the steps stop being separable: either the core is no longer pure, or the shell starts deciding.
+The handler has six lines that matter: three reads, one pure call, two writes. Move the clock read into `CalculatePrice`, or an eligibility check into the handler, and the steps stop being separable: either the core is no longer pure, or the shell starts deciding.
 
 ---
 
