@@ -166,7 +166,7 @@ writeSummary(context.processedCount, context.errors);
 
 The inputs have different lifetimes, and the code shows it:
 
-- **The database access is a dependency.** It outlives every run, so it arrives once, through the constructor, and is used directly, without a repository in between. In Java that is jOOQ's `DSLContext`, whose configuration is designed to be shared [4]. In C# it is EF Core's `IDbContextFactory`, because a `DbContext` itself is "designed to be used for a *single* unit-of-work" and is not thread-safe [5]: each run creates one, saves once at the end, and disposes it.
+- **The database access is a dependency.** It outlives every run, so it arrives once, through the constructor, and is used directly. In Java that is jOOQ's `DSLContext`, whose configuration is designed to be shared [4]. In C# it is EF Core's `IDbContextFactory`, because a `DbContext` itself is "designed to be used for a *single* unit-of-work" and is not thread-safe [5]: each run creates one, saves once at the end, and disposes it.
 - **`BatchContext` belongs to one run**, so it arrives as a parameter of each call.
 
 `ValidateRow` is pure: it takes a row and returns a `Result`, and doesn't know `BatchContext` exists. All the mutation is in the shell: adding an error, incrementing the count, reporting progress. The progress callback was built by the *caller*, a closure in the sense of [Axiom 9](axiom-09-first-class-functions.md), and handed in, so a new session can report progress differently without changing the importer.
