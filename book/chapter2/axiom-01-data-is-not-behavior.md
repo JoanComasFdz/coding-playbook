@@ -164,7 +164,7 @@ Sharvit is upfront about the costs [5]:
 
 - **No access control.** Nothing stops any code from reading any data.
 - **No packaging.** The data and the logic that belongs to it no longer sit together in one unit.
-- **More entities.** A system ends up with more named things to keep track of: the data types *and* the modules of functions over them.
+- **More named things.** A system ends up with more names to keep track of: the data types *and* the modules of functions over them.
 
 ---
 
