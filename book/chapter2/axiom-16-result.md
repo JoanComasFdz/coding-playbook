@@ -137,7 +137,7 @@ String message = result.match(
 </tr>
 </table>
 
-Same caller, same result. Which form to use is the choice in [`switch` or `Match`?](axiom-11-pattern-matching.md#switch-or-match).
+Same caller, same result. Which form to use is the choice in [switch or Match?](axiom-11-pattern-matching.md#switch-or-match).
 
 ---
 
@@ -238,7 +238,7 @@ Read it from top to bottom, and the earlier axioms are all visible:
 - **An honest, total signature** ([Axiom 6](axiom-06-honest-total-signatures.md)): every outcome of `Decide` is in its return type.
 - **One reason to change** ([Axiom 7](axiom-07-cohesion.md)): `Decide` changes when the login rules change; `Login` changes when the plumbing does.
 - **Functions as arguments** ([Axiom 9](axiom-09-first-class-functions.md), [Axiom 10](axiom-10-higher-order-functions.md)): `Match` takes one function per outcome.
-- **Pattern matching** ([Axiom 11](axiom-11-pattern-matching.md)): the core uses a `switch` on the lookup, and the shell uses `Match` on the decision (see [`switch` or `Match`?](axiom-11-pattern-matching.md#switch-or-match)).
+- **Pattern matching** ([Axiom 11](axiom-11-pattern-matching.md)): the core uses a `switch` on the lookup, and the shell uses `Match` on the decision (see [switch or Match?](axiom-11-pattern-matching.md#switch-or-match)).
 - **The Impureim sandwich** ([Axiom 12](axiom-12-impureim.md)): gather, decide, act.
 - **Absence as a value** ([Axiom 13](axiom-13-maybe.md)): the missing user reaches the core as a nullable value, and the `switch` has to handle it. (In Java the repository returns an `Optional`, and the shell unwraps it, because `Optional` stays out of parameters.)
 - **Either with names** ([Axiom 14](axiom-14-either.md)): `Success` and `Failure` say what `Right` and `Left` only imply.
