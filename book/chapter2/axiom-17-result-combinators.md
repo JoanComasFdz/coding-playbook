@@ -116,7 +116,7 @@ Result<int, string> RequireAdult(int age) =>
         ? new Success<int, string>(age)
         : new Failure<int, string>("under 18");
 
-Result<string, FormError> TicketBand(string ageInput) =>
+Result<string, FormError> ChooseTicketType(string ageInput) =>
     ParseAge(ageInput)
         .Bind(RequireAdult)                       // can fail
         .Map(age => age >= 65 ? "senior" : "adult") // can't fail
@@ -135,7 +135,7 @@ Result<Integer, String> requireAdult(int age) {
         : new Failure<>("under 18");
 }
 
-Result<String, FormError> ticketBand(String ageInput) {
+Result<String, FormError> chooseTicketType(String ageInput) {
     return parseAge(ageInput)
         .flatMap(this::requireAdult)                // can fail
         .map(age -> age >= 65 ? "senior" : "adult") // can't fail
@@ -147,7 +147,7 @@ Result<String, FormError> ticketBand(String ageInput) {
 </tr>
 </table>
 
-`TicketBand` reads as its steps, with no `if (failed) return …` in between. If `ParseAge` fails, `RequireAdult` and the `Map` step never run, and the parse error comes out as a `FormError`. The same happens if `RequireAdult` fails. If both succeed, the `Map` step runs and the result is a `Success`.
+`ChooseTicketType` reads as its steps, with no `if (failed) return …` in between. If `ParseAge` fails, `RequireAdult` and the `Map` step never run, and the parse error comes out as a `FormError`. The same happens if `RequireAdult` fails. If both succeed, the `Map` step runs and the result is a `Success`.
 
 ---
 
