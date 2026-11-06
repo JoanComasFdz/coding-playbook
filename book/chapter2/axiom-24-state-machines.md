@@ -1,13 +1,13 @@
 # Axiom 24 — State machines
 
-**A state machine is one pure function: `Transition(state, command) → event`. It takes the entity's current state and a command, and returns an event that carries the next state, or `NoChange` with the same state when the command doesn't apply. It is the shape of [Axiom 23](axiom-23-pure-functions-returning-actions.md) with the entity's state added to the inputs.**
+**A state machine is one pure function: `Transition(state, command) → event`. It takes the current state and a command, and returns an event that carries the next state, or `NoChange` with the same state when the command doesn't apply. It is the shape of [Axiom 23](axiom-23-pure-functions-returning-actions.md) with the current state added to the inputs.**
 
 - **State, command and event are data**: each is a sealed DU of immutable records ([Axiom 21](axiom-21-discriminated-unions.md)), and the state has one record per condition ([Axiom 22](axiom-22-illegal-states.md)).
 - **Each successful event carries the specific next state it produces** (`Activated(Active)`, `Cancelled(Ended)`), so the transition table is checked by the type system.
 - **`Transition` is pure and total**: every pair of state and command lands in some event, a real transition or `NoChange(state)`.
 - **The shell** loads the state, calls `Transition`, matches on the event and saves the new state. How it answers `NoChange` is its decision.
 
-[Axiom 23](axiom-23-pure-functions-returning-actions.md) returned an action describing what the shell should do. This axiom keeps that shape and adds two things: the entity's state joins the inputs, and each successful event carries the next state. That turns a one-shot decision into a machine: the same function, called again and again with the current state, drives the entity through its whole life. It is what this chapter has been building toward: pure functions over immutable types returning DUs, with one impure shell as the only seam [4][5].
+[Axiom 23](axiom-23-pure-functions-returning-actions.md) returned an action describing what the shell should do. This axiom keeps that shape and adds two things: the current state joins the inputs, and each successful event carries the next state. That turns a one-shot decision into a machine: the same function, called again and again with the current state, moves the state through its whole life. It is what this chapter has been building toward: pure functions over immutable types returning DUs, with one impure shell as the only seam [4][5].
 
 Through [Axiom 8](axiom-08-connascence.md)'s lens, it turns a [Connascence of Execution](axiom-08-connascence.md#connascence-of-execution-coe) (the legal order of transitions, otherwise scattered across methods and checked at runtime) into a [Connascence of Type](axiom-08-connascence.md#connascence-of-type-cot).
 
@@ -19,7 +19,7 @@ Through [Axiom 8](axiom-08-connascence.md)'s lens, it turns a [Connascence of Ex
 
 Four words, each with one meaning:
 
-- **State**: the entity's *condition* right now. An immutable value: one record when the entity has one shape, a sealed DU of records when it has several. The DU form is the one to prefer when the allowed commands differ by condition.
+- **State**: the *condition* right now. An immutable value: one record when there is one shape, a sealed DU of records when there are several. The DU form is the one to prefer when the allowed commands differ by condition.
 - **Command**: a *request* to the machine, in the future tense: "activate this subscription". A sealed DU, each case carrying the data it needs. When the machine reacts to things that happen rather than to requests, the same slot is often called a signal or a trigger; its role is identical.
 - **Event**: a *fact* about what happened, in the past tense: "this subscription was activated". A sealed DU. Successful events carry the next state. `NoChange` carries the unchanged state when the command doesn't apply (a second click, a stale request, a resent message): the machine reports an honest no-op instead of an error.
 - **Transition**: the function that computes the event from a state and a command.
@@ -203,7 +203,7 @@ private HttpResponse saveAndRespond(
 </tr>
 </table>
 
-Everything [Axiom 16's synthesis](axiom-16-result.md#the-first-synthesis) showed still holds, and the shell is [Axiom 23](axiom-23-pure-functions-returning-actions.md)'s, one branch per event. What is new is that the entity's state is now a value in the pure core, passed in and handed back, instead of a field inside an object.
+Everything [Axiom 16's synthesis](axiom-16-result.md#the-first-synthesis) showed still holds, and the shell is [Axiom 23](axiom-23-pure-functions-returning-actions.md)'s, one branch per event. What is new is that the state is now a value in the pure core, passed in and handed back, instead of a field inside a mutable object.
 
 **`NoChange` is reported, not judged.** The shell above answers it with `200 OK`, the convention when a repeated command should quietly succeed. Another domain might answer `409 Conflict`, because a command that doesn't apply means a bug or a race the caller should hear about. A third might decide per state: `NoChange` holding an `Ended` after `Cancel` is harmless, but after `Renew` it is a conflict. All three are valid. The machine's job is to say honestly whether anything changed; turning that into a status code is a policy for the shell.
 
@@ -211,7 +211,7 @@ Everything [Axiom 16's synthesis](axiom-16-result.md#the-first-synthesis) showed
 
 ## Problem / forces
 
-When an entity changes condition over time and answers commands differently in each condition, six shapes are common:
+When something changes condition over time and answers commands differently in each condition, six shapes are common:
 
 1. **A mutable object whose methods change it.** `subscription.Cancel()` flips a `status` field. The legal transitions are an unwritten rule spread across methods, and the same call means different things from different starting states, with nothing in the signature to say so ([Axiom 5](axiom-05-pure-functions.md)).
 2. **The same, with `if` checks on the status.** `if (status == Active) status = Cancelled;`. The rules are visible inside each method, but still only checked at runtime.
@@ -227,13 +227,13 @@ Options 1 to 3 keep state inside an object and change it through methods, so the
 ## Why
 
 **1. Every rule is in one place.**
-To learn what an entity is allowed to do, read `Transition`: one `switch`, one branch per legal pair plus the no-ops, each with its next state. There is no second file, no subclass and no configuration to check.
+To learn which commands are allowed in which state, read `Transition`: one `switch`, one branch per legal pair plus the no-ops, each with its next state. There is no second file, no subclass and no configuration to check.
 
 **2. Every trigger uses the same rules.**
-An entity is usually reachable in several ways: an HTTP endpoint, a queue consumer, a scheduled job, a webhook. Without a state machine, each grows its own copy of the rules: the endpoint checks "is it still in trial?" with an `if`, the consumer re-implements the check slightly differently, the scheduled job filters states in its own query. Three copies drift apart. With `Transition`, every trigger has the same shape (load, transition, act on the event), and the rules live in one function that can be read, reasoned about and tested as a table. That is [Axiom 7](axiom-07-cohesion.md)'s one reason to change, kept in one place.
+The same state is usually changed from several places: an HTTP endpoint, a queue consumer, a scheduled job, a webhook. Without a state machine, each grows its own copy of the rules: the endpoint checks "is it still in trial?" with an `if`, the consumer re-implements the check slightly differently, the scheduled job filters states in its own query. Three copies drift apart. With `Transition`, every trigger has the same shape (load, transition, act on the event), and the rules live in one function that can be read, reasoned about and tested as a table. That is [Axiom 7](axiom-07-cohesion.md)'s one reason to change, kept in one place.
 
 **3. It is the most common legacy refactoring.**
-Many classes spread their state across fields like `_isStarted`, `_lastEventAt`, `_retryCount` and `_currentDelay`, which change together by rules buried in the methods that change them. Those fields are pieces of one state; those methods are unwritten branches of `Transition`. Turn the fields into a state DU ([Axiom 22](axiom-22-illegal-states.md)), move the rules into a pure `Transition`, and the class shrinks to a thin shell holding one value. The signal is the field list (flags, timestamps, counters and durations that change together), not the domain: the same refactoring applies to business entities and to long-running infrastructure classes.
+Many classes spread their state across fields like `_isStarted`, `_lastEventAt`, `_retryCount` and `_currentDelay`, which change together by rules buried in the methods that change them. Those fields are pieces of one state; those methods are unwritten branches of `Transition`. Turn the fields into a state DU ([Axiom 22](axiom-22-illegal-states.md)), move the rules into a pure `Transition`, and the class shrinks to a thin shell holding one value. The signal is the field list (flags, timestamps, counters and durations that change together), not the domain: the same refactoring applies to domain types and to long-running infrastructure classes.
 
 **4. An illegal transition doesn't compile.**
 Because `Activated` can only hold an `Active`, the transition table is in the types. Making an event produce a different state, or adding a state, needs the compiler's agreement. The other benefits of [Axiom 23](axiom-23-pure-functions-returning-actions.md#why) carry over: `Transition` is tested as a table, and every state and event is a value you can log, store or replay.
@@ -242,7 +242,7 @@ Because `Activated` can only hold an `Active`, the transition table is in the ty
 
 ## Trade-offs
 
-- **More types.** Each entity declares three DUs and one function. For one entity that is real overhead; for the tenth it is habit. Simple CRUD records don't earn it (see *When NOT to*).
+- **More types.** Each state machine declares three DUs and one function. For one machine that is real overhead; for the tenth it is habit. Simple CRUD records don't earn it (see *When NOT to*).
 - **State and event types change together.** A new state usually needs an event that produces it, and a new event a branch in `Transition`. The compiler points at each place, so the cost is mechanical, not subtle.
 - **One command, several events, is usually a smell.** Check first whether one event should be a field of the other (`LoanApproved(rate)` rather than `LoanApproved` plus `RateLocked`), or whether the "second event" is really an effect the shell performs in response to the first. The rare cases that survive that check are beyond this chapter.
 - **Strict typing fixes each event's next state.** `Activated(Active)` says *every* activation produces an `Active`. That is usually exactly right. When an event can produce different states under different conditions, fall back to `Activated(SubscriptionState)`, which moves that part of the rule from the types back into the function.
@@ -252,10 +252,10 @@ Because `Activated` can only hold an `Active`, the transition table is in the ty
 
 ## When NOT to
 
-- **CRUD with no rules.** A `Country` with a `Code` and a `Name` has no conditions and no transitions: read and write the row. A state machine is for entities whose *legal next step depends on what came before*. If it depends only on the input, it is a plain function ([Axiom 5](axiom-05-pure-functions.md)) or a one-shot action ([Axiom 23](axiom-23-pure-functions-returning-actions.md)).
+- **CRUD with no rules.** A `Country` with a `Code` and a `Name` has no conditions and no transitions: read and write the row. A state machine is for things whose *legal next step depends on what came before*. If it depends only on the input, it is a plain function ([Axiom 5](axiom-05-pure-functions.md)) or a one-shot action ([Axiom 23](axiom-23-pure-functions-returning-actions.md)).
 - **One-rule scripts.** The same threshold as [Axiom 23](axiom-23-pure-functions-returning-actions.md#when-not-to): a job that loads one row, applies one rule and writes one row may not earn the vocabulary.
-- **Workflows across several entities.** One `Transition` can't enforce "the customer must have a valid payment method", because the customer is a different machine. Coordinating several machines (sagas, process managers) is system topology, out of scope for this book. Each machine stays pure and local; the shell reads one and feeds the next.
-- **A workflow engine already runs the machine.** When Temporal, Camunda or AWS Step Functions already drive the entity, with retries and persisted state, configure the engine directly: its primitives *are* a state machine, and a `Transition` on top would duplicate it. The single function is at its best when you own the runtime.
+- **Workflows across several machines.** One `Transition` can't enforce "the customer must have a valid payment method", because the customer is a different machine. Coordinating several machines (sagas, process managers) is system topology, out of scope for this book. Each machine stays pure and local; the shell reads one and feeds the next.
+- **A workflow engine already runs the machine.** When Temporal, Camunda or AWS Step Functions already drive the process, with retries and persisted state, configure the engine directly: its primitives *are* a state machine, and a `Transition` on top would duplicate it. The single function is at its best when you own the runtime.
 
 ---
 
