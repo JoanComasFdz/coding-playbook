@@ -37,7 +37,7 @@ A **Session Context** is:
 **What doesn't:**
 
 - **The state being decided about.** A subscription's state belongs in [Axiom 24](axiom-24-state-machines.md)'s state DU, passed as a value through `Transition`. The context holds the *shell's* memory, not the domain's [3].
-- **Dependencies.** The database, the clock and the logger outlive any session; they are wired when the shell is built.
+- **Dependencies.** Database access, the clock and the logger outlive any session; they are wired when the shell is built (see the *Example* for a database context that lives for one run).
 - **State shared across sessions.** Connection pools, caches and queues outlive one session and belong at a higher level.
 
 ---
@@ -62,12 +62,14 @@ public sealed class BatchContext
     public Action<int> ReportProgress { get; init; } = _ => { };
 }
 
-public sealed class CustomerImporter(CustomerStore customers) // dependency: wired once
+public sealed class CustomerImporter(
+    IDbContextFactory<ImportDbContext> dbFactory)     // dependency: wired once
 {
     public void ImportRows(
         IEnumerable<string[]> rows,
         BatchContext context)                         // session: passed per call
     {
+        using var db = dbFactory.CreateDbContext();   // one unit of work per run
         var rowNumber = 0;
         foreach (var row in rows)
         {
@@ -76,7 +78,7 @@ public sealed class CustomerImporter(CustomerStore customers) // dependency: wir
             switch (validation)
             {
                 case Success<Customer, string>(var customer):
-                    customers.Insert(customer);
+                    db.Customers.Add(customer);
                     break;
                 case Failure<Customer, string>(var reason):
                     context.Errors.Add(new ImportError(rowNumber, reason));
@@ -87,11 +89,12 @@ public sealed class CustomerImporter(CustomerStore customers) // dependency: wir
             context.ProcessedCount++;
             context.ReportProgress(context.ProcessedCount);
         }
+        db.SaveChanges();
     }
 }
 
 // The importer is built once; each run gets a fresh context:
-var importer = new CustomerImporter(customerStore);
+var importer = new CustomerImporter(dbFactory);
 
 var context = new BatchContext
 {
@@ -119,10 +122,10 @@ public final class BatchContext {
 }
 
 public final class CustomerImporter {
-    private final CustomerStore customers;           // dependency: wired once
+    private final DSLContext dsl;                    // dependency: wired once
 
-    public CustomerImporter(CustomerStore customers) {
-        this.customers = customers;
+    public CustomerImporter(DSLContext dsl) {
+        this.dsl = dsl;
     }
 
     public void importRows(
@@ -133,8 +136,11 @@ public final class CustomerImporter {
             rowNumber++;
             var validation = validateRow(row);       // pure
             switch (validation) {
-                case Success<Customer, String> s ->
-                    customers.insert(s.value());
+                case Success<Customer, String> s -> dsl
+                    .insertInto(CUSTOMER)
+                    .set(CUSTOMER.NAME, s.value().name())
+                    .set(CUSTOMER.EMAIL, s.value().email())
+                    .execute();
                 case Failure<Customer, String> f ->
                     context.errors.add(
                         new ImportError(rowNumber, f.error()));
@@ -146,7 +152,7 @@ public final class CustomerImporter {
 }
 
 // The importer is built once; each run gets a fresh context:
-var importer = new CustomerImporter(customerStore);
+var importer = new CustomerImporter(dsl);
 
 var context = new BatchContext(
     n -> System.out.println("row " + n));
@@ -158,7 +164,10 @@ writeSummary(context.processedCount, context.errors);
 </tr>
 </table>
 
-The two inputs have different lifetimes, and the code shows it. `CustomerStore` is a dependency: it outlives every session, so it arrives once, through the constructor. `BatchContext` belongs to one run, so it arrives as a parameter of each call.
+The inputs have different lifetimes, and the code shows it:
+
+- **The database access is a dependency.** It outlives every run, so it arrives once, through the constructor, and is used directly, without a repository in between. In Java that is jOOQ's `DSLContext`, whose configuration is designed to be shared [4]. In C# it is EF Core's `IDbContextFactory`, because a `DbContext` itself is "designed to be used for a *single* unit-of-work" and is not thread-safe [5]: each run creates one, saves once at the end, and disposes it.
+- **`BatchContext` belongs to one run**, so it arrives as a parameter of each call.
 
 `ValidateRow` is pure: it takes a row and returns a `Result`, and doesn't know `BatchContext` exists. All the mutation is in the shell: adding an error, incrementing the count, reporting progress. The progress callback was built by the *caller*, a closure in the sense of [Axiom 9](axiom-09-first-class-functions.md), and handed in, so a new session can report progress differently without changing the importer.
 
@@ -216,6 +225,12 @@ A test creates a `BatchContext`, runs rows through `ImportRows`, and checks what
 
 [3] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022. Also cited in [Axiom 1](axiom-01-data-is-not-behavior.md), [Axiom 2](axiom-02-immutability.md), [Axiom 21](axiom-21-discriminated-unions.md), [Axiom 23](axiom-23-pure-functions-returning-actions.md) and [Axiom 24](axiom-24-state-machines.md). Keeps the system's state as one immutable value, apart from the code that orchestrates changes to it: the same split as the domain's state versus the shell's working memory.
 <https://www.manning.com/books/data-oriented-programming>
+
+[4] **jOOQ manual**, *Thread safety* (DSLContext). Configuration objects make "no thread safety guarantees", but "Configuration was designed to work in a thread safe way", and the manual encourages sharing them, "because they contain caches for work not worth repeating".
+<https://www.jooq.org/doc/latest/manual/sql-building/dsl-context/thread-safety/>
+
+[5] **Microsoft**, *DbContext Lifetime, Configuration, and Initialization*, EF Core documentation. "A `DbContext` instance is designed to be used for a *single* unit-of-work", it is "Not thread-safe", and `IDbContextFactory` is the documented way to create one per unit of work when the surrounding scope doesn't match.
+<https://learn.microsoft.com/en-us/ef/core/dbcontext-configuration/>
 
 ---
 
