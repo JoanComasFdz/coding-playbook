@@ -1,43 +1,41 @@
 # Axiom 18 — Value objects
 
-**A value object is an immutable type whose only constructor is a static factory returning `Result<T, string>` — invalid inputs become a `Failure` carrying the reason, valid inputs become a `Success` whose contents every downstream function may trust without rechecking.**
+**A value object is a small immutable type whose only way in is a factory that checks the input and returns a `Result`: a `Success` holding a value the rest of the code can trust, or a `Failure` saying why not.**
 
-- The factory does the validation once; the type itself is the proof that the contained value satisfies the domain rule.
-- **Invalid states are unrepresentable**: there is no path to a value of the type that bypasses the check.
+- The check runs once, when the value is built. After that, the type itself is the proof that the rule holds.
+- There is no other way to build one, so an invalid value can't exist.
 
-[Axiom 6](axiom-06-honest-total-signatures.md) named two ways to reach a total signature — widen the output, or *narrow the input*. The narrowing path needed a type whose values were guaranteed valid by construction; `NonZeroInt` was the placeholder. This axiom is the toolkit for building those types. A value object is a small immutable record ([Axiom 2](axiom-02-immutability.md)) whose construction *is* the parse step — raw input checked once on the way in, producing either a value the rest of the code can trust or a `Failure` ([Axiom 16](axiom-16-result.md)) explaining why it couldn't.
+[Axiom 6](axiom-06-honest-total-signatures.md#why) made functions total by narrowing their input types, with `NonZeroInt` as a placeholder. This axiom is how you build such types: a small immutable record ([Axiom 2](axiom-02-immutability.md)) whose construction *is* the check, and whose factory returns a `Result` ([Axiom 16](axiom-16-result.md)).
 
-This is also where [Axiom 0](axiom-00-ubiquitous-language.md)'s naming discipline gets teeth at the level of a single noun: the domain's word — `Username`, `Money`, `EmailAddress` — becomes a type the compiler enforces, not a bare `string` any other string can impersonate.
+It is also where [Axiom 0](axiom-00-ubiquitous-language.md)'s names get teeth. The domain's word (`Username`, `EmailAddress`) becomes a type the compiler enforces, not a bare `string` that any other string can stand in for.
 
-Through [Axiom 8](axiom-08-connascence.md)'s lens, this axiom weakens a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com) — every call site re-checking what a bare string *means* — into a Connascence of Type, retiring the same-typed [Connascence of Position](axiom-08-connascence.md#connascence-of-position-cop) behind swapped arguments along the way.
+Through [Axiom 8](axiom-08-connascence.md)'s lens, a value object turns a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com) (every call site re-checking what a bare string means) into a [Connascence of Type](axiom-08-connascence.md#connascence-of-type-cot). It also removes the [Connascence of Position](axiom-08-connascence.md#connascence-of-position-cop) between two parameters of the same type (see *Why*, point 3).
 
 ---
 
 ## Definitions
 
-A value object is a type with three structural properties:
+A [value object](https://en.wikipedia.org/wiki/Value_object) has three properties [1]:
 
-- **Immutable.** A record or final class with no setters and no mutable internals; the carried data is fixed at construction. ([Axiom 2](axiom-02-immutability.md))
-- **Equality by value.** Two instances with equal data are equal. There is no identity beyond the data — no surrogate key, no reference comparison that survives serialisation. Records provide this for free in modern C# and Java; hand-rolled classes must override `equals` and `GetHashCode` consistently.
-- **Validity by construction.** The public constructor is hidden. The *only* entry point is a static factory — conventionally `From` (C#) or `from` (Java) — that returns `Result<T, string>`. The factory runs the validation once. If the input is invalid, it returns `Failure` carrying the reason; otherwise it returns `Success` wrapping the constructed instance.
+- **Immutable.** No setters and no mutable internals ([Axiom 2](axiom-02-immutability.md)).
+- **Equal by value.** Two instances with the same data are equal; there is no identity beyond the data. Records give you this for free. A hand-written class has to override `Equals`/`GetHashCode` (`equals`/`hashCode` in Java) consistently.
+- **Valid by construction.** The constructor is private. The only way in is a static factory, `From` in C# and `from` in Java, that checks the input once and returns `Result<T, string>`. Functional programmers call this a [smart constructor](https://wiki.haskell.org/Smart_constructors).
 
-The first two properties already live in earlier axioms. The third is what this axiom adds: it converts a record from "a tuple of fields" into "a proof that those fields satisfy a domain rule."
+The first two properties come from earlier axioms. The third is what this axiom adds: it turns a record from "some fields" into "proof that these fields follow a rule". A function that takes a `Username` never checks whether it is empty, because `Username.From` already did.
 
-The body of every function that takes a value object can treat the contained data as already-valid. There is no `if (string.IsNullOrEmpty(name))` inside `Display(name)` — that check happened once, in `Username.From`, and the type system has remembered the answer ever since.
+This axiom departs from three common defaults:
 
-This axiom rejects three mainstream defaults:
+- **Bare primitives for domain concepts.** `CustomerProfile(string Username, string Email)` accepts any two strings, in either order, empty or not. Every function downstream re-checks, or trusts that someone else did.
+- **A constructor that throws.** It moves the failure out of the return type and into the call stack, the dishonesty [Axiom 16](axiom-16-result.md#problem--forces) already ruled out. Building a value is not a special case.
+- **A separate validation step.** With `Validate(profile)` called after `new CustomerProfile(...)`, the object exists before it is checked, and the next caller can forget the check. The only way to guarantee the check is to make building and checking one step.
 
-- **Primitive obsession.** `CustomerProfile(string Username, string Email)` accepts any pair of strings — the type system has no opinion on which is which, whether either is non-empty, or whether the second contains an `@`. Every function downstream pays the cost of re-checking; every domain rule is scattered across the call sites that happen to remember it.
-- **The throwing constructor.** A constructor that throws on bad input pushes the failure case outside the return type and into the call stack — exactly the dishonesty [Axiom 16](axiom-16-result.md) named for any other success-or-failure operation. Construction is not a special case; the failure mode belongs in the signature as a value.
-- **The detached validation step.** A `Validate(profile)` called separately from `new CustomerProfile(...)` lets the constructed object exist *before* validation runs — and lets validation be forgotten on the next call site. The only way to guarantee that validation happened is to make construction and validation the same operation.
-
-Note the chosen error type: `string`. A failure-reason as a human-readable string is the cheapest convention, reads well in logs, and is enough when the caller's only job is to surface or record the reason. Typed failure values become worth the cost when callers need to *branch* on different failure cases; that escalation is an ADR-level decision, not a principle-level one. This axiom uses strings throughout.
+The examples use `string` as the error type: cheap, readable in logs, and enough when the caller only reports the reason. When callers need to branch on the reason, use a typed error ([Axiom 16](axiom-16-result.md#trade-offs)).
 
 ---
 
 ## Example
 
-The problem first — a record built from raw strings:
+The problem first: a record built from raw strings.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -45,12 +43,12 @@ The problem first — a record built from raw strings:
 <td>
 
 ```csharp
-public record CustomerProfile(string Username, string Email);
+public sealed record CustomerProfile(string Username, string Email);
 
-// All of these compile; none are caught at construction:
-new CustomerProfile("", "joan@example.com");        // empty username
-new CustomerProfile("joan", "not-an-email");        // malformed email
-new CustomerProfile("joan@example.com", "joan");    // arguments swapped
+// All of these compile:
+new CustomerProfile("", "joan@example.com");     // empty username
+new CustomerProfile("joan", "not-an-email");     // malformed email
+new CustomerProfile("joan@example.com", "joan"); // arguments swapped
 ```
 
 </td>
@@ -59,19 +57,19 @@ new CustomerProfile("joan@example.com", "joan");    // arguments swapped
 ```java
 public record CustomerProfile(String username, String email) {}
 
-// All of these compile; none are caught at construction:
-new CustomerProfile("", "joan@example.com");        // empty username
-new CustomerProfile("joan", "not-an-email");        // malformed email
-new CustomerProfile("joan@example.com", "joan");    // arguments swapped
+// All of these compile:
+new CustomerProfile("", "joan@example.com");     // empty username
+new CustomerProfile("joan", "not-an-email");     // malformed email
+new CustomerProfile("joan@example.com", "joan"); // arguments swapped
 ```
 
 </td>
 </tr>
 </table>
 
-Every constructor argument is a `String`. The compiler has nothing to enforce: the two arguments could be in either order, either could be empty, either could be malformed — the type allows the lot. Every function downstream that uses `CustomerProfile` either trusts that earlier code checked (which earlier code? checked what?) or re-checks itself.
+Both arguments are strings, so the compiler has nothing to check: either order, either empty, either malformed.
 
-Now the same record, built from value objects. Each constituent is its own type with a smart constructor:
+The same record, built from value objects:
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -84,12 +82,14 @@ public sealed record Username
     public string Value { get; }
     private Username(string value) => Value = value;
 
-    public static Result<Username, string> From(string raw) =>
-        string.IsNullOrWhiteSpace(raw)
-            ? new Failure<Username, string>("username is empty")
-            : raw.Length > 30
-                ? new Failure<Username, string>("username exceeds 30 characters")
-                : new Success<Username, string>(new Username(raw));
+    public static Result<Username, string> From(string raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return new Failure<Username, string>("username is empty");
+        if (raw.Length > 30)
+            return new Failure<Username, string>("username is over 30 characters");
+        return new Success<Username, string>(new Username(raw));
+    }
 }
 
 public sealed record EmailAddress
@@ -97,14 +97,16 @@ public sealed record EmailAddress
     public string Value { get; }
     private EmailAddress(string value) => Value = value;
 
-    public static Result<EmailAddress, string> From(string raw) =>
-        string.IsNullOrWhiteSpace(raw)
-            ? new Failure<EmailAddress, string>("email is empty")
-            : !raw.Contains('@')
-                ? new Failure<EmailAddress, string>("email is missing '@'")
-                : raw.Length > 254
-                    ? new Failure<EmailAddress, string>("email exceeds 254 characters")
-                    : new Success<EmailAddress, string>(new EmailAddress(raw));
+    public static Result<EmailAddress, string> From(string raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return new Failure<EmailAddress, string>("email is empty");
+        if (!raw.Contains('@'))
+            return new Failure<EmailAddress, string>("email has no '@'");
+        if (raw.Length > 254)
+            return new Failure<EmailAddress, string>("email is over 254 characters");
+        return new Success<EmailAddress, string>(new EmailAddress(raw));
+    }
 }
 
 public sealed record CustomerProfile(Username Username, EmailAddress Email);
@@ -123,14 +125,14 @@ public final class Username {
         if (raw == null || raw.isBlank())
             return new Failure<>("username is empty");
         if (raw.length() > 30)
-            return new Failure<>("username exceeds 30 characters");
+            return new Failure<>("username is over 30 characters");
         return new Success<>(new Username(raw));
     }
 
     @Override public boolean equals(Object o) {
-        return o instanceof Username u && Objects.equals(value, u.value);
+        return o instanceof Username u && value.equals(u.value);
     }
-    @Override public int hashCode() { return Objects.hash(value); }
+    @Override public int hashCode() { return value.hashCode(); }
     @Override public String toString() { return "Username[" + value + "]"; }
 }
 
@@ -143,13 +145,13 @@ public final class EmailAddress {
         if (raw == null || raw.isBlank())
             return new Failure<>("email is empty");
         if (!raw.contains("@"))
-            return new Failure<>("email is missing '@'");
+            return new Failure<>("email has no '@'");
         if (raw.length() > 254)
-            return new Failure<>("email exceeds 254 characters");
+            return new Failure<>("email is over 254 characters");
         return new Success<>(new EmailAddress(raw));
     }
 
-    // equals/hashCode/toString as above
+    // equals, hashCode and toString as in Username
 }
 
 public record CustomerProfile(Username username, EmailAddress email) {}
@@ -159,9 +161,9 @@ public record CustomerProfile(Username username, EmailAddress email) {}
 </tr>
 </table>
 
-The constructors are hidden. There is no `new Username("")` and no `new EmailAddress("not-an-email")` — those call sites do not compile. The only way in is `Username.From(...)`, which returns a `Result`. The compiler refuses to let the caller use the success branch without acknowledging the failure branch.
+`new Username("")` no longer compiles. The only way in is `Username.From(...)`, which returns a `Result`, so the caller has to handle the failure before it gets a `Username`.
 
-The payoff lands at the *use* site. A downstream function takes the value object, not the primitive:
+The payoff is where the values are used:
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -169,7 +171,7 @@ The payoff lands at the *use* site. A downstream function takes the value object
 <td>
 
 ```csharp
-public string DisplayLine(CustomerProfile profile) =>
+public string FormatContactLine(CustomerProfile profile) =>
     $"{profile.Username.Value} <{profile.Email.Value}>";
 ```
 
@@ -177,8 +179,9 @@ public string DisplayLine(CustomerProfile profile) =>
 <td>
 
 ```java
-public String displayLine(CustomerProfile profile) {
-    return profile.username().value() + " <" + profile.email().value() + ">";
+public String formatContactLine(CustomerProfile profile) {
+    return profile.username().value()
+        + " <" + profile.email().value() + ">";
 }
 ```
 
@@ -186,49 +189,44 @@ public String displayLine(CustomerProfile profile) {
 </tr>
 </table>
 
-No null check, no length check, no `@` check. Those checks ran once, at the boundary where the raw strings entered the program; the types have carried the answer ever since. `DisplayLine` is total ([Axiom 6](axiom-06-honest-total-signatures.md)) by virtue of its parameter type, not by re-validating its input. The same property propagates to every function downstream — every layer below the boundary inherits the guarantee for free.
+No null check, no length check, no `@` check. They ran once, where the raw strings entered the program. `FormatContactLine` is total ([Axiom 6](axiom-06-honest-total-signatures.md)) because of its parameter type, and so is every function below it that takes these types.
 
 ---
 
 ## Problem / forces
 
-The competing force is **boilerplate**. A value object is a small file: a private constructor, a single field, a factory, and — in Java — manual `equals` / `hashCode`. A codebase with thirty value objects has thirty such files. The mainstream `string` everywhere has zero. In a small program with no domain rules to enforce, the value-object discipline is pure tax.
-
-The trade reverses as soon as the rules show up. The moment any two functions disagree about what makes a username valid, or any one caller forgets to validate, the cost of the primitive form starts compounding: bugs that look like *"how did an empty username reach the database?"*, defensive checks scattered across layers, and validation rules duplicated in places that drift out of sync. The boilerplate of the value object is the price of *paying that cost once* — at the point of construction — instead of paying it everywhere.
-
-There is a second force worth naming: the **shape of the boundary**. Inputs to the program arrive as primitives — JSON strings, form fields, query parameters, database rows. Outputs go back the same way. The value-object discipline does not eliminate primitives; it concentrates them at the edge. The `From` factory is the seam where a primitive becomes a value object on the way in, and an accessor like `.Value` is the seam where it becomes a primitive on the way out. The pure core of the program traffics in value objects; the impure shell ([Axiom 4](axiom-04-impure-functions.md)) speaks both languages.
+- **Boilerplate against scattered rules.** A value object is a small file: a private constructor, a field, a factory and, in Java, `equals` and `hashCode`. Libraries such as CSharpFunctionalExtensions ship a base class that removes some of it [7]. A bare `string` costs nothing to write, and in a program with no rules to enforce it is the right choice. The trade reverses as soon as a rule exists. Once two functions disagree about what makes a username valid, or one caller forgets to check, the costs pile up: "how did an empty username reach the database?", defensive checks in every layer, and copies of the rule that drift apart. The value object pays that cost once, where the value is built.
+- **The boundary speaks primitives.** Input arrives as primitives (JSON, form fields, query strings, database rows), and output leaves the same way. Value objects don't remove primitives; they push them to the edge. `From` turns a primitive into a value object on the way in, and `.Value` turns it back on the way out. The pure core works with value objects; the impure shell ([Axiom 12](axiom-12-impureim.md)) speaks both.
 
 ---
 
 ## Why
 
 **1. The type is the proof.**
-Once an `EmailAddress` exists, no further code in the program needs to check that it's a well-formed email. The validation rule and the type are one artefact; the rule cannot be forgotten without the type being unconstructable. This is the *parse, don't validate*[1] discipline applied at the lowest level — a function that "validates" a string returns the same string and asks the caller to remember; a function that "parses" a string returns a `Result<ValidatedType, …>` and the type system stops the caller from forgetting. The validating form is return-side *boolean blindness* ([Axiom 6](axiom-06-honest-total-signatures.md)) in its commonest dress — a `bool` handed back beside the unchanged primitive, telling the caller *that* the string is valid while giving them nothing valid to hold; the smart constructor cures it by returning the parsed type itself.
+Once an `EmailAddress` exists, no other code needs to check that it is well formed. The rule and the type are one thing. This is [*parse, don't validate*](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/) [2] at its smallest scale: a function that *validates* a string hands back a `bool` and the same string, and asks the caller to remember (the [boolean blindness of Axiom 6](axiom-06-honest-total-signatures.md#definitions)). A function that *parses* a string hands back the parsed type, so there is nothing to remember.
 
-**2. Validation lives once, at the construction site.**
-The same rule expressed in three call sites drifts into three slightly different rules over time. The same rule expressed in `Username.From` lives in one place. Every caller agrees on what makes a username valid because the *type* is the agreement. When the rule changes — *"usernames now allow up to 50 characters"* — there is one file to edit and one set of tests to update; the rest of the codebase inherits the change without modification.
+**2. The rule lives in one place.**
+The same rule written at three call sites becomes three slightly different rules over time. Written in `Username.From`, it is one rule, and the type is the agreement. When it changes ("usernames can now be 50 characters"), you edit one file and its tests.
 
-**3. The signature gets richer for free.**
-A function whose parameter is `Username` instead of `string` is honest in a way that the `string` version cannot be: the signature documents that the function expects a *validated* username, not any string. The reader does not have to read the body to discover the precondition. Add a third value object — say, `OrderId` — and the signature `Refund(Username, OrderId)` rules out the swapped-arguments class of bugs entirely. The compiler is doing the work that documentation and code review used to do alone.
+**3. Signatures say more.**
+A parameter of type `Username` says the function expects a *valid* username, not any string. The reader learns the precondition without reading the body. And `Refund(Username, OrderId)` can't be called with its arguments swapped, because the two types differ: the compiler now does what code review used to do.
 
-**4. Total functions become buildable.**
-[Axiom 6](axiom-06-honest-total-signatures.md) used `Divide(int, NonZeroInt)` as a sketch — totality reached by narrowing the input type. Value objects are the general form of that sketch. Once any function's preconditions can be expressed as a type, the function's body has no precondition left to check. The branching that *was* "if the input is bad, do something other than the work" disappears, because the type system has refused that input long before the body runs. Every function written against value objects is shorter, more total, and more directly about its actual job.
+**4. Total functions become easy to write.**
+[Axiom 6](axiom-06-honest-total-signatures.md#why) (point 3) reached totality by narrowing the input type. Value objects are how you narrow it. Once a precondition is a type, the body has nothing left to check, and every function written against value objects is shorter and about its actual job.
 
-**Design by Contract, answered with types.** Meyer's *Design by Contract* asks three questions of every method: what must hold before it runs (the *precondition*), what it guarantees on return (the *postcondition*), and what stays true of the object throughout (the *invariant*). A value object answers two at once — its smart constructor *is* the invariant (a malformed `EmailAddress` cannot be constructed), and taking one as a parameter discharges the *precondition*. The *postcondition* is the honest return type from [Axiom 6](axiom-06-honest-total-signatures.md): a `Result`, `Option`, or DU, never "returns X *or* throws." The difference from Meyer's Eiffel is *where the contract is enforced* — Eiffel's `require` / `ensure` assertions run at runtime and can be compiled out in production (`-assertions=no`), whereas a type is checked at compile time and cannot be switched off; the contract stops being something the program *checks* and becomes something it *cannot violate*. The honest limit: a postcondition like *"the returned list is sorted,"* or an invariant spanning several values, can resist typing, and there a runtime assertion or property-based test still earns its keep — the rule is to carry in the type every contract a type *can* carry.
+**Design by Contract, answered with types.** [Design by Contract](https://en.wikipedia.org/wiki/Design_by_contract) asks three things of a method: what must hold before it runs (the precondition), what it guarantees after (the postcondition), and what always stays true (the invariant) [3]. A value object answers two of them with types. Its factory is the invariant: a malformed `EmailAddress` can't exist. Taking one as a parameter discharges the precondition. The postcondition is the honest return type of [Axiom 6](axiom-06-honest-total-signatures.md). The difference from Eiffel is *when* the contract is checked: Eiffel's assertions run at runtime and can be turned off in production builds, while a type is checked by the compiler and can't be. Some contracts resist types, such as "the returned list is sorted" or a rule that spans several values. There, a runtime assertion or a property-based test still earns its place. Put into a type every contract a type can carry.
 
-**Postel's Law, reconciled.** Jon Postel's *Robustness Principle* — *"be conservative in what you do, be liberal in what you accept from others"* (RFC 760, 1980) — reads at first as the opposite of this axiom: be *liberal* about input, where the smart constructor is *strict*. The contradiction is only apparent; the two govern different layers. Postel speaks to *surface form* — the syntax arriving on the wire — while the smart constructor speaks to *meaning* — the value that crosses into the domain. The reconciliation is **lenient lexer, strict parser**: a `From` factory may be generous about the shapes it accepts (trim whitespace, take either date format, normalise casing) but must be uncompromising about what it *emits* — exactly one canonical value or a `Failure` — and the leniency stops at that step. Far from a rival, the smart constructor does the very job the protocol world learned that leniency *needs*: the IETF has since recanted the principle (Thomson & Schinazi, *Maintaining Robust Protocols*, RFC 9413, 2023), because accepting malformed input *without* normalising it lets each consumer decide for itself what the input meant — the spec drifts to "whatever the popular parser accepts," and the format ossifies. Parsing at the boundary keeps the forgiving front door while killing the drift: the many tolerated forms collapse to one internal representation immediately, and nothing downstream re-litigates the question.
+**Postel's law, reconciled.** The [robustness principle](https://en.wikipedia.org/wiki/Robustness_principle) says "be conservative in what you do, be liberal in what you accept from others" [4]. That sounds like the opposite of a strict factory, but the two apply to different things. Postel is about the *form* of the input; the factory is about its *meaning*. A `From` may accept several forms (trim whitespace, accept two date formats, ignore case), as long as it produces exactly one canonical value or a `Failure`. That is the part plain leniency was missing. The IETF has since reconsidered the principle [5]: accepting malformed input without normalizing it lets every consumer decide what it meant, and the format drifts toward whatever the most popular implementation accepts. Parsing at the boundary keeps the forgiving front door and stops the drift.
 
 ---
 
 ## Identity and typed IDs
 
-The definitions above drew the line at equality-by-value, and the *When NOT to* below marks its far side: a `Customer` is not a value object, because two customers who share every field are still two customers. That far side has its own smallest primitive, and it is built from the very same machinery — dialled all the way down to one field.
+Some things are not values. Two customers with the same name and email are still two customers (see *When NOT to*). Such things need identity, and the smallest building block for it comes from the same machinery.
 
-**The typed ID is a value object with the validation removed.** An `OrderId` wraps a single `Guid`; a `CustomerId` wraps another. Same shape as the value objects above — hidden constructor, equality-by-value, immutable — but the invariant is trivial or absent: any `Guid` is a fine `OrderId`, so the factory may not even return a `Result`. The point is not validation; it is *type-distinction*. This is Wlaschin's "single-case union"[2] at its purest — a one-case wrapper that carries no rule, only a name. And it pays the same dividend as Why #3 above: a `Refund(CustomerId, OrderId)` signature cannot take its arguments in the wrong order, because `CustomerId` and `OrderId` are different types. The swapped-argument bug that two bare `Guid`s would compile away is gone — the compiler retires that [Connascence of Position](axiom-08-connascence.md#connascence-of-position-cop) the same way it did for `Username` and `EmailAddress`.
-
-**Equality-by-key is the complement of equality-by-value.** A value object is equal by its full contents; an identity-bearing thing is equal by a single *key field*. Two snapshots of the same order — one before shipping, one after — differ in nearly every field and are still the *same order*, because their `OrderId` matches. Two orders with byte-for-byte identical contents but different `OrderId`s are *different orders*. That is the exact mirror of the equality-by-value rule from the Definitions: where a value object asks *"is all the data the same?"*, an identified thing asks *"is the key the same?"* — and it is precisely why a value object needs no ID (its data *is* its identity) while an identified thing needs one (its data is not).
-
-**Why the ID has to be carried in the data — the immutability bridge.** This is the load-bearing point, and it follows from a decision made three axioms back. [Axiom 8](axiom-08-connascence.md) named [Connascence of Identity](axiom-08-connascence.md#connascence-of-identity-coi) the strongest binding on its scale — two holders depending on referencing *the same instance* — and noted that this playbook's immutable-value model is built to *dissolve* it: an immutable value has no mutable cell to alias, so two holders of "equal" values can never silently diverge, because there is nothing to mutate. But dissolving reference-identity has a consequence. Once a reference no longer carries identity, the question *"which thing is this?"* can no longer ride on the object reference the way it does in a mutable, reference-tracked model. Identity has to go *somewhere* — and the only honest place left is *inside the data*, as an explicit key field. So the typed ID is not decoration: it is where identity lives once we have taken it off the reference. A value object needs no ID because it has no identity to carry; an identity-bearing thing — one that persists and changes across a lifetime while staying the same thing — needs an explicit one for exactly that reason.
+- **A typed ID is a value object without the rule.** An `OrderId` wraps a `Guid`. Any `Guid` is a valid `OrderId`, so the factory doesn't need a `Result`. Its job is not checking but *telling types apart*, like Wlaschin's single-case union types [6]: `Refund(CustomerId, OrderId)` can't take its arguments swapped (see *Why*, point 3), where two bare `Guid`s could.
+- **Things with identity are equal by key.** A value object is equal by all its data. A thing with identity is equal by one key field. Two snapshots of the same order, before and after shipping, differ in almost every field and are still the same order, because their `OrderId` matches. A value object needs no ID because its data *is* its identity.
+- **The key has to live in the data.** [Axiom 8](axiom-08-connascence.md#connascence-of-identity-coi) called Connascence of Identity (two holders depending on *the same instance*) the strongest kind, and immutable values dissolve it: there is no shared mutable object to point at. The price is that "which thing is this?" can no longer be answered by the reference. Identity has to move into the data, as an explicit key field. That is what the typed ID is for.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -238,10 +236,10 @@ The definitions above drew the line at equality-by-value, and the *When NOT to* 
 ```csharp
 public readonly record struct OrderId(Guid Value)
 {
-    public static OrderId New() => new(Guid.NewGuid());
+    public static OrderId Create() => new(Guid.NewGuid());
 }
 
-// Equal by Value (the key), not by the rest of the contents.
+// Equal by Id (the key), not by the rest of the data.
 public sealed record Order(OrderId Id, Money Total, OrderStatus Status)
 {
     public bool Equals(Order? other) => other is not null && Id == other.Id;
@@ -254,10 +252,10 @@ public sealed record Order(OrderId Id, Money Total, OrderStatus Status)
 
 ```java
 public record OrderId(UUID value) {
-    public static OrderId newId() { return new OrderId(UUID.randomUUID()); }
+    public static OrderId create() { return new OrderId(UUID.randomUUID()); }
 }
 
-// Equal by id (the key), not by the rest of the contents.
+// Equal by id (the key), not by the rest of the data.
 public record Order(OrderId id, Money total, OrderStatus status) {
     @Override public boolean equals(Object o) {
         return o instanceof Order other && id.equals(other.id);
@@ -270,46 +268,47 @@ public record Order(OrderId id, Money total, OrderStatus status) {
 </tr>
 </table>
 
-`OrderId` is the value object's machinery with the rule subtracted; `Order` is the same immutable record, but its equality is overridden to read the key alone. Two `Order` values with the same `Id` are the same order regardless of how their `Total` or `Status` has moved; two with different `Id`s are different orders however alike their contents.
+Two `Order` values with the same `Id` are the same order, however their `Total` or `Status` has changed. Two with different `Id`s are different orders, however alike their data.
 
 ---
 
 ## Trade-offs
 
-**Boilerplate.** A value object is irreducibly more code than a primitive. C# softens this with positional records and expression-bodied factories; Java is more verbose, particularly the `equals` / `hashCode` / `toString` triple a `final class` requires. The cost is real and proportional to the number of domain types; the answer is to make value objects only for the rules that *exist*, not for every conceivable primitive.
-
-**Java records cannot enforce private construction.** A `public record` has a public canonical constructor by language rule. The two options are: declare the value object as a `final class` (shown in the example above) and write `equals` / `hashCode` by hand, or accept the public canonical constructor as a soft convention and rely on code review to prevent direct use. The playbook prefers `final class` for true value objects; lean teams sometimes use the public-constructor convention for the cheapest wins. Either choice should be made once per codebase, not per type.
-
-**Mapping at the persistence boundary.** ORMs and serialisers expect public constructors or settable properties; value objects with private constructors do not fit by default. The discipline is to map *at the boundary* — a converter that reads a row into the primitive, calls `From`, and surfaces a `Failure` as a startup error if the database somehow holds a value the current type refuses. This is the same boundary work the impure shell does for every other primitive coming in; the value object simply joins the queue.
-
-**One Result per construction; composing many is the next concern.** A handler that builds three value objects from three raw strings has three `Result` values to handle. Manual early-return on each one works and is the right shape for a single value; with several it becomes mechanical. The combinators from [Axiom 17](axiom-17-result-combinators.md) apply directly — value-object factories are exactly the fallible step `Bind` was designed for — and a later axiom develops the pattern for composing many. For now the building block is the lone smart constructor.
+- **Java records can't hide their constructor.** A record's canonical constructor is as visible as the record itself. Either write the value object as a `final class` with hand-written `equals` and `hashCode` (as in the example), or accept the public constructor and rely on review to keep callers on `from`. This book prefers the `final class`. Decide once per codebase, not per type.
+- **Mapping at the persistence boundary.** ORMs and serializers expect public constructors or settable properties. Map at the boundary instead (see *Problem / forces*): read the primitive, call `From`, and treat a `Failure` as an error, because it means the stored data breaks today's rule.
+- **Several values, several Results.** A handler that builds three value objects has three `Result`s to handle. The combinators of [Axiom 17](axiom-17-result-combinators.md) apply directly: a factory is exactly the kind of step `Bind` chains. A later axiom builds on this to compose many.
 
 ---
 
 ## When NOT to
 
-**A primitive with no invariant.** A field that is "any string, even empty, even arbitrary length" gains nothing from being wrapped in a `SomeString` value object whose factory always returns `Success`. The boilerplate is pure cost. Use the primitive. The discipline earns its keep when there is a *rule* to enforce.
-
-**At the I/O boundary, where primitives are mandatory.** The function that reads a JSON body, the one that writes a database row, the one that constructs an outgoing HTTP request — these speak the wire format, which is primitives. The conversion is the boundary's job ([Axiom 12](axiom-12-impureim.md)); the value object lives one layer in. Pushing value objects *into* the JSON deserialiser is not the point of this axiom.
-
-**Entities with identity.** A `Customer` whose two instances are different even when their data is identical — because they refer to different rows, different aggregates, different things in the world — is not a value object. Two `EmailAddress("a@b.com")` are the same email; two `Customer` instances representing two customers who happen to share a name are not the same customer. Equality-by-value is the wrong relation for identity-bearing types; force-fitting it produces subtle bugs. Value objects are for the *attributes* of those entities, not the entities themselves — and the entities get their own smallest primitive, the typed ID, with equality by key rather than by contents (see *Identity and typed IDs* above).
-
-**Single-use throwaways.** A short script, a one-off migration, a one-page tool whose lifetime is measured in days. The cost of writing the value object is fixed; the benefit accrues with reuse and with the number of callers that would otherwise re-check. A program with three call sites and a one-week lifetime does not amortise the cost.
+- **A primitive with no rule.** A field that can be any string gains nothing from a wrapper whose factory always succeeds. Use the primitive.
+- **In the code that talks to the outside world.** The function that reads a JSON body or writes a database row speaks primitives (see *Problem / forces*). The value object lives one layer in; it doesn't belong inside the deserializer.
+- **For things with identity.** A `Customer` is not a value object: two customers who share every field are still two customers. Use value objects for their attributes, and a typed ID for the identity (see *Identity and typed IDs*).
+- **Throwaway code.** A one-off script or migration that lives for days doesn't pay back the cost. The benefit grows with reuse and with the number of callers that would otherwise re-check.
 
 ---
 
 ## References
 
-[1] **Alexis King**, *Parse, Don't Validate*, lexi-lambda.github.io, 2019. Cross-listed from [Axiom 6](axiom-06-honest-total-signatures.md). The essay's central claim — that the difference between a validating function (returns a `bool` next to the original primitive) and a parsing function (returns a validated type or a structured failure) is the difference between dishonest and honest signatures — is *the* foundational argument for value objects with smart constructors. This axiom is the operational form of that essay.
-<https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/>
-
-[2] **Scott Wlaschin**, *Designing with Types: Making Illegal States Unrepresentable*, fsharpforfunandprofit.com, 2013. Cross-listed from [Axiom 6](axiom-06-honest-total-signatures.md). The "single-case union" pattern in the series — wrapping a primitive in a one-case discriminated union with a smart constructor — is the F# equivalent of the C# / Java records here, and the series develops the discipline across a whole domain model.
-<https://fsharpforfunandprofit.com/posts/designing-with-types-single-case-dus/>
-
-[3] **Eric Evans**, *Domain-Driven Design: Tackling Complexity in the Heart of Software*, Addison-Wesley, 2003. The original treatment of "Value Object" as a domain modelling pattern — immutable, equality-by-value, no identity — distinguished from "Entity." Evans does not specify the smart-constructor-returning-Result shape (DDD predates the mainstream FP-in-OO renaissance); the equality-and-immutability half of this axiom's definition is his.
+[1] **Eric Evans**, *Domain-Driven Design: Tackling Complexity in the Heart of Software*, Addison-Wesley, 2003. The original Value Object: immutable, equal by value, no identity, as opposed to an Entity. The smart constructor returning a `Result` is not from Evans; the immutability and equality are.
 <https://www.domainlanguage.com/ddd/>
 
-[4] **Vladimir Khorikov**, *CSharpFunctionalExtensions* (v3.7.0, March 2026). Cross-listed from [Axiom 16](axiom-16-result.md) and [Axiom 17](axiom-17-result-combinators.md). The library's `ValueObject` base class and the recipes in Khorikov's writing on the smart-constructor pattern are the practical .NET reference the C# example here is shaped after.
+[2] **Alexis King**, *Parse, Don't Validate*, 2019. Also cited in [Axiom 6](axiom-06-honest-total-signatures.md). A validating function returns a `bool` next to the original value; a parsing function returns a more precise type. This axiom is that essay applied to single values.
+<https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/>
+
+[3] **Bertrand Meyer**, *Object-Oriented Software Construction* (2nd ed.), Prentice Hall, 1997. Design by Contract: preconditions, postconditions and invariants, checked by assertions in Eiffel.
+
+[4] **Jon Postel (ed.)**, *Transmission Control Protocol*, RFC 793, 1981, section 2.10: "be conservative in what you do, be liberal in what you accept from others". (RFC 760, 1980, states the same idea in other words.)
+<https://www.rfc-editor.org/rfc/rfc793>
+
+[5] **Martin Thomson and David Schinazi**, *Maintaining Robust Protocols*, RFC 9413, June 2023. Notes that the robustness principle "has been interpreted in a variety of ways", some of which "can negatively affect interoperability over time", and recommends active protocol maintenance instead.
+<https://www.rfc-editor.org/rfc/rfc9413>
+
+[6] **Scott Wlaschin**, *Designing with types: Single case union types*, fsharpforfunandprofit.com, 2013. Wraps a primitive in a one-case type with a smart constructor: the F# version of this axiom's records, part of a series that applies the idea to a whole domain model.
+<https://fsharpforfunandprofit.com/posts/designing-with-types-single-case-dus/>
+
+[7] **Vladimir Khorikov**, *CSharpFunctionalExtensions*. Also cited in [Axiom 16](axiom-16-result.md) and [Axiom 17](axiom-17-result-combinators.md). Its `ValueObject` base class handles equality for hand-written value objects in C#.
 <https://github.com/vkhorikov/CSharpFunctionalExtensions>
 
 ---
