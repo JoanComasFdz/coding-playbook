@@ -337,11 +337,16 @@ Single Level of Abstraction Per function. Both useful halves already live elsewh
 
 ---
 
-## Lenses / optics — [CONTRAST / restrained]
+## Lenses / optics — [❌ DISCARDED]
 
 **What:** the nested-immutable-update tax; composable getter+setter bundles (lens=field, prism=case, traversal=many).
 
-**Verdict:** cover the *pain* + the cheap built-in answer (`with` / withers) inside Immutability; name optics only as the *deep-nesting escape hatch*, parked in "what might change tomorrow" (JDK 25 / JEP 468 shifts the calculus). A full optic library isn't recommended for mainstream C#/Java today.
+**Verdict:** not carried: a niche problem. Deeply nested data is usually a smell in itself, and the everyday case is covered.
+
+- [Axiom 2 — Immutability](chapter2/axiom-02-immutability.md#trade-offs) — the pain and the built-in answer: C#'s `with`, Java's `withName(...)` methods (*Trade-offs*, "Ergonomics on update").
+- Optics themselves may fit a future chapter for niche techniques.
+
+**Revisit if** JEP 468 (derived record creation, a `with` for Java records) ships. It is a Candidate, not in any JDK release yet.
 
 **Source:** Kmett `lens`; Scott Logic "The Immutability Gap" series.
 
