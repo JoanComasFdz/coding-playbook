@@ -1,60 +1,50 @@
 # Axiom 25 — Session Context
 
-**A Session Context is a per-session mutable record, owned by the shell, threaded explicitly as a parameter to the functions that need it. It bundles the working memory of one session — accumulators, signals, flags, callbacks, identifiers — into one named, scoped place. This is the first axiom in the chapter that permits mutability; the discipline of scope, ownership, and explicit threading is the price the shape pays for the permission.**
+**A Session Context is a mutable object that holds the working memory of one session (counters, collected errors, flags, callbacks, identifiers). The shell owns it and passes it explicitly to the functions that need it. It is the first place in this chapter where mutation is allowed, and the price is strict scope, one owner, and explicit passing.**
 
-- A Session Context is allocated at the shell's entry point and discarded when the session ends. It exists for one session and only for one session.
-- It is *owned by the shell* — the impure orchestrator. The pure core never holds it, never reads it, never mutates it.
-- It is *passed explicitly* as a parameter to every function that needs to read or accumulate into it. No ambient storage, no thread-local, no globals.
-- It holds *data*: counters, lists, flags, identifiers, callbacks set up for this session — values that change as the session progresses or that the session captured at start.
-- It is *not* the entity's state ([Axiom 24](axiom-24-state-machines.md)); it is *not* a dependency wired at construction; it is *not* a global. Each of those is a different thing, with its own home.
+- It is created when the session starts and dropped when it ends.
+- Only the shell reads or changes it. The pure core never sees it.
+- It is passed as a parameter, never reached through a global, a static or a thread-local.
 
-Every prior axiom has moved in one direction. Data is a value ([Axiom 1](axiom-01-data-is-not-behavior.md)), data does not change after creation ([Axiom 2](axiom-02-immutability.md)), decisions are pure ([Axiom 5](axiom-05-pure-functions.md)), the inputs and outputs of every function are immutable values ([Axioms 6](axiom-06-honest-total-signatures.md), [16](axiom-16-result.md), [21](axiom-21-discriminated-unions.md), [23](axiom-23-pure-functions-returning-actions.md), [24](axiom-24-state-machines.md)). State has existed — the FSM's state in [Axiom 24](axiom-24-state-machines.md) is the most explicit example — but it has always flowed *as an immutable value*: passed in, used to compute the next value, persisted by the shell. Twenty-four axioms of values being created, transformed, and returned. Never mutated. Stateless execution.
+Every axiom so far has pushed the same way. Data is a value ([Axiom 1](axiom-01-data-is-not-behavior.md)) that doesn't change ([Axiom 2](axiom-02-immutability.md)), decisions are pure ([Axiom 5](axiom-05-pure-functions.md)), and even a state machine's state ([Axiom 24](axiom-24-state-machines.md)) flows as an immutable value: passed in, used to compute the next one, saved by the shell.
 
-Most programs cannot live entirely on that diet. A batch importer needs to count rows as it goes. A multi-step orchestration needs somewhere to accumulate the errors it surfaces along the way. A session that lasts more than one call needs callbacks set up at start-time and an identifier the later steps can reference. None of this is the entity's state — the FSM is busy modelling the *thing being acted on*; this is the *shell's own* working memory while one session runs. Forcing it through "rebuild an immutable snapshot at every step" is a tax that buys nothing here: the data is not replayed, not compared between snapshots, not audited as history; it just needs to live for the session and be readable from the steps that need it.
+Most programs can't live entirely on that. A batch import counts rows as it goes. A multi-step job collects the errors it finds along the way. A session that spans several steps needs callbacks set up at the start and an identifier later steps can read. None of this is the state being decided about; it is the *shell's own* working memory while one session runs. Rebuilding an immutable snapshot at every step would buy nothing: this data isn't replayed, compared or audited. It only needs to live for the session and be readable by the steps that use it.
 
-Session Context is the named place for that data. It is mutable — deliberately. The discipline of scope is what makes the mutability safe: when the session ends the context is gone; nothing outside the session can reach into it; nothing inside the session reaches it implicitly. The pure core stays pure because the pure core never takes the Session Context as input — only the impure shell does.
+Frameworks already ship this shape. ASP.NET Core's `HttpContext` is created per request and passed to middleware (`InvokeAsync(HttpContext context)`), with an `Items` dictionary for values shared between steps; EF Core's `DbContext` lives per request and collects pending changes until `SaveChanges()`. In Java, `HttpServletRequest` carries request-scoped attributes, and JPA's `EntityManager` is the persistence context of one unit of work. Each is designed to be passed explicitly, though each also offers an ambient way to reach it (`IHttpContextAccessor`, Spring's `RequestContextHolder`), the form this axiom rules out (see *Problem / forces*).
 
-This is not a new pattern. Mainstream frameworks already ship it under different names. In C#, ASP.NET Core's `HttpContext` is per-request, threaded explicitly to middleware (`InvokeAsync(HttpContext ctx, ...)`), with an `Items` dictionary for cross-handler accumulators; Entity Framework Core's `DbContext` is per-request, threaded to repositories, and accumulates pending entity changes that `SaveChanges()` flushes at session end. The Java siblings are Jakarta's `HttpServletRequest` (request-scoped attributes via `getAttribute` / `setAttribute`) and JPA's `EntityManager` (the persistence-context Unit of Work). All four are *typed* to be passed explicitly — the shape this axiom names — though each framework also offers an ambient accessor on top (`IHttpContextAccessor`, Spring's `RequestContextHolder`, JPA's `@PersistenceContext` field injection); those are the anti-pattern form the Problem/forces section below catalogues.
-
-Through [Axiom 8](axiom-08-connascence.md)'s lens, ambient state is the most dangerous binding there is — a [Connascence of Identity](axiom-08-connascence.md#connascence-of-identity-coi): any function in the call tree may reach the one shared mutable instance, and no signature shows which ones do. Threading the context explicitly does not delete that shared identity — the instance is still shared — but it works the connascence's other two axes: it pulls the dependency into the open, so every function that needs the context declares it, and it localises that identity to the shell. An invisible, system-wide connascence becomes one the compiler can see and the reader can follow from signature to signature.
+Through [Axiom 8](axiom-08-connascence.md)'s lens, ambient shared state is the strongest kind of coupling, a [Connascence of Identity](axiom-08-connascence.md#connascence-of-identity-coi): any function in the call tree may reach the one shared mutable object, and no signature says which do. Passing the context explicitly doesn't remove the sharing, but it makes it visible in every signature that needs it, and keeps it inside the shell.
 
 ---
 
 ## Definitions
 
-A **session** is one unit of work the shell drives end-to-end:
-
-- A batch import that processes a file from open to close.
-- An HTTP request handler that fans out across several sub-steps.
-- An interactive run for one user, one job, one job-run.
-
-Its start and end are bounded; the Session Context lives between those bounds and not beyond.
+A **session** is one unit of work the shell drives from start to end: importing one file, handling one HTTP request across several steps, one run of a job. Its start and end are clear, and the Session Context lives between them.
 
 A **Session Context** is:
 
-- A *mutable* record or class. In C# a `sealed class` with `{ get; set; }` properties (or a `record class` with mutable members); in Java a `final class` with non-`final` fields. Either way, the type's purpose is to *hold* and *be updated*.
-- *Scoped* to one session — allocated at the shell entry, garbage-collected (or disposed) when the session ends.
-- *Owned* by the shell — the only code that reads or writes the context is impure orchestrator code. Pure functions never receive it.
-- *Threaded* explicitly — every shell function that needs to read or update it takes it as a parameter. Ambient storage (thread-locals, async-locals, statics) is not the shape this axiom names.
+- **Mutable on purpose.** In C#, a `sealed class` with settable properties; in Java, a `final class` with non-final fields. Its job is to hold values and be updated.
+- **Scoped to one session**: created at the shell's entry point, discarded when the session ends.
+- **Owned by the shell.** Only impure orchestration code reads or writes it. Pure functions never receive it. Vernon's application services play this role in DDD [2].
+- **Passed explicitly** to every shell function that needs it. Thread-locals, async-locals and statics are not this shape.
 
-What goes inside a Session Context:
+**What goes in it:**
 
-- **Accumulators** — counters, lists, sums incremented per step (`ProcessedCount`, `Errors`).
-- **Flags / signals** — booleans the shell sets to communicate cross-cutting condition to later steps (`Cancelled`, `Aborted`).
-- **Callbacks** — function references set up for *this* session (a progress reporter, a per-row hook). These are distinct from dependencies: a dependency is a stable service (DB, clock, logger) wired at the shell's *construction*; a callback in the context is wired at the *session's* construction and varies per session. Both are technically references; the lifecycle is what places them in different homes.
-- **Identifiers** — a session ID, correlation token, trace ID — values minted at session start that later steps may read.
+- **Accumulators**: counters, lists, totals updated as the session goes (`ProcessedCount`, `Errors`).
+- **Flags**: values the shell sets so later steps know about a condition (`Cancelled`).
+- **Callbacks** set up for *this* session, such as a progress reporter. They differ from dependencies by lifetime: a dependency (database, clock, logger) is wired once when the shell is built; a callback in the context is wired per session.
+- **Identifiers** created at the start of the session, such as a correlation ID.
 
-What does *not* belong in a Session Context:
+**What doesn't:**
 
-- **Entity state.** The Subscription's state from [Axiom 24](axiom-24-state-machines.md) lives in the entity, not in the shell's working memory.
-- **Dependencies.** The DB, the clock, the logger are wired at the shell's construction, not per session. They are *behaviour*; the Session Context is *data*.
-- **Cross-session state.** Connection pools, in-memory caches, queues — anything that outlives one session belongs in a different layer.
+- **The state being decided about.** A subscription's state belongs in [Axiom 24](axiom-24-state-machines.md)'s state DU, passed as a value through `Transition`. The context holds the *shell's* memory, not the domain's [3].
+- **Dependencies.** Database access, the clock and the logger outlive any session; they are wired when the shell is built (see the *Example* for a database context that lives for one run).
+- **State shared across sessions.** Connection pools, caches and queues outlive one session and belong at a higher level.
 
 ---
 
 ## Example
 
-A small CSV importer: the shell reads N rows, calls a pure validator per row, persists the valid ones, accumulates the errors, and reports progress through a per-session callback. The pure validator is unchanged from [Axiom 16](axiom-16-result.md)'s shape — `string[] -> Result<Customer, string>` — and never sees the context. The shell threads the context through the iteration and accumulates into it.
+A CSV import. The shell reads the rows, calls a pure validator on each one, saves the valid ones, collects the errors, and reports progress through a per-session callback. The validator has the shape of [Axiom 16](axiom-16-result.md) (`string[] → Result<Customer, string>`) and never sees the context.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -69,29 +59,49 @@ public sealed class BatchContext
 {
     public int ProcessedCount { get; set; }
     public List<ImportError> Errors { get; } = new();
-    public Action<int> Progress { get; init; } = _ => { };
+    public Action<int> ReportProgress { get; init; } = _ => { };
 }
 
-public void Import(IEnumerable<string[]> rows, BatchContext ctx)
+public sealed class CustomerImporter(
+    IDbContextFactory<ImportDbContext> dbFactory)     // dependency: wired once
 {
-    var rowIndex = 0;
-    foreach (var row in rows)
+    public void ImportRows(
+        IEnumerable<string[]> rows,
+        BatchContext context)                         // session: passed per call
     {
-        rowIndex++;
-        var validation = ValidateRow(row);
-        switch (validation)
+        using var db = dbFactory.CreateDbContext();   // one unit of work per run
+        var rowNumber = 0;
+        foreach (var row in rows)
         {
-            case Success<Customer, string>(var customer):
-                customers.Insert(customer);
-                break;
-            case Failure<Customer, string>(var reason):
-                ctx.Errors.Add(new ImportError(rowIndex, reason));
-                break;
+            rowNumber++;
+            var validation = ValidateRow(row);        // pure
+            switch (validation)
+            {
+                case Success<Customer, string>(var customer):
+                    db.Customers.Add(customer);
+                    break;
+                case Failure<Customer, string>(var reason):
+                    context.Errors.Add(new ImportError(rowNumber, reason));
+                    break;
+                default:
+                    throw new UnreachableException();
+            }
+            context.ProcessedCount++;
+            context.ReportProgress(context.ProcessedCount);
         }
-        ctx.ProcessedCount++;
-        ctx.Progress(ctx.ProcessedCount);
+        db.SaveChanges();
     }
 }
+
+// The importer is built once; each run gets a fresh context:
+var importer = new CustomerImporter(dbFactory);
+
+var context = new BatchContext
+{
+    ReportProgress = n => Console.WriteLine($"row {n}")
+};
+importer.ImportRows(rows, context);
+WriteSummary(context.ProcessedCount, context.Errors);
 ```
 
 </td>
@@ -104,122 +114,123 @@ public record ImportError(int row, String reason) {}
 public final class BatchContext {
     public int processedCount;
     public final List<ImportError> errors = new ArrayList<>();
-    public final IntConsumer progress;
+    public final IntConsumer reportProgress;
 
-    public BatchContext(IntConsumer progress) {
-        this.progress = progress;
+    public BatchContext(IntConsumer reportProgress) {
+        this.reportProgress = reportProgress;
     }
 }
 
-public void importRows(Iterable<String[]> rows, BatchContext ctx) {
-    int rowIndex = 0;
-    for (String[] row : rows) {
-        rowIndex++;
-        var validation = validateRow(row);
-        switch (validation) {
-            case Success<Customer, String> s ->
-                customers.insert(s.value());
-            case Failure<Customer, String> f ->
-                ctx.errors.add(new ImportError(rowIndex, f.error()));
+public final class CustomerImporter {
+    private final DSLContext dsl;                    // dependency: wired once
+
+    public CustomerImporter(DSLContext dsl) {
+        this.dsl = dsl;
+    }
+
+    public void importRows(
+            Iterable<String[]> rows,
+            BatchContext context) {                  // session: passed per call
+        int rowNumber = 0;
+        for (String[] row : rows) {
+            rowNumber++;
+            var validation = validateRow(row);       // pure
+            switch (validation) {
+                case Success<Customer, String> s -> dsl
+                    .insertInto(CUSTOMER)
+                    .set(CUSTOMER.NAME, s.value().name())
+                    .set(CUSTOMER.EMAIL, s.value().email())
+                    .execute();
+                case Failure<Customer, String> f ->
+                    context.errors.add(
+                        new ImportError(rowNumber, f.error()));
+            }
+            context.processedCount++;
+            context.reportProgress.accept(context.processedCount);
         }
-        ctx.processedCount++;
-        ctx.progress.accept(ctx.processedCount);
     }
 }
+
+// The importer is built once; each run gets a fresh context:
+var importer = new CustomerImporter(dsl);
+
+var context = new BatchContext(
+    n -> System.out.println("row " + n));
+importer.importRows(rows, context);
+writeSummary(context.processedCount, context.errors);
 ```
 
 </td>
 </tr>
 </table>
 
-The caller — the composition root, an outer handler — allocates the context, hands it to `Import`, and reads the accumulated state when the call returns:
+The inputs have different lifetimes, and the code shows it:
 
-```csharp
-var ctx = new BatchContext { Progress = n => Console.WriteLine($"row {n}") };
-Import(rows, ctx);
-Report(ctx.ProcessedCount, ctx.Errors);   // outside the session
-```
+- **The database access is a dependency.** It outlives every run, so it arrives once, through the constructor, and is used directly, without a repository in between. In Java that is jOOQ's `DSLContext`, whose configuration is designed to be shared [4]. In C# it is EF Core's `IDbContextFactory`, because a `DbContext` itself is "designed to be used for a *single* unit-of-work" and is not thread-safe [5]: each run creates one, saves once at the end, and disposes it.
+- **`BatchContext` belongs to one run**, so it arrives as a parameter of each call.
 
-`ValidateRow` is unchanged from [Axiom 16](axiom-16-result.md) — pure, takes a row, returns a `Result`. It does not know `BatchContext` exists. The mutation lives only in the shell: `ctx.Errors.Add(...)`, `ctx.ProcessedCount++`, `ctx.Progress(...)`. The `Progress` callback was captured at session start by the *caller* — a closure in the sense of [Axiom 9](axiom-09-first-class-functions.md), built outside the importer and handed in — not hard-coded into the shell. That's the point of putting it in the context rather than on the importer class.
+`ValidateRow` is pure: it takes a row and returns a `Result`, and doesn't know `BatchContext` exists. All the mutation is in the shell: adding an error, incrementing the count, reporting progress. The progress callback was built by the *caller*, a closure in the sense of [Axiom 9](axiom-09-first-class-functions.md), and handed in, so a new session can report progress differently without changing the importer.
 
 ---
 
 ## Problem / forces
 
-When a shell needs to keep working state across multiple steps of one session, four shapes recur:
+When a shell needs working state across the steps of one session, four shapes are common:
 
-1. **Fields on a long-lived class.** The importer is a class with `private int _processedCount`, `private List<ImportError> _errors`, `private Action<int> _progress` fields. The fields *are* the session's working memory. The cost is the one [Axiom 24](axiom-24-state-machines.md) named: multi-field state on a long-lived object is almost always an implicit state machine — except here the fields are not an entity's condition, they are *session-scoped accumulators*. Promoting them to an FSM is the wrong refactor; the right one is to lift them off the long-lived class entirely. The class also has to be reconstructed per session, or its fields reset between sessions; concurrent sessions sharing the same instance corrupt each other.
-2. **Globals or statics.** A `static int ProcessedCount`, a `static List<ImportError> Errors`. Solves the multi-session reset problem by being shared across all sessions — which is also the failure: every session contends, two concurrent imports interleave their counts, and tests cannot run in parallel. The data has no scope.
-3. **Ambient context — thread-locals, async-locals, MDC, ambient containers.** A `ThreadLocal<BatchContext>` (Java), `AsyncLocal<BatchContext>` (C#), `ScopedContext` (Spring), or the SLF4J MDC. Scoped per execution context rather than globally — better than 2 — but *implicit*: any code anywhere in the call tree can reach in and read or write. The compiler does not show which functions depend on the context; following the flow of state means reading every function the call tree might touch.
-4. **A named Session Context passed explicitly.** A mutable record allocated by the shell at session start and passed as a parameter to every function that reads or updates it. Scope is the lifetime of the session; ownership is the shell; the dependency is visible in every signature that needs it.
+1. **Fields on a long-lived class.** The importer keeps `_processedCount`, `_errors` and `_progress` as fields. Session data now lives as long as the object, so either every session shares the same counters (and concurrent sessions corrupt each other), or the class must reset its fields between sessions, an unwritten convention. Turning those fields into a state machine ([Axiom 24](axiom-24-state-machines.md#why), point 3) is the wrong fix here: they aren't the condition of anything, just the session's scratch space.
+2. **Globals or statics.** Shared by every session at once: two concurrent imports mix their counts, and tests can't run in parallel. The data has no scope.
+3. **Ambient context**: a `ThreadLocal` in Java, an `AsyncLocal` in C#, or a logging MDC. Scoped per execution, which is better than a global, but *implicit*: any function in the call tree can read or write it, and no signature shows which ones do. Seemann and van Deursen describe this as the Ambient Context anti-pattern [1].
+4. **A named Session Context, passed explicitly.** Created by the shell at the start of the session and passed as a parameter to each function that uses it. The scope is the session, the owner is the shell, and the dependency is visible in every signature that needs it.
 
-The first three each cost something the playbook has already named:
-
-- Option 1 puts session-scoped data inside a long-lived object, conflating per-session and per-instance lifetimes. Either every session shares the same accumulators (corrupting concurrent sessions) or the class has to reset its fields between sessions (an unwritten convention).
-- Option 2 has no scope at all — every consumer shares one piece of state.
-- Option 3 has scope but no visibility — the dependency on the ambient context is invisible in the function signature, and the only way to know which functions depend on it is to read every body.
-
-Option 4 — the Session Context — pays explicit parameter-passing in exchange for *named, scoped, visible* mutable state. The mutation is real; the discipline that contains it is the named scope and the explicit hand-off.
+The first three cost something already named in this book: the wrong lifetime, no scope, or an invisible dependency. The Session Context pays with an extra parameter, in exchange for mutable state that is named, scoped and visible.
 
 ---
 
 ## Why
 
-**1. Mutability earns a controlled, justified return.**
-Twenty-three axioms have treated mutation as forbidden. This axiom does not relax that default for the pure core — the pure core stays pure. It opens *one specific place* where mutation is appropriate: the shell's own working memory for one session. Because the scope is bounded and the owner is named, mutation here does not cascade into the dangers [Axiom 2](axiom-02-immutability.md) named — there is no aliasing across the boundary, no hidden share with another caller, no surprise mutation during iteration that the rest of the program can observe.
+**1. Mutation comes back in one bounded place.**
+The pure core stays pure. Mutation is allowed in exactly one place: the shell's working memory for one session. Because the scope is bounded and the owner is named, the dangers of [Axiom 2](axiom-02-immutability.md) don't spread: nothing outside the session holds a reference, and nothing else can see a change half-way through.
 
-**2. The dependency is visible in every signature that needs it.**
-A function that reads or updates the Session Context takes it as a parameter. A reviewer looking at `Import(rows, ctx)` knows the function depends on `ctx`; a reviewer looking at `ValidateRow(row)` knows it does not. Compare with the ambient-context shape, where neither signature reveals the dependency. The compiler cannot help when the dependency is implicit; it helps perfectly when the dependency is a parameter.
+**2. The dependency is in the signature.**
+`ImportRows(rows, context)` tells the reader it uses the context; `ValidateRow(row)` tells them it doesn't. With ambient state, neither signature would say. The compiler can only help with a dependency that is a parameter.
 
-**3. The pure core stays pure.**
-`ValidateRow` does not take the context, does not see it, cannot mutate it. Its signature is the same one [Axiom 16](axiom-16-result.md) introduced — `string[] -> Result<Customer, string>` — testable as a table with no orchestration setup. The session's accumulator lives one layer out, in the shell, where mutation is allowed.
-
-**4. The session is testable.**
-Tests for `Import` allocate a `BatchContext`, run a sequence of rows through it, and assert on the accumulated state — `ctx.ProcessedCount == N`, `ctx.Errors` matches expected list. No mock framework, no thread-local cleanup between tests, no shared state to reset. Two tests running in parallel each have their own context.
-
-**5. Per-session behaviour is per-session data.**
-A progress callback set up by *this* run of the importer is part of *this* session — not part of the importer's stable wiring. The Session Context is the natural home: declared once, captured at session start, available to every step. A new session gets a fresh callback without rewiring the importer class.
+**3. A session is easy to test.**
+A test creates a `BatchContext`, runs rows through `ImportRows`, and checks what the context collected: the count, the list of errors. No mocks, no thread-local cleanup between tests, and two tests running in parallel each have their own context.
 
 ---
 
 ## Trade-offs
 
-**Mutability is now permitted at one named point — discipline carries the rest.** The scope is small (one session, one shell, one explicit parameter), but the moment mutation is allowed it can be misused. Hand the context to a pure function and the pure function stops being pure. Capture a reference to the context's internal list and read it from another thread mid-session — race. Cache the context past the session's end — leak. The discipline this axiom asks for is not a tax on cleverness; it is the *only* reason the mutability is safe.
-
-**Explicit threading is visible noise.** Every shell function that needs the context grows a parameter. In a deep call tree this can feel like ambient context would be tidier — and it would be, at the cost of [Why 2.](#why). The visible parameter is the playbook's choice; in a small shell the cost is bounded, and the visibility pays off the first time someone has to trace where the accumulator changes.
-
-**Mutable fields in a record-leaning codebase look out of place.** A C# `sealed class` with `{ get; set; }` properties, or a Java `final class` with non-`final` fields, sits awkwardly next to a codebase otherwise built on immutable records ([Axiom 2](axiom-02-immutability.md)). Calling out the type as a *Session Context* in its name (e.g. `BatchContext`, `SessionContext`, `RunContext`) — and keeping it in the shell layer — is the convention that makes the exception legible: this type is *meant* to be mutable; the surrounding records are not.
-
-**The boundary between Session Context and entity state can blur.** A long-running session for one entity tempts the developer to put the entity's state into the Session Context "while we're here." Don't — those concerns belong in [Axiom 24](axiom-24-state-machines.md), modelled as a State DU and threaded as a *value* through `Transition`. The Session Context holds the *shell's* working memory; the entity's condition holds the *entity's* condition. Mixing them collapses the seam.
-
-**Cross-session shared state is a different problem.** A connection pool, an in-memory cache, a job queue — these outlive any one session and do not belong in the Session Context. The Session Context's scope is *one* session; resources that span many sessions are owned at a higher layer.
+- **Allowing mutation means it can be misused.** Pass the context to a pure function, and that function stops being pure. Hand its error list to another thread mid-session, and you have a race. Keep a reference after the session ends, and you have a leak. The discipline this axiom asks for is the *only* thing that makes the mutation safe.
+- **Explicit passing adds a parameter.** In a deep call tree, an ambient context can look tidier, at the cost of *Why*, point 2. In a shell of reasonable size the cost is small, and the visible parameter pays off the first time someone has to find where a counter changes.
+- **A mutable class looks out of place.** A class with settable properties stands out in a codebase built on immutable records. Name it as what it is (`BatchContext`, `RunContext`) and keep it in the shell, so the exception reads as deliberate.
 
 ---
 
 ## When NOT to
 
-**One-shot shells with no accumulated state.** An HTTP endpoint that loads one entity, calls `Transition` once, persists, responds — the synthesis from [Axiom 24](axiom-24-state-machines.md) — has no session-scoped working memory. There is nothing to accumulate, no progress to report, no flag to carry across steps. The Session Context is dead weight here; the four-line shell is already the shape.
-
-**Pure-function tests and table-driven checks.** Tests for `Transition`, `Decide`, `ValidateRow`, `Map`/`Bind`/`MapError` do not need a Session Context — those functions never take one. Reaching for a context "for consistency" adds vocabulary without changing what the test asserts.
-
-**Entity state.** When the working memory is *the entity's condition* — flags, timestamps, counters that move together because the entity is moving through states — the right home is [Axiom 24](axiom-24-state-machines.md): promote the fields to a State DU and the rules to `Transition`. The Session Context is *not* a shortcut for that refactor; the smells the two axioms address are different.
-
-**Dependencies and behaviour.** A DB, a clock, a logger — services wired at the shell's construction — belong in the shell's constructor (Dependency Injection / module-level statics / function parameters at construction), not in the Session Context. The lifecycle distinguishes them: a dependency is stable across many sessions, the Session Context lives for one.
-
-**Cross-session shared state.** Connection pools, caches, queues — anything whose lifetime exceeds one session — lives at a higher layer than the Session Context. Where exactly is its own concern, outside this axiom.
+- **A one-shot shell with nothing to collect.** An HTTP handler that loads a state, calls `Transition` once, saves and responds ([Axiom 24](axiom-24-state-machines.md#example)) has no working memory across steps. A context there is dead weight.
+- **Tests of pure functions.** `Transition`, `DecideAdd` and `ValidateRow` never take a context, so their tests don't need one.
+- **Anything listed under *What doesn't* in *Definitions*.** State that changes as the domain moves through conditions belongs in a state DU ([Axiom 24](axiom-24-state-machines.md#why), point 3). Dependencies belong in the shell's construction, and cross-session resources at a higher level. The context is not a shortcut around any of them.
 
 ---
 
 ## References
 
-[1] **Mark Seemann, Steven van Deursen**, *Dependency Injection Principles, Practices, and Patterns*, Manning Publications, 2019. The book's chapters on *Ambient Context as an anti-pattern* and *Method Injection as the alternative* are the closest mainstream precedent for this axiom: state that varies per call (or per session) is passed explicitly, not stored ambiently. The Session Context is the per-session, mutable analogue of method-injected request-scoped state.
+[1] **Mark Seemann, Steven van Deursen**, *Dependency Injection Principles, Practices, and Patterns*, Manning Publications, 2019. Describes Ambient Context as an anti-pattern and Method Injection as the alternative: values that vary per call are passed explicitly, not stored ambiently. A Session Context is the per-session, mutable form of that advice.
 <https://www.manning.com/books/dependency-injection-principles-practices-patterns>
 
-[2] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022. Cross-listed from [Axiom 1](axiom-01-data-is-not-behavior.md), [Axiom 2](axiom-02-immutability.md), [Axiom 21](axiom-21-discriminated-unions.md), [Axiom 23](axiom-23-pure-functions-returning-actions.md), and [Axiom 24](axiom-24-state-machines.md). Sharvit's distinction between *system state* (the long-lived, shared value the application is "about") and *transient state* held by the orchestration layer is the data-oriented framing of the same separation: entity state belongs in one place, the shell's own session-scoped data in another.
+[2] **Vaughn Vernon**, *Implementing Domain-Driven Design*, Addison-Wesley, 2013. Its Application Services coordinate one request: they own the transaction and the request's working data, and hand the domain its state. That is this axiom's shell holding its Session Context, under another name.
+<https://www.informit.com/store/implementing-domain-driven-design-9780321834577>
+
+[3] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022. Also cited in [Axiom 1](axiom-01-data-is-not-behavior.md), [Axiom 2](axiom-02-immutability.md), [Axiom 21](axiom-21-discriminated-unions.md), [Axiom 23](axiom-23-pure-functions-returning-actions.md) and [Axiom 24](axiom-24-state-machines.md). Keeps the system's state as one immutable value, apart from the code that orchestrates changes to it: the same split as the domain's state versus the shell's working memory.
 <https://www.manning.com/books/data-oriented-programming>
 
-[3] **Vaughn Vernon**, *Implementing Domain-Driven Design*, Addison-Wesley, 2013. The book's chapters on *Application Services* describe the per-request coordinator that owns the session's working state — transactional boundary, identifiers, accumulators — and hands the entity's state through pure operations. The Application Service is the architectural sibling of this axiom's "shell holds the Session Context"; the names differ but the lifecycle and ownership match.
-<https://www.informit.com/store/implementing-domain-driven-design-9780321834577>
+[4] **jOOQ manual**, *Thread safety* (DSLContext). Configuration objects make "no thread safety guarantees", but "Configuration was designed to work in a thread safe way", and the manual encourages sharing them, "because they contain caches for work not worth repeating".
+<https://www.jooq.org/doc/latest/manual/sql-building/dsl-context/thread-safety/>
+
+[5] **Microsoft**, *DbContext Lifetime, Configuration, and Initialization*, EF Core documentation. "A `DbContext` instance is designed to be used for a *single* unit-of-work", it is "Not thread-safe", and `IDbContextFactory` is the documented way to create one per unit of work when the surrounding scope doesn't match.
+<https://learn.microsoft.com/en-us/ef/core/dbcontext-configuration/>
 
 ---
 
