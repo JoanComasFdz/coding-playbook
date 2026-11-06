@@ -253,7 +253,7 @@ Every failure is a value, every decision is a function, and every effect sits at
 - **The caller already has one.** `users.find` returns an `Optional`. Unwrapping it to `null` just to pass it on turns an honest value back into a dishonest one.
 - **`javac` checks it.** `@Nullable` is only checked by outside tools; `Optional` is checked by the compiler ([Axiom 13](axiom-13-maybe.md#definitions)). In the pure core, where honesty matters most, take the stronger check.
 - **The usual objections are about public APIs.** Callers having to wrap values they already hold, and overloads being cleaner, don't apply to a core function whose only caller is its own shell.
-- **The strongest objection has a fix.** A caller can pass a `null` `Optional`, which gives three states instead of two. `Objects.requireNonNull(found)` closes that, at the cost of one line [6].
+- **The strongest objection has a fix.** A caller can pass a `null` `Optional`, which gives three states instead of two. `Objects.requireNonNull(found)` closes that, at the cost of one line [6]. It throws, and that is correct: a `null` `Optional` can only be a bug, which is [rung 3 of the ladder](#the-ladder-eliminate-then-return-then-fail-fast), not an outcome to return.
 
 The trade-off, for now: the code is a little longer. Java can't `switch` on what's inside an `Optional`, so the core uses an early return and `orElseThrow()` instead of the `case null` switch that mirrors C#. C# needs none of this: `User?` already is its Maybe.
 
