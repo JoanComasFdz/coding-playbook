@@ -172,7 +172,7 @@ sealed interface Shape permits Circle, Rectangle, Square {
 
 Its body is the same `switch` as before: `Match` wraps it as a method on the type. Java needs no fallback branch; C# does, for the reason in *Definitions*.
 
-The same `Area` function, first as a `switch` expression and then as a `Match` call:
+The same `CalculateArea` function, first as a `switch` expression and then as a `Match` call:
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -181,7 +181,7 @@ The same `Area` function, first as a `switch` expression and then as a `Match` c
 
 ```csharp
 // switch — case analysis at the call site
-public static double Area(Shape shape) => shape switch
+public static double CalculateArea(Shape shape) => shape switch
 {
     Circle c    => Math.PI * c.Radius * c.Radius,
     Rectangle r => r.L * r.W,
@@ -190,7 +190,7 @@ public static double Area(Shape shape) => shape switch
 };
 
 // Match — case analysis on the type
-public static double Area(Shape shape) => shape.Match(
+public static double CalculateArea(Shape shape) => shape.Match(
     circle:    c => Math.PI * c.Radius * c.Radius,
     rectangle: r => r.L * r.W,
     square:    s => s.Side * s.Side);
@@ -201,7 +201,7 @@ public static double Area(Shape shape) => shape.Match(
 
 ```java
 // switch — case analysis at the call site
-public static double area(Shape shape) {
+public static double calculateArea(Shape shape) {
     return switch (shape) {
         case Circle c    -> Math.PI * c.radius() * c.radius();
         case Rectangle r -> r.length() * r.width();
@@ -210,7 +210,7 @@ public static double area(Shape shape) {
 }
 
 // match — case analysis on the type
-public static double area(Shape shape) {
+public static double calculateArea(Shape shape) {
     return shape.match(
         c -> Math.PI * c.radius() * c.radius(),
         r -> r.length() * r.width(),
@@ -279,7 +279,7 @@ The consumer that needs to branch on a shape holds the branching logic; the data
 
 Two cases where another option fits better:
 
-- **The behavior is part of what the type is.** `Shape.Area()`, `Money.Plus(other)`, `Document.IsValid()`: operations whose meaning belongs to the type. A method on the type (or on each record that implements it) keeps the operation next to its data. A pattern match in a consumer would make every caller know how each shape computes its area; the abstraction is the point.
+- **The behavior is part of what the type is.** `Shape.CalculateArea()`, `Money.Add(other)`, `Document.IsValid()`: operations whose meaning belongs to the type. A method on the type (or on each record that implements it) keeps the operation next to its data. A pattern match in a consumer would make every caller know how each shape computes its area; the abstraction is the point.
 - **The set of cases is open by design.** Plugin hosts, extension points, codebases where new subtypes are expected to appear outside the module. Pattern matching's guarantee depends on the compiler seeing every case. For an open set, a virtual method is the right shape.
 
 ---

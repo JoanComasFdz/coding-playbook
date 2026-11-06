@@ -162,7 +162,7 @@ public User findByEmail(String email) {
 <td>
 
 ```csharp
-public string DisplayName(int userId) =>
+public string GetDisplayName(int userId) =>
     FindById(userId)!.Name;
 ```
 
@@ -170,7 +170,7 @@ public string DisplayName(int userId) =>
 <td>
 
 ```java
-public String displayName(int userId) {
+public String getDisplayName(int userId) {
     return findById(userId).get().name();
 }
 ```
@@ -187,7 +187,7 @@ public String displayName(int userId) {
 <td>
 
 ```csharp
-public string DisplayName(int userId) =>
+public string GetDisplayName(int userId) =>
     FindById(userId)?.Name ?? "(unknown)";
 ```
 
@@ -195,7 +195,7 @@ public string DisplayName(int userId) =>
 <td>
 
 ```java
-public String displayName(int userId) {
+public String getDisplayName(int userId) {
     return findById(userId)
         .map(User::name)
         .orElse("(unknown)");
