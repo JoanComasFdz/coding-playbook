@@ -3,11 +3,11 @@ A comprehensive guide on how I think programs should be coded nowadays.
 
 ## Introduction
 
-I write this playbook to establish all my continues learning about coding in my adventure to look for simplicity first.
+I write this playbook to establish all my continuous learning about coding in my adventure to look for simplicity first.
 
 The main and final goal of this playbook is to provide the building blocks that will allow any engineer working in high level, general purpose languages like C# and Java, to produce code that is as simple as possible, as honest as possible and as robust as possible.
 
-I do this by cherry picking the concepts that I think are worth it, without marying to the whole paradigm, language, framework, design, architecture, etc.
+I do this by cherry picking the concepts that I think are worth it, without marrying the whole paradigm, language, framework, design, architecture, etc.
 
 ## Scope
 
