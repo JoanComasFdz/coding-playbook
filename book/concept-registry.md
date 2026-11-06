@@ -348,7 +348,7 @@ Single Level of Abstraction Per function. Both useful halves already live elsewh
 
 **Revisit if** JEP 468 (derived record creation, a `with` for Java records) ships. It is a Candidate, not in any JDK release yet.
 
-**Source:** Kmett `lens`; Scott Logic "The Immutability Gap" series.
+**Source:** Kmett `lens`; Scott Logic "The Immutability Gap" series; Joan Comas, [*dotnet-optics*](https://github.com/JoanComasFdz/dotnet-optics), my own experiments with optics in C#.
 
 ---
 
