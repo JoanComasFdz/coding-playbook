@@ -199,22 +199,22 @@ public record User(
 
 // ── Pure core: same inputs, same output ──
 Result<User, String> decide(
-        @Nullable User found, String password, Instant now) {
-    return switch (found) {
-        case null -> new Failure<>("user not found");
-        case User u when u.lockedUntil() != null
-                      && u.lockedUntil().isAfter(now)
-            -> new Failure<>("locked until " + u.lockedUntil());
-        case User u when !verify(password, u.passwordHash())
-            -> new Failure<>("wrong password");
-        case User u -> new Success<>(u);
-    };
+        Optional<User> found, String password, Instant now) {
+    Objects.requireNonNull(found);
+    if (found.isEmpty())
+        return new Failure<>("user not found");
+    User u = found.orElseThrow();
+    if (u.lockedUntil() != null && u.lockedUntil().isAfter(now))
+        return new Failure<>("locked until " + u.lockedUntil());
+    if (!verify(password, u.passwordHash()))
+        return new Failure<>("wrong password");
+    return new Success<>(u);
 }
 
 // ── Impure shell: effects at the edges ──
 Unit login(Credentials credentials) {
-    User found = users.find(credentials.username())
-                      .orElse(null);              // gather
+    Optional<User> found =
+        users.find(credentials.username());       // gather
     Instant now = clock.instant();                // gather
 
     var decision = decide(found, credentials.password(), now);
@@ -238,13 +238,24 @@ Read it from top to bottom, and the earlier axioms are all visible:
 - **An honest, total signature** ([Axiom 6](axiom-06-honest-total-signatures.md)): every outcome of `Decide` is in its return type.
 - **One reason to change** ([Axiom 7](axiom-07-cohesion.md)): `Decide` changes when the login rules change; `Login` changes when the plumbing does.
 - **Functions as arguments** ([Axiom 9](axiom-09-first-class-functions.md), [Axiom 10](axiom-10-higher-order-functions.md)): `Match` takes one function per outcome.
-- **Pattern matching** ([Axiom 11](axiom-11-pattern-matching.md)): the core uses a `switch` on the lookup, and the shell uses `Match` on the decision (see [switch or Match?](axiom-11-pattern-matching.md#switch-or-match)).
+- **Pattern matching** ([Axiom 11](axiom-11-pattern-matching.md)): the C# core uses a `switch` on the lookup, and the shell uses `Match` on the decision (see [switch or Match?](axiom-11-pattern-matching.md#switch-or-match)).
 - **The Impureim sandwich** ([Axiom 12](axiom-12-impureim.md)): gather, decide, act.
-- **Absence as a value** ([Axiom 13](axiom-13-maybe.md)): the missing user reaches the core as a nullable value, and the `switch` has to handle it. (In Java the repository returns an `Optional`, and the shell unwraps it, because `Optional` stays out of parameters.)
+- **Absence as a value** ([Axiom 13](axiom-13-maybe.md)): the missing user reaches the core as a value it has to handle: `User?` in C#, `Optional<User>` in Java (see *Why `Optional` as a parameter* below).
 - **Either with names** ([Axiom 14](axiom-14-either.md)): `Success` and `Failure` say what `Right` and `Left` only imply.
 - **Unit** ([Axiom 15](axiom-15-unit.md)): `Match` needs both branches to return the same type. Starting a session and writing an audit entry have nothing to return, so both return `Unit`.
 
 Every failure is a value, every decision is a function, and every effect sits at a named edge. To know why a login failed, you read `Decide`.
+
+### Why `Optional` as a parameter
+
+[Axiom 13](axiom-13-maybe.md#when-not-to) keeps `Optional` out of parameters, following Java's own guidance: it is "primarily intended for use as a method return type" [5]. The Java `decide` takes one anyway:
+
+- **The caller already has one.** `users.find` returns an `Optional`. Unwrapping it to `null` just to pass it on turns an honest value back into a dishonest one.
+- **`javac` checks it.** `@Nullable` is only checked by outside tools; `Optional` is checked by the compiler ([Axiom 13](axiom-13-maybe.md#definitions)). In the pure core, where honesty matters most, take the stronger check.
+- **The usual objections are about public APIs.** Callers having to wrap values they already hold, and overloads being cleaner, don't apply to a core function whose only caller is its own shell.
+- **The strongest objection has a fix.** A caller can pass a `null` `Optional`, which gives three states instead of two. `Objects.requireNonNull(found)` closes that, at the cost of one line [6].
+
+The trade-off, for now: the code is a little longer. Java can't `switch` on what's inside an `Optional`, so the core uses an early return and `orElseThrow()` instead of the `case null` switch that mirrors C#. C# needs none of this: `User?` already is its Maybe.
 
 ---
 
@@ -315,6 +326,12 @@ Where the line between rungs 2 and 3 falls depends on the context. "The database
 <https://github.com/vkhorikov/CSharpFunctionalExtensions>
 
 [4] **James Shore**, *Fail Fast*, IEEE Software 21(5), 2004. Stop immediately on a programmer error or a broken invariant, so the defect shows up where it starts instead of several frames later disguised as a normal value.
+
+[5] **`java.util.Optional` API note**, Java SE 21 documentation. Also cited in [Axiom 13](axiom-13-maybe.md). Brian Goetz puts it more strongly, as quoted by Nicolai Parlog: "You should almost never use it as a field of something or a method parameter."
+<https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html> · <https://nipafx.dev/stephen-colebourne-java-optional-strict-approach/>
+
+[6] **Nicolai Parlog**, *Java 8 SE Optional, a strict approach* and *Where to use Optional* (Inside Java Newscast #19). Parlog, a Java developer advocate at Oracle, is "decidedly in the Optional-everywhere camp", accepts `Optional` parameters, and rejects a `null` `Optional` with `requireNonNull`. He also lists the camps that disagree, and calls "return values only" a sound default for teams that need one shared rule.
+<https://nipafx.dev/stephen-colebourne-java-optional-strict-approach/> · <https://nipafx.dev/inside-java-newscast-19/>
 
 ---
 
