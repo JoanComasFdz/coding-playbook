@@ -24,7 +24,72 @@ A Result is an [Either](axiom-14-either.md#definitions) with two changes:
 
 ## Example
 
-The type, with a `Match` method ([Axiom 11](axiom-11-pattern-matching.md#the-method-form)) so callers don't repeat the generic arguments on every branch:
+The type, and a function that can fail in two ways:
+
+<table>
+<tr><th>C#</th><th>Java</th></tr>
+<tr>
+<td>
+
+```csharp
+public abstract record Result<T, E>;
+public sealed record Success<T, E>(T Value) : Result<T, E>;
+public sealed record Failure<T, E>(E Error) : Result<T, E>;
+
+Result<int, string> ParseAge(string input)
+{
+    if (!int.TryParse(input, out var age))
+        return new Failure<int, string>("not a number");
+    if (age < 0)
+        return new Failure<int, string>("negative");
+    return new Success<int, string>(age);
+}
+
+var result = ParseAge("42");
+var message = result switch
+{
+    Success<int, string> s => $"Age {s.Value}",
+    Failure<int, string> f => $"Invalid age: {f.Error}",
+    _ => throw new UnreachableException()
+};
+```
+
+</td>
+<td>
+
+```java
+public sealed interface Result<T, E> permits Success, Failure {}
+public record Success<T, E>(T value) implements Result<T, E> {}
+public record Failure<T, E>(E error) implements Result<T, E> {}
+
+Result<Integer, String> parseAge(String input) {
+    int age;
+    try {
+        age = Integer.parseInt(input);
+    } catch (NumberFormatException e) {
+        return new Failure<>("not a number");
+    }
+    if (age < 0)
+        return new Failure<>("negative");
+    return new Success<>(age);
+}
+
+var result = parseAge("42");
+String message = switch (result) {
+    case Success<Integer, String> s -> "Age " + s.value();
+    case Failure<Integer, String> f -> "Invalid age: " + f.error();
+};
+```
+
+</td>
+</tr>
+</table>
+
+Both failures are in the return type. The C# version turns `TryParse`'s flag into a value; the Java version catches `parseInt`'s exception and turns it into one. Either way, the conversion happens once, inside `ParseAge`, and no caller sees a flag or an exception. The caller handles both outcomes in one `switch` ([Axiom 11](axiom-11-pattern-matching.md)).
+
+### With `Match`
+
+Every branch of that `switch` repeats the generic arguments (`Success<int, string>`), which gets tiresome as the types grow. [Axiom 11](axiom-11-pattern-matching.md#the-method-form) showed the alternative: put the case analysis on the type as a `Match` method, and let each caller pass one function per case. For `Result`:
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -43,8 +108,10 @@ public abstract record Result<T, E>
             _ => throw new UnreachableException()
         };
 }
-public sealed record Success<T, E>(T Value) : Result<T, E>;
-public sealed record Failure<T, E>(E Error) : Result<T, E>;
+
+var message = result.Match(
+    success: age   => $"Age {age}",
+    failure: error => $"Invalid age: {error}");
 ```
 
 </td>
@@ -60,54 +127,7 @@ public sealed interface Result<T, E> permits Success, Failure {
         };
     }
 }
-public record Success<T, E>(T value) implements Result<T, E> {}
-public record Failure<T, E>(E error) implements Result<T, E> {}
-```
 
-</td>
-</tr>
-</table>
-
-A function that can fail in two ways, and a caller that handles both outcomes:
-
-<table>
-<tr><th>C#</th><th>Java</th></tr>
-<tr>
-<td>
-
-```csharp
-Result<int, string> ParseAge(string input)
-{
-    if (!int.TryParse(input, out var age))
-        return new Failure<int, string>("not a number");
-    if (age < 0)
-        return new Failure<int, string>("negative");
-    return new Success<int, string>(age);
-}
-
-var result = ParseAge("42");
-var message = result.Match(
-    success: age   => $"Age {age}",
-    failure: error => $"Invalid age: {error}");
-```
-
-</td>
-<td>
-
-```java
-Result<Integer, String> parseAge(String input) {
-    int age;
-    try {
-        age = Integer.parseInt(input);
-    } catch (NumberFormatException e) {
-        return new Failure<>("not a number");
-    }
-    if (age < 0)
-        return new Failure<>("negative");
-    return new Success<>(age);
-}
-
-var result = parseAge("42");
 String message = result.match(
     age   -> "Age " + age,
     error -> "Invalid age: " + error);
@@ -117,13 +137,13 @@ String message = result.match(
 </tr>
 </table>
 
-Both failures are in the return type. The C# version turns `TryParse`'s flag into a value; the Java version catches `parseInt`'s exception and turns it into one. Either way, the conversion happens once, inside `ParseAge`, and no caller sees a flag or an exception.
+Same caller, same result. Which form to use is the choice in [`switch` or `Match`?](axiom-11-pattern-matching.md#switch-or-match).
 
 ---
 
 ## The first synthesis
 
-Result is the first point where most of the axioms so far fit into one piece of code. Here is a login, end to end, using the `Result` type above:
+Result is the first point where most of the axioms so far fit into one piece of code. Here is a login, end to end, using the `Result` type above (with `Match`):
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
