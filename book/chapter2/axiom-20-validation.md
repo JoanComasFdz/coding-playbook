@@ -13,21 +13,21 @@
 
 The shape rests on two pieces:
 
-- **`ValidationError`** — a small immutable record carrying `Field` (a string locating the input — `"username"`, `"items[3].quantity"`, `"$.body.email"`) and `Message` (the human-readable reason). Both strings: the playbook stays with the cheapest convention. Each value object's `From` produces a `ValidationError` directly — the type knows its field name, so every `Result<T, ValidationError>` arrives at the composition site already located. Anything richer than two strings — a sealed hierarchy of error variants, an enum of categories — is an ADR-level decision, not part of this axiom.
+- **`ValidationError`** — a small immutable record carrying `Field` (a string locating the input — `"username"`, `"items[3].quantity"`, `"$.body.email"`) and `Message` (the human-readable reason). Both strings: the playbook stays with the cheapest convention. Each value object's `Parse` produces a `ValidationError` directly — the type knows its field name, so every `Result<T, ValidationError>` arrives at the composition site already located. Anything richer than two strings — a sealed hierarchy of error variants, an enum of categories — is an ADR-level decision, not part of this axiom.
 - **`Validation.Combine`** — a static method on a `Validation` utility class. Takes N independent `Result<T, ValidationError>` values and returns a `Combined<…>` holder; the holder's `.Map(build)` method runs the composite constructor *if every branch succeeded*, otherwise returns `Failure(IReadOnlyList<ValidationError>)` carrying one entry per failed branch. The two-stage shape — *`Combine` collects, `.Map` builds* — keeps each step on its own line and matches the applicative-builder pattern from the FP literature without inheriting its jargon. Overloads cover 2-arity through 8-arity; beyond that, breaking the composite into smaller records is usually the right move.
 
 The contrast with the railway from [Axiom 19](axiom-19-railway.md) is structural — same `Result` shape, different propagation rule:
 
 | Combinator             | Failure mode                                             | Use when |
 |------------------------|----------------------------------------------------------|------------------------------------------------------------------------|
-| `Bind` (the railway)               | Stops at the first `Failure`; later steps never run.     | Each step depends on the previous one's success — `Token.From → Payload.Decode → CheckNotExpired → …` |
+| `Bind` (the railway)               | Stops at the first `Failure`; later steps never run.     | Each step depends on the previous one's success — `Token.Parse → Payload.Decode → CheckNotExpired → …` |
 | `Combine` + `.Map` (validation)    | Runs all branches; merges every `Failure` into one list. | Branches are independent — N field validations on the same input record. |
 
 ---
 
 ## Example
 
-The example builds a `CustomerProfile` from two raw strings — a username and an email. Each field has its own value object ([Axiom 18](axiom-18-value-objects.md)) whose `From` factory returns `Result<T, ValidationError>` directly: the type owns the field name, so every failure arrives already located.
+The example builds a `CustomerProfile` from two raw strings — a username and an email. Each field has its own value object ([Axiom 18](axiom-18-value-objects.md)) whose `Parse` factory returns `Result<T, ValidationError>` directly: the type owns the field name, so every failure arrives already located.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -42,7 +42,7 @@ public sealed record Username
     public string Value { get; }
     private Username(string value) => Value = value;
 
-    public static Result<Username, ValidationError> From(string raw) =>
+    public static Result<Username, ValidationError> Parse(string raw) =>
         string.IsNullOrWhiteSpace(raw)
             ? new Failure<Username, ValidationError>(
                 new ValidationError("username", "username is empty"))
@@ -57,7 +57,7 @@ public sealed record EmailAddress
     public string Value { get; }
     private EmailAddress(string value) => Value = value;
 
-    public static Result<EmailAddress, ValidationError> From(string raw) =>
+    public static Result<EmailAddress, ValidationError> Parse(string raw) =>
         string.IsNullOrWhiteSpace(raw)
             ? new Failure<EmailAddress, ValidationError>(
                 new ValidationError("email", "email is empty"))
@@ -81,7 +81,7 @@ public final class Username {
     private Username(String value) { this.value = value; }
     public String value() { return value; }
 
-    public static Result<Username, ValidationError> from(String raw) {
+    public static Result<Username, ValidationError> parse(String raw) {
         if (raw == null || raw.isBlank())
             return new Failure<>(new ValidationError("username", "username is empty"));
         if (raw.length() > 30)
@@ -97,7 +97,7 @@ public final class EmailAddress {
     private EmailAddress(String value) { this.value = value; }
     public String value() { return value; }
 
-    public static Result<EmailAddress, ValidationError> from(String raw) {
+    public static Result<EmailAddress, ValidationError> parse(String raw) {
         if (raw == null || raw.isBlank())
             return new Failure<>(new ValidationError("email", "email is empty"));
         if (!raw.contains("@"))
@@ -123,9 +123,9 @@ The shape we *don't* want first — composing the two value objects with the rai
 <td>
 
 ```csharp
-public static Result<CustomerProfile, ValidationError> From(string rawUsername, string rawEmail) =>
-    Username.From(rawUsername)
-        .Bind(u => EmailAddress.From(rawEmail)
+public static Result<CustomerProfile, ValidationError> Parse(string rawUsername, string rawEmail) =>
+    Username.Parse(rawUsername)
+        .Bind(u => EmailAddress.Parse(rawEmail)
             .Map(e => new CustomerProfile(u, e)));
 
 // Input: ("", "not-an-email")
@@ -137,9 +137,9 @@ public static Result<CustomerProfile, ValidationError> From(string rawUsername, 
 <td>
 
 ```java
-public static Result<CustomerProfile, ValidationError> from(String rawUsername, String rawEmail) {
-    return Username.from(rawUsername)
-        .flatMap(u -> EmailAddress.from(rawEmail)
+public static Result<CustomerProfile, ValidationError> parse(String rawUsername, String rawEmail) {
+    return Username.parse(rawUsername)
+        .flatMap(u -> EmailAddress.parse(rawEmail)
             .map(e -> new CustomerProfile(u, e)));
 }
 
@@ -152,7 +152,7 @@ public static Result<CustomerProfile, ValidationError> from(String rawUsername, 
 </tr>
 </table>
 
-The chain composes correctly — the type system has remembered that any step may fail — but the *semantics* are wrong for this scenario. The two field validations are independent: `EmailAddress.From("not-an-email")` does not need `Username.From("")` to have succeeded. There is no reason to stop after the first failure, and a meaningful reason not to: the user round-trips once per invalid field.
+The chain composes correctly — the type system has remembered that any step may fail — but the *semantics* are wrong for this scenario. The two field validations are independent: `EmailAddress.Parse("not-an-email")` does not need `Username.Parse("")` to have succeeded. There is no reason to stop after the first failure, and a meaningful reason not to: the user round-trips once per invalid field.
 
 Now the accumulating shape. `Validation.Combine(...)` collects the independent results into a `Combined<…>` holder; `.Map(build)` runs the composite constructor when every branch succeeded, or returns the merged failure list otherwise:
 
@@ -242,12 +242,12 @@ And the composite — the value objects already speak `ValidationError`, so the 
 <td>
 
 ```csharp
-public static Result<CustomerProfile, IReadOnlyList<ValidationError>> From(
+public static Result<CustomerProfile, IReadOnlyList<ValidationError>> Parse(
     string rawUsername,
     string rawEmail) => Validation
         .Combine(
-            Username.From(rawUsername),
-            EmailAddress.From(rawEmail))
+            Username.Parse(rawUsername),
+            EmailAddress.Parse(rawEmail))
         .Map((u, e) => new CustomerProfile(u, e));
 
 // Input: ("", "not-an-email")
@@ -261,13 +261,13 @@ public static Result<CustomerProfile, IReadOnlyList<ValidationError>> From(
 <td>
 
 ```java
-public static Result<CustomerProfile, List<ValidationError>> from(
+public static Result<CustomerProfile, List<ValidationError>> parse(
         String rawUsername,
         String rawEmail) {
     return Validation
         .combine(
-            Username.from(rawUsername),
-            EmailAddress.from(rawEmail))
+            Username.parse(rawUsername),
+            EmailAddress.parse(rawEmail))
         .map(CustomerProfile::new);
 }
 
@@ -328,7 +328,7 @@ N independent inputs become an N-arity `Combine` overload returning a `Combined<
 
 **Variadic `Combine` is awkward in static languages.** C# and Java do not have heterogeneous variadic generics. The N-arity ceiling is a real cost; in practice a 2-through-8 overload family of `Combine` (each paired with its `Combined<…>` holder) covers the realistic record sizes — beyond eight independent fallible fields, breaking the record into smaller composites is usually the better move. F# and Haskell express the same idea via a single applicative operator that scales without overloads; C# and Java pay a small overload-table tax — and on the Java side, an extra family of `Function3..Function8` interfaces that the standard library doesn't ship.
 
-**VO factories own their field name.** Each `From` hard-codes the `Field` for its own type — `Username.From` always emits `ValidationError(Field: "username", …)`. The composition site stays clean (no per-branch `MapError` to lift a `string` failure into a structured one), but the VO is now coupled to one field name. When the same type fills two fields of one record — `BillingEmail` and `ShippingEmail` both holding an `EmailAddress` — the escape is either an overloaded `From(raw, field)` that takes the field path as a parameter, or two distinct VO types (a wrapper per role). One-VO-per-field is the simpler default; the parameter form is the escape hatch when the same VO needs to appear twice. The alternative direction — VOs return `Result<T, string>` per [Axiom 18](axiom-18-value-objects.md)'s default and the composition site lifts each one with `MapError(m => new ValidationError(field, m))` — keeps the VO reusable but pushes a line of bookkeeping into every composition site.
+**VO factories own their field name.** Each `Parse` hard-codes the `Field` for its own type — `Username.Parse` always emits `ValidationError(Field: "username", …)`. The composition site stays clean (no per-branch `MapError` to lift a `string` failure into a structured one), but the VO is now coupled to one field name. When the same type fills two fields of one record — `BillingEmail` and `ShippingEmail` both holding an `EmailAddress` — the escape is either an overloaded `Parse(raw, field)` that takes the field path as a parameter, or two distinct VO types (a wrapper per role). One-VO-per-field is the simpler default; the parameter form is the escape hatch when the same VO needs to appear twice. The alternative direction — VOs return `Result<T, string>` per [Axiom 18](axiom-18-value-objects.md)'s default and the composition site lifts each one with `MapError(m => new ValidationError(field, m))` — keeps the VO reusable but pushes a line of bookkeeping into every composition site.
 
 **Independence is sometimes a lie.** "Validate every field in parallel" assumes each check is truly independent. If `email` is allowed to be empty *only* when `username` matches a system account, the parallel form runs both checks anyway, which is harmless but reports an `"email is empty"` error that turns out not to be one. For genuinely conditional checks, fold a `Bind` into the chain after `Combine` resolves the unconditional ones.
 

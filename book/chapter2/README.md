@@ -118,7 +118,7 @@ map / flatMap / mapError.
 
 ### 18. [Value objects](axiom-18-value-objects.md)
 
-Make invalid values unrepresentable: each `from` returns a Result, starting with plain string failures.
+Make invalid values unrepresentable: each `parse` returns a Result, starting with plain string failures.
 
 ***Leads to Railway:*** *A domain full of fallible constructors is exactly what we can now wire together.*
 
