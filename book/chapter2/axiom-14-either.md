@@ -15,9 +15,11 @@ Through [Axiom 8](axiom-08-connascence.md)'s lens, Either turns a [Connascence o
 
 ## Definitions
 
-A type is an *Either* (a [sum type](https://en.wikipedia.org/wiki/Tagged_union) with two cases) when:
+An *Either* is a [sum type](https://en.wikipedia.org/wiki/Tagged_union) with only two cases.
 
-- **It has two cases.** One carries a value of type `L` (`Left`), the other a value of type `R` (`Right`).
+A type is an Either when:
+
+- **Each case carries its own type.** One carries a value of type `L` (`Left`), the other a value of type `R` (`Right`).
 - **The cases are disjoint.** A value is one or the other, never both and never neither.
 - **There is no silent unwrap.** You can't read either side without first checking which one is present.
 
