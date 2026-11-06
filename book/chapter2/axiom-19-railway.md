@@ -5,7 +5,7 @@
 - The visual metaphor: a track with two rails — *success* and *failure*. Each step has a switch on the success rail; the failure rail runs straight to the end. Once a value falls onto the failure rail it stays there.
 - The mechanical content: a sequence of `.Bind(step)` calls, with `Map` for the non-fallible transforms in between.
 
-[Axiom 17](axiom-17-result-combinators.md) named `Bind` as the combinator that chains a fallible step. [Axiom 18](axiom-18-value-objects.md) populated the domain with fallible steps — every `From` returns `Result<T, string>`. This axiom is what the call site looks like when those two land in the same function: a flat chain of `.Bind` and `.Map` calls, each step written as a plain function, the propagation rule named once inside the combinators and not again at any call site.
+[Axiom 17](axiom-17-result-combinators.md) named `Bind` as the combinator that chains a fallible step. [Axiom 18](axiom-18-value-objects.md) populated the domain with fallible steps — every `Parse` returns `Result<T, string>`. This axiom is what the call site looks like when those two land in the same function: a flat chain of `.Bind` and `.Map` calls, each step written as a plain function, the propagation rule named once inside the combinators and not again at any call site.
 
 > Railway Oriented Programming is not limited to chaining Result types. But for now I restrict its use to be applied only for this purpose.
 
@@ -30,7 +30,7 @@ The railway is not a new combinator. It is `Bind` and `Map` applied to a chain o
 
 A small pure pipeline: a registration-token verification that turns a raw token string into a verified user, with state (current time, user lookup table) passed in as values. Three fallible steps and a final non-fallible one.
 
-The value objects come first — each is a record with a private constructor and a `From` returning `Result` ([Axiom 18](axiom-18-value-objects.md)):
+The value objects come first — each is a record with a private constructor and a `Parse` returning `Result` ([Axiom 18](axiom-18-value-objects.md)):
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -43,7 +43,7 @@ public sealed record Token
     public string Value { get; }
     private Token(string v) => Value = v;
 
-    public static Result<Token, string> From(string raw) =>
+    public static Result<Token, string> Parse(string raw) =>
         string.IsNullOrWhiteSpace(raw)
             ? new Failure<Token, string>("token is empty")
             : raw.Length != 32
@@ -69,7 +69,7 @@ public final class Token {
     private Token(String value) { this.value = value; }
     public String value() { return value; }
 
-    public static Result<Token, String> from(String raw) {
+    public static Result<Token, String> parse(String raw) {
         if (raw == null || raw.isBlank())
             return new Failure<>("token is empty");
         if (raw.length() != 32)
@@ -116,7 +116,7 @@ public static Result<VerifiedUser, string> Verify(
     string rawToken,
     DateTime now,
     IReadOnlyDictionary<UserId, User> users) =>
-    Token.From(rawToken)                           // string  -> Result<Token, string>
+    Token.Parse(rawToken)                           // string  -> Result<Token, string>
         .Bind(Payload.Decode)                      // Token   -> Result<Payload, string>
         .Bind(p => CheckNotExpired(p, now))        // Payload -> Result<Payload, string>
         .Bind(p => LookupUser(users, p.UserId))    // Payload -> Result<User, string>
@@ -146,7 +146,7 @@ public static Result<VerifiedUser, String> verify(
         String rawToken,
         Instant now,
         Map<UserId, User> users) {
-    return Token.from(rawToken)                        // String  -> Result<Token,   String>
+    return Token.parse(rawToken)                        // String  -> Result<Token,   String>
         .flatMap(Payload::decode)                      // Token   -> Result<Payload, String>
         .flatMap(p -> checkNotExpired(p, now))         // Payload -> Result<Payload, String>
         .flatMap(p -> lookupUser(users, p.userId()))   // Payload -> Result<User,    String>
@@ -158,7 +158,7 @@ public static Result<VerifiedUser, String> verify(
 </tr>
 </table>
 
-`Verify` reads as the happy path. Every line is what the function *does* when the previous step succeeded. The `if (failure) return` bookkeeping that this exact code would carry without `Bind` is nowhere on the page — the combinator handles it once and the call site never repeats it. If `Token.From` fails because the token is the wrong length, none of the downstream steps run; the failure reason `"token must be 32 characters"` flows straight to `Verify`'s return value. If decoding succeeds but the payload is expired, `LookupUser` is not called.
+`Verify` reads as the happy path. Every line is what the function *does* when the previous step succeeded. The `if (failure) return` bookkeeping that this exact code would carry without `Bind` is nowhere on the page — the combinator handles it once and the call site never repeats it. If `Token.Parse` fails because the token is the wrong length, none of the downstream steps run; the failure reason `"token must be 32 characters"` flows straight to `Verify`'s return value. If decoding succeeds but the payload is expired, `LookupUser` is not called.
 
 `now` and `users` are *passed in* as values rather than read inside `Verify`. That is what keeps `Verify` pure ([Axiom 5](axiom-05-pure-functions.md)): same `(rawToken, now, users)` in, same `Result<VerifiedUser, string>` out. The state that the railway runs *against* is the impure shell's responsibility to load and hand over.
 
@@ -181,7 +181,7 @@ public HttpResponse VerifyEndpoint(string rawToken)
     DateTime now                            = clock.Now;             // impure: clock read
     IReadOnlyDictionary<UserId, User> users = userStore.Snapshot();  // impure: DB snapshot
 
-    var result = Token.From(rawToken)                                // pure: railway
+    var result = Token.Parse(rawToken)                                // pure: railway
         .Bind(Payload.Decode)
         .Bind(p => CheckNotExpired(p, now))
         .Bind(p => LookupUser(users, p.UserId))
@@ -209,7 +209,7 @@ public HttpResponse verifyEndpoint(String rawToken) {
     Instant now             = clock.now();           // impure: clock read
     Map<UserId, User> users = userStore.snapshot();  // impure: DB snapshot
 
-    var result = Token.from(rawToken)                // pure: railway
+    var result = Token.parse(rawToken)                // pure: railway
         .flatMap(Payload::decode)
         .flatMap(p -> checkNotExpired(p, now))
         .flatMap(p -> lookupUser(users, p.userId()))
@@ -243,7 +243,7 @@ Read the picture from top to bottom and every prior axiom is visible at its post
 - **Result is Either with names** ([Axiom 14](axiom-14-either.md), [Axiom 16](axiom-16-result.md)). The two cases live in the same return slot; `Success` and `Failure` carry the convention that one side is the answer the caller wanted and the other is the reason it didn't get it.
 - **Unit is the shape when there's no value to return** ([Axiom 15](axiom-15-unit.md)). Here the shell *does* have a value to return — the `HttpResponse` — so it returns one. The same overall shape applies to shells whose only job is to write a row or log a reason; those return `Unit`.
 - **`Bind` and `Map` are the bookkeeping** ([Axiom 17](axiom-17-result-combinators.md)). Four composed steps, zero `if (failure) return` blocks. The propagation rule is named once, inside the combinators; the call site is the steps in order.
-- **Each fallible step is a smart constructor or its equivalent** ([Axiom 18](axiom-18-value-objects.md)). `Token.From` is the canonical smart constructor; `Payload.Decode`, `CheckNotExpired`, and `LookupUser` are all "parse, don't validate" steps — they return either a value the rest of the program can trust or a reason it couldn't be built.
+- **Each fallible step is a smart constructor or its equivalent** ([Axiom 18](axiom-18-value-objects.md)). `Token.Parse` is the canonical smart constructor; `Payload.Decode`, `CheckNotExpired`, and `LookupUser` are all "parse, don't validate" steps — they return either a value the rest of the program can trust or a reason it couldn't be built.
 
 The payoff: when something goes wrong the reader finds out *what* by reading the chain. The first refused step is the first reason. The downstream steps did not run; their preconditions were never violated because they were never reached. The shell has a single Result to look at and two arms to write. The business logic and the wiring are on the same page, in the same shape they will keep across the rest of the codebase.
 

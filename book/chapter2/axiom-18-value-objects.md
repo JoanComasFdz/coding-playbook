@@ -19,9 +19,9 @@ A [value object](https://en.wikipedia.org/wiki/Value_object) has three propertie
 
 - **Immutable.** No setters and no mutable internals ([Axiom 2](axiom-02-immutability.md)).
 - **Equal by value.** Two instances with the same data are equal; there is no identity beyond the data. Records give you this for free. A hand-written class has to override `Equals`/`GetHashCode` (`equals`/`hashCode` in Java) consistently.
-- **Valid by construction.** The constructor is private. The only way in is a static factory, `From` in C# and `from` in Java, that checks the input once and returns `Result<T, string>`. Functional programmers call this a [smart constructor](https://wiki.haskell.org/Smart_constructors).
+- **Valid by construction.** The constructor is private. The only way in is a static factory, `Parse` in C# and `parse` in Java, that checks the input once and returns `Result<T, string>`. Functional programmers call this a [smart constructor](https://wiki.haskell.org/Smart_constructors).
 
-The first two properties come from earlier axioms. The third is what this axiom adds: it turns a record from "some fields" into "proof that these fields follow a rule". A function that takes a `Username` never checks whether it is empty, because `Username.From` already did.
+The first two properties come from earlier axioms. The third is what this axiom adds: it turns a record from "some fields" into "proof that these fields follow a rule". A function that takes a `Username` never checks whether it is empty, because `Username.Parse` already did.
 
 This axiom departs from three common defaults:
 
@@ -82,7 +82,7 @@ public sealed record Username
     public string Value { get; }
     private Username(string value) => Value = value;
 
-    public static Result<Username, string> From(string raw)
+    public static Result<Username, string> Parse(string raw)
     {
         if (string.IsNullOrWhiteSpace(raw))
             return new Failure<Username, string>("username is empty");
@@ -97,7 +97,7 @@ public sealed record EmailAddress
     public string Value { get; }
     private EmailAddress(string value) => Value = value;
 
-    public static Result<EmailAddress, string> From(string raw)
+    public static Result<EmailAddress, string> Parse(string raw)
     {
         if (string.IsNullOrWhiteSpace(raw))
             return new Failure<EmailAddress, string>("email is empty");
@@ -121,7 +121,7 @@ public final class Username {
     private Username(String value) { this.value = value; }
     public String value() { return value; }
 
-    public static Result<Username, String> from(String raw) {
+    public static Result<Username, String> parse(String raw) {
         if (raw == null || raw.isBlank())
             return new Failure<>("username is empty");
         if (raw.length() > 30)
@@ -141,7 +141,7 @@ public final class EmailAddress {
     private EmailAddress(String value) { this.value = value; }
     public String value() { return value; }
 
-    public static Result<EmailAddress, String> from(String raw) {
+    public static Result<EmailAddress, String> parse(String raw) {
         if (raw == null || raw.isBlank())
             return new Failure<>("email is empty");
         if (!raw.contains("@"))
@@ -161,7 +161,7 @@ public record CustomerProfile(Username username, EmailAddress email) {}
 </tr>
 </table>
 
-`new Username("")` no longer compiles. The only way in is `Username.From(...)`, which returns a `Result`, so the caller has to handle the failure before it gets a `Username`.
+`new Username("")` no longer compiles. The only way in is `Username.Parse(...)`, which returns a `Result`, so the caller has to handle the failure before it gets a `Username`.
 
 The payoff is where the values are used:
 
@@ -196,7 +196,7 @@ No null check, no length check, no `@` check. They ran once, where the raw strin
 ## Problem / forces
 
 - **Boilerplate against scattered rules.** A value object is a small file: a private constructor, a field, a factory and, in Java, `equals` and `hashCode`. Libraries such as CSharpFunctionalExtensions ship a base class that removes some of it [7]. A bare `string` costs nothing to write, and in a program with no rules to enforce it is the right choice. The trade reverses as soon as a rule exists. Once two functions disagree about what makes a username valid, or one caller forgets to check, the costs pile up: "how did an empty username reach the database?", defensive checks in every layer, and copies of the rule that drift apart. The value object pays that cost once, where the value is built.
-- **The boundary speaks primitives.** Input arrives as primitives (JSON, form fields, query strings, database rows), and output leaves the same way. Value objects don't remove primitives; they push them to the edge. `From` turns a primitive into a value object on the way in, and `.Value` turns it back on the way out. The pure core works with value objects; the impure shell ([Axiom 12](axiom-12-impureim.md)) speaks both.
+- **The boundary speaks primitives.** Input arrives as primitives (JSON, form fields, query strings, database rows), and output leaves the same way. Value objects don't remove primitives; they push them to the edge. `Parse` turns a primitive into a value object on the way in, and `.Value` turns it back on the way out. The pure core works with value objects; the impure shell ([Axiom 12](axiom-12-impureim.md)) speaks both.
 
 ---
 
@@ -206,7 +206,7 @@ No null check, no length check, no `@` check. They ran once, where the raw strin
 Once an `EmailAddress` exists, no other code needs to check that it is well formed. The rule and the type are one thing. This is [*parse, don't validate*](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/) [2] at its smallest scale: a function that *validates* a string hands back a `bool` and the same string, and asks the caller to remember (the [boolean blindness of Axiom 6](axiom-06-honest-total-signatures.md#definitions)). A function that *parses* a string hands back the parsed type, so there is nothing to remember.
 
 **2. The rule lives in one place.**
-The same rule written at three call sites becomes three slightly different rules over time. Written in `Username.From`, it is one rule, and the type is the agreement. When it changes ("usernames can now be 50 characters"), you edit one file and its tests.
+The same rule written at three call sites becomes three slightly different rules over time. Written in `Username.Parse`, it is one rule, and the type is the agreement. When it changes ("usernames can now be 50 characters"), you edit one file and its tests.
 
 **3. Signatures say more.**
 A parameter of type `Username` says the function expects a *valid* username, not any string. The reader learns the precondition without reading the body. And `Refund(Username, OrderId)` can't be called with its arguments swapped, because the two types differ: the compiler now does what code review used to do.
@@ -216,7 +216,7 @@ A parameter of type `Username` says the function expects a *valid* username, not
 
 **Design by Contract, answered with types.** [Design by Contract](https://en.wikipedia.org/wiki/Design_by_contract) asks three things of a method: what must hold before it runs (the precondition), what it guarantees after (the postcondition), and what always stays true (the invariant) [3]. A value object answers two of them with types. Its factory is the invariant: a malformed `EmailAddress` can't exist. Taking one as a parameter discharges the precondition. The postcondition is the honest return type of [Axiom 6](axiom-06-honest-total-signatures.md). The difference from Eiffel is *when* the contract is checked: Eiffel's assertions run at runtime and can be turned off in production builds, while a type is checked by the compiler and can't be. Some contracts resist types, such as "the returned list is sorted" or a rule that spans several values. There, a runtime assertion or a property-based test still earns its place. Put into a type every contract a type can carry.
 
-**Postel's law, reconciled.** The [robustness principle](https://en.wikipedia.org/wiki/Robustness_principle) says "be conservative in what you do, be liberal in what you accept from others" [4]. That sounds like the opposite of a strict factory, but the two apply to different things. Postel is about the *form* of the input; the factory is about its *meaning*. A `From` may accept several forms (trim whitespace, accept two date formats, ignore case), as long as it produces exactly one canonical value or a `Failure`. That is the part plain leniency was missing. The IETF has since reconsidered the principle [5]: accepting malformed input without normalizing it lets every consumer decide what it meant, and the format drifts toward whatever the most popular implementation accepts. Parsing at the boundary keeps the forgiving front door and stops the drift.
+**Postel's law, reconciled.** The [robustness principle](https://en.wikipedia.org/wiki/Robustness_principle) says "be conservative in what you do, be liberal in what you accept from others" [4]. That sounds like the opposite of a strict factory, but the two apply to different things. Postel is about the *form* of the input; the factory is about its *meaning*. A `Parse` may accept several forms (trim whitespace, accept two date formats, ignore case), as long as it produces exactly one canonical value or a `Failure`. That is the part plain leniency was missing. The IETF has since reconsidered the principle [5]: accepting malformed input without normalizing it lets every consumer decide what it meant, and the format drifts toward whatever the most popular implementation accepts. Parsing at the boundary keeps the forgiving front door and stops the drift.
 
 ---
 
@@ -274,8 +274,8 @@ Two `Order` values with the same `Id` are the same order, however their `Total` 
 
 ## Trade-offs
 
-- **Java records can't hide their constructor.** A record's canonical constructor is as visible as the record itself. Either write the value object as a `final class` with hand-written `equals` and `hashCode` (as in the example), or accept the public constructor and rely on review to keep callers on `from`. This book prefers the `final class`. Decide once per codebase, not per type.
-- **Mapping at the persistence boundary.** ORMs and serializers expect public constructors or settable properties. Map at the boundary instead (see *Problem / forces*): read the primitive, call `From`, and treat a `Failure` as an error, because it means the stored data breaks today's rule.
+- **Java records can't hide their constructor.** A record's canonical constructor is as visible as the record itself. Either write the value object as a `final class` with hand-written `equals` and `hashCode` (as in the example), or accept the public constructor and rely on review to keep callers on `parse`. This book prefers the `final class`. Decide once per codebase, not per type.
+- **Mapping at the persistence boundary.** ORMs and serializers expect public constructors or settable properties. Map at the boundary instead (see *Problem / forces*): read the primitive, call `Parse`, and treat a `Failure` as an error, because it means the stored data breaks today's rule.
 - **Several values, several Results.** A handler that builds three value objects has three `Result`s to handle. The combinators of [Axiom 17](axiom-17-result-combinators.md) apply directly: a factory is exactly the kind of step `Bind` chains. A later axiom builds on this to compose many.
 
 ---
