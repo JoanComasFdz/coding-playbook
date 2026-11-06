@@ -1,52 +1,52 @@
 # Axiom 26 — Stateful Shell
 
-**A Stateful Shell is the long-running counterpart of [Axiom 24](axiom-24-state-machines.md)'s one-shot shell. The pure `Transition` is unchanged. What changes is the shell: instead of running once per request, it runs in a loop — read the current state, dispatch the side effect that state implies, await the environmental result as an event, call `Transition`, repeat — until the FSM reaches a terminal state or external cancellation fires.**
+**A Stateful Shell is the long-running version of [Axiom 24](axiom-24-state-machines.md)'s shell. The pure `Transition` doesn't change. The shell does: instead of running once, it loops. Read the current state, carry out the effect that state implies, wait for the result as an event, call `Transition`, and repeat, until the machine reaches a final state or is cancelled.**
 
-- The pure core is the same `Transition(state, event) → state` shape from [Axiom 24](axiom-24-state-machines.md), refined so the state DU splits into a running subset (variants the dispatch can see) and a terminal subset (the exits) — *illegal states unrepresentable* ([Axiom 6](axiom-06-honest-total-signatures.md)) at the FSM-state level, so the dispatch never needs a defensive arm against the terminal.
-- The loop body pattern-matches on the *current state* to decide what side effect to perform — *the state implies the effect*. Each state names one natural action the shell takes: Connecting tries to connect; BackingOff sleeps; Connected reads.
-- The environmental result of that side effect — a connection succeeded, a packet arrived, a timer elapsed, a cancellation fired — arrives as an event and is fed into `Transition` to produce the next state.
-- The loop exits when the next state is *terminal* (no further action is meaningful) or when an external cancellation signal arrives.
-- Cross-tick working memory — message counters, the cancellation token, captured callbacks — lives in a [Session Context (Axiom 25)](axiom-25-session-context.md), held by the shell, never seen by `Transition`.
+- **The core** is a `Transition(state, event) → state`, as in [Axiom 24](axiom-24-state-machines.md). Its state DU is split into the states the loop can act on and the final ones, so the loop never has to handle a final state ([Axiom 22](axiom-22-illegal-states.md)).
+- **The state implies the effect.** Each state names one thing the shell does: `Connecting` tries to connect, `BackingOff` waits, `Connected` reads.
+- **The result of that effect** (connected, failed, disconnected, time elapsed) comes back as an event and goes into `Transition`.
+- **Working memory across iterations** (a message counter, the cancellation signal) lives in a [Session Context](axiom-25-session-context.md), held by the shell and never seen by `Transition`.
 
-[Axiom 24](axiom-24-state-machines.md) closed with a one-shot shell: an HTTP endpoint loaded state, called `Transition` once, persisted the new state, returned a response. Many programs are not one-shot. A message queue subscriber reads forever. A reconnecting client reconnects after every drop. A background worker waits for the next job, processes it, waits for the next. The pure decision — *what state are we in next?* — keeps the exact shape `Transition` always had. What grows is what the shell does *between* and *around* those decisions: it dispatches the right effect for the current state, awaits the environmental event the effect produces, and does so over and over until the machine is done. This axiom names that long-running shell — the **Stateful Shell**.
+[Axiom 24](axiom-24-state-machines.md)'s shell ran once per request. Many programs don't: a queue subscriber reads forever, a client reconnects after every drop, a worker waits for the next job. The decision, *what state are we in next?*, keeps exactly the shape `Transition` always had. What grows is the shell around it: it carries out the right effect for the current state, waits for the event that effect produces, and does it again until the machine is done.
 
-Through [Axiom 8](axiom-08-connascence.md)'s lens, this axiom does not weaken so much as *localise* a [Connascence of Execution](axiom-08-connascence.md#connascence-of-execution-coe): the temporal contract a callback-driven shell scatters is gathered into one explicit loop.
+Through [Axiom 8](axiom-08-connascence.md)'s lens, the loop doesn't weaken a [Connascence of Execution](axiom-08-connascence.md#connascence-of-execution-coe) so much as *gather* it: the order of steps that callbacks would scatter across files sits in one visible loop.
 
-> **A note on the name.** This shape has an older name from the language-runtime world: the **Interpreter Loop**. A bytecode VM or a CPU interprets one instruction at a time — fetch the next instruction, decode it, execute the corresponding effect, advance, repeat — and that is exactly what this shell does, with FSM states standing in for instructions: fetch the current state, decode it (pattern-match), execute the side effect that state implies, take the resulting event, advance the state via `Transition`, repeat. *Stateful Shell* is the name this playbook prefers — it points straight at the relationship to [Axiom 24](axiom-24-state-machines.md)'s shell, now grown stateful across many calls — but anyone who has written a bytecode VM, a REPL, or a `gen_statem` callback module will recognise the shape on sight under its older name.
+> **A note on the name.** This shape has an older name from language runtimes: the *interpreter loop*. A bytecode VM fetches the next instruction, decodes it, executes its effect and moves on; this shell fetches the current state, matches on it, executes the effect that state implies, and moves on through `Transition`. I call it a Stateful Shell because that points straight at [Axiom 24](axiom-24-state-machines.md)'s shell, now kept alive across many steps. Anyone who has written a REPL or a `gen_statem` module [4] will recognize it.
 
 ---
 
 ## Definitions
 
-A **Stateful Shell** is an impure orchestrator that drives a state machine over its lifetime. Its body is a `while` (or equivalent) whose iteration is the FSM step:
+A **Stateful Shell** is an impure orchestrator that drives a state machine through its whole life. Each iteration of its loop is one step of the machine:
 
-1. **Read the current state** — held in a local variable that the loop updates each tick.
-2. **Dispatch the effect that state demands** — pattern-match on the state and perform the impure work each state implies (open a socket, sleep for a delay, read the next message, send a packet).
-3. **Await the environmental event** — the result of the dispatched effect arrives as an event (connection succeeded, connection failed, message received, timer elapsed, cancellation requested).
-4. **Call `Transition(state, event)`** — pure ([Axiom 24](axiom-24-state-machines.md)); produces the next state.
-5. **Repeat** until the next state is *terminal* or external cancellation arrives.
+1. **Read the current state**, kept in a local variable the loop updates.
+2. **Carry out the effect that state implies**: match on the state and do its impure work (open a socket, wait, read the next message).
+3. **Wait for the event** that effect produces (connected, failed, message read, time elapsed).
+4. **Call `Transition(state, event)`**, which is pure and returns the next state.
+5. **Repeat** until the next state is final or the loop is cancelled.
 
-A few terms the loop relies on:
+Each iteration is one sandwich of [Axiom 12](axiom-12-impureim.md) [3], and the four-step shell of [Axiom 24](axiom-24-state-machines.md#definitions), repeated.
 
-- **Terminal state** — a state for which no further dispatch is meaningful. The FSM either reached its goal (`Done`) or gave up (`Failed`). Modelled as one or more variants of the State DU; the loop's exit condition pattern-matches on them.
-- **Cancellation** — an external signal (a `CancellationToken`, an `AtomicBoolean`, a closed channel) the shell honours by exiting the loop. Long-running dispatch helpers thread the signal in too, so a `Sleep` wakes early and a `Read` aborts cleanly.
-- **Environmental event** — an occurrence the loop can observe but does not control: a packet arrived, the socket dropped, the timer elapsed, the user pressed Ctrl-C. Distinct from a command in [Axiom 24](axiom-24-state-machines.md)'s sense — a command is a request *to* the machine; an environmental event is a fact *from* the world. The structural role inside `Transition` is the same; [Axiom 24](axiom-24-state-machines.md) already noted that this input slot is also called `Signal`, `Trigger`, or `Event` when the FSM is reacting rather than answering requests.
+The terms it relies on:
 
-The Moore-style signature **`Transition(state, event) → state`** — the function returns the next state directly — is the natural fit for a Stateful Shell because the loop never pattern-matches on the event after handing it to `Transition`; it only needs the next state to decide what to do on the next tick. The example below refines this slightly: the input is the *running-state subset* and the output is the *full state space* (including the terminal), so the "are we done?" decision lives in `Transition`'s output type and the dispatch's input type stays terminal-free. [Axiom 24](axiom-24-state-machines.md)'s Mealy-style shape (events carry strict-typed next state as their payload) still works here too, and is preferable when downstream consumers — an audit log, a metrics exporter, an observer — also need the event variant. The example below uses the refined Moore shape.
+- **Final state**: a state where nothing more can happen. The machine reached its goal or gave up (`Failed`). It is a case of the state DU, and the loop stops when `Transition` returns it.
+- **Cancellation**: an outside signal (a `CancellationToken` in C#, an `AtomicBoolean` in Java) that stops the loop. Long-running effects receive it too, so a wait ends early and a read stops cleanly.
+- **Event**: something that happens in the world, which the loop observes but doesn't control (a packet arrived, the socket dropped, the timer fired). It fills the slot [Axiom 24](axiom-24-state-machines.md#definitions) calls a command; there, a request to the machine, here a fact from the world.
+
+**Moore, not Mealy.** [Axiom 24](axiom-24-state-machines.md)'s `Transition` returns an event that carries the next state: a [Mealy machine](https://en.wikipedia.org/wiki/Mealy_machine). Here `Transition` returns the next state directly, and the effect depends only on the state: a [Moore machine](https://en.wikipedia.org/wiki/Moore_machine), whose output depends only on its current state [2]. That fits a loop, which only needs the next state to decide its next effect. The Mealy shape still works, and is the better choice when something else (an audit log, metrics) also needs the events. Pick one per machine and stay with it.
 
 ---
 
 ## Example
 
-A small message-queue subscriber that connects to a broker, reads messages until the connection drops, reconnects with bounded retries and exponential backoff, and gives up after too many failures or when cancelled.
+A message-queue subscriber. It connects to a broker, reads messages until the connection drops, reconnects with a growing delay, and gives up after too many failed attempts or when cancelled.
 
-- **State DU**, split per [Axiom 6](axiom-06-honest-total-signatures.md) and [Axiom 21](axiom-21-discriminated-unions.md): `RunningState = Connecting(attempt) | Connected(connection) | BackingOff(nextAttempt)` (the variants the loop can actively dispatch from) and `ConnState = Running(RunningState) | Failed(reason)` (the full state space, with `Failed` as the terminal exit).
-- **Event DU**: `ConnectSucceeded(connection)`, `ConnectFailed(reason)`, `Disconnected`, `BackoffElapsed`.
-- **Pure `Transition`** — `RunningState × ConnEvent → ConnState`. Five arms plus an idempotent catch-all. The input is a `RunningState` (you cannot transition out of `Failed`); the output is a `ConnState` whose two variants carry whether the loop continues (`Running`) or stops (`Failed`).
-- **Loop body**: the dispatch is exhaustive over `RunningState` — three arms, no `Failed` case, no defensive guard — because the local variable's type cannot be `Failed`. After each `Transition` call the result pattern-matches once: `Running` updates the local and continues; `Failed` returns it.
-- **Session Context**: a `SubscriberContext` with `ProcessedCount` (accumulator) and `Cancellation` (the external signal).
+- **States**, split in two: `RunningState = Connecting(attempt) | Connected(connection) | BackingOff(nextAttempt)` are the states the loop acts on; `ConnState = Running(RunningState) | Failed(reason)` adds the final state.
+- **Events**: `ConnectSucceeded(connection)`, `ConnectFailed(reason)`, `Disconnected`, `BackoffElapsed`.
+- **`Transition`**: `RunningState × ConnEvent → ConnState`. It takes a running state (nothing transitions out of `Failed`) and returns either `Running`, to continue, or `Failed`, to stop.
+- **Session Context**: `SubscriberContext`, with a message counter and the cancellation signal.
 
-`IConnection` is whatever connection handle the underlying broker library returns; the dispatch helpers `TryConnect`, `Sleep`, `ConsumeUntilDropped`, and `BackoffDelay` are impure shell helpers omitted for brevity — the axiom is teaching the loop shape, not the helper bodies.
+`BrokerConnection` stands for whatever the broker library returns. The effect helpers (`TryConnect`, `WaitFor`, `ConsumeUntilDropped`) are left out; the axiom is about the loop, not their bodies.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -54,44 +54,22 @@ A small message-queue subscriber that connects to a broker, reads messages until
 <td>
 
 ```csharp
-public abstract record RunningState
-{
-    public abstract T Match<T>(
-        Func<Connecting, T> onConnecting,
-        Func<Connected,  T> onConnected,
-        Func<BackingOff, T> onBackingOff);
-}
-public sealed record Connecting(int Attempt) : RunningState
-{
-    public override T Match<T>(
-        Func<Connecting, T> onConnecting,
-        Func<Connected,  T> onConnected,
-        Func<BackingOff, T> onBackingOff) => onConnecting(this);
-}
-public sealed record Connected(IConnection Conn) : RunningState
-{
-    public override T Match<T>(
-        Func<Connecting, T> onConnecting,
-        Func<Connected,  T> onConnected,
-        Func<BackingOff, T> onBackingOff) => onConnected(this);
-}
-public sealed record BackingOff(int NextAttempt) : RunningState
-{
-    public override T Match<T>(
-        Func<Connecting, T> onConnecting,
-        Func<Connected,  T> onConnected,
-        Func<BackingOff, T> onBackingOff) => onBackingOff(this);
-}
+public abstract record RunningState;
+public sealed record Connecting(int Attempt) : RunningState;
+public sealed record Connected(BrokerConnection Connection)
+    : RunningState;
+public sealed record BackingOff(int NextAttempt) : RunningState;
 
 public abstract record ConnState;
-public sealed record Running(RunningState RunningState) : ConnState;
+public sealed record Running(RunningState State) : ConnState;
 public sealed record Failed(string Reason)       : ConnState;
 
 public abstract record ConnEvent;
-public sealed record ConnectSucceeded(IConnection Conn) : ConnEvent;
-public sealed record ConnectFailed(string Reason)       : ConnEvent;
-public sealed record Disconnected                       : ConnEvent;
-public sealed record BackoffElapsed                     : ConnEvent;
+public sealed record ConnectSucceeded(BrokerConnection Connection)
+    : ConnEvent;
+public sealed record ConnectFailed(string Reason) : ConnEvent;
+public sealed record Disconnected   : ConnEvent;
+public sealed record BackoffElapsed : ConnEvent;
 
 public sealed class SubscriberContext
 {
@@ -101,31 +79,44 @@ public sealed class SubscriberContext
 
 private const int MaxAttempts = 5;
 
-public static ConnState Transition(RunningState state, ConnEvent ev) => (state, ev) switch
-{
-    (Connecting,        ConnectSucceeded s)                 => new Running(new Connected(s.Conn)),
-    (Connecting(var a), ConnectFailed) when a < MaxAttempts => new Running(new BackingOff(a + 1)),
-    (Connecting,        ConnectFailed f)                    => new Failed(f.Reason),
-    (Connected,         Disconnected)                       => new Running(new BackingOff(1)),
-    (BackingOff(var n), BackoffElapsed)                     => new Running(new Connecting(n)),
-    _                                                       => new Running(state)
-};
-
-public Failed Run(SubscriberContext ctx)
-{
-    RunningState currentRunningState = new Connecting(1);
-    while (!ctx.Cancellation.IsCancellationRequested)
+public static ConnState Transition(RunningState state, ConnEvent ev) =>
+    (state, ev) switch
     {
-        ConnEvent ev = currentRunningState.Match(                                  // impure dispatch, exhaustive by signature
-            onConnecting:  _ => TryConnect(),
-            onConnected:   c => ConsumeUntilDropped(c.Conn, ctx),
-            onBackingOff:  b => Sleep(BackoffDelay(b.NextAttempt), ctx.Cancellation)
-        );
-        var connState = Transition(currentRunningState, ev);                       // pure call
-        switch (connState)                                                         // match on the result
+        (Connecting, ConnectSucceeded s) =>
+            new Running(new Connected(s.Connection)),
+        (Connecting(var attempt), ConnectFailed)
+            when attempt < MaxAttempts =>
+            new Running(new BackingOff(attempt + 1)),
+        (Connecting, ConnectFailed f) =>
+            new Failed(f.Reason),
+        (Connected, Disconnected) =>
+            new Running(new BackingOff(1)),
+        (BackingOff(var next), BackoffElapsed) =>
+            new Running(new Connecting(next)),
+        _ => new Running(state)   // event doesn't apply: no change
+    };
+
+public Failed Run(SubscriberContext context)
+{
+    RunningState state = new Connecting(1);
+    while (!context.Cancellation.IsCancellationRequested)
+    {
+        ConnEvent ev = state switch                     // act
         {
-            case Running r: currentRunningState = r.RunningState; break;
-            case Failed  f: return f;
+            Connecting   => TryConnect(),
+            Connected c  => ConsumeUntilDropped(c.Connection, context),
+            BackingOff b => WaitFor(
+                CalculateBackoffDelay(b.NextAttempt), context.Cancellation),
+            _ => throw new UnreachableException()
+        };
+
+        var next = Transition(state, ev);               // decide
+
+        switch (next)
+        {
+            case Running r: state = r.State; break;
+            case Failed f:  return f;
+            default:        throw new UnreachableException();
         }
     }
     return new Failed("cancelled");
@@ -138,25 +129,29 @@ public Failed Run(SubscriberContext ctx)
 ```java
 public sealed interface RunningState
     permits Connecting, Connected, BackingOff {}
-public record Connecting(int attempt)     implements RunningState {}
-public record Connected(IConnection conn) implements RunningState {}
+public record Connecting(int attempt) implements RunningState {}
+public record Connected(BrokerConnection connection)
+    implements RunningState {}
 public record BackingOff(int nextAttempt) implements RunningState {}
 
 public sealed interface ConnState permits Running, Failed {}
-public record Running(RunningState runningState) implements ConnState {}
+public record Running(RunningState state) implements ConnState {}
 public record Failed(String reason)       implements ConnState {}
 
 public sealed interface ConnEvent
     permits ConnectSucceeded, ConnectFailed, Disconnected, BackoffElapsed {}
-public record ConnectSucceeded(IConnection conn) implements ConnEvent {}
-public record ConnectFailed(String reason)       implements ConnEvent {}
-public record Disconnected()                     implements ConnEvent {}
-public record BackoffElapsed()                   implements ConnEvent {}
+public record ConnectSucceeded(BrokerConnection connection)
+    implements ConnEvent {}
+public record ConnectFailed(String reason) implements ConnEvent {}
+public record Disconnected()   implements ConnEvent {}
+public record BackoffElapsed() implements ConnEvent {}
 
 public static final class SubscriberContext {
     public int processedCount;
     public final AtomicBoolean cancelled;
-    public SubscriberContext(AtomicBoolean cancelled) { this.cancelled = cancelled; }
+    public SubscriberContext(AtomicBoolean cancelled) {
+        this.cancelled = cancelled;
+    }
 }
 
 private static final int MAX_ATTEMPTS = 5;
@@ -164,13 +159,13 @@ private static final int MAX_ATTEMPTS = 5;
 public static ConnState transition(RunningState state, ConnEvent ev) {
     return switch (state) {
         case Connecting c -> switch (ev) {
-            case ConnectSucceeded s -> new Running(new Connected(s.conn()));
+            case ConnectSucceeded s -> new Running(new Connected(s.connection()));
             case ConnectFailed f    -> c.attempt() < MAX_ATTEMPTS
-                                        ? new Running(new BackingOff(c.attempt() + 1))
-                                        : new Failed(f.reason());
-            default                 -> new Running(state);
+                ? new Running(new BackingOff(c.attempt() + 1))
+                : new Failed(f.reason());
+            default -> new Running(state);   // event doesn't apply
         };
-        case Connected co -> switch (ev) {
+        case Connected c -> switch (ev) {
             case Disconnected d -> new Running(new BackingOff(1));
             default             -> new Running(state);
         };
@@ -181,18 +176,21 @@ public static ConnState transition(RunningState state, ConnEvent ev) {
     };
 }
 
-public Failed run(SubscriberContext ctx) {
-    RunningState currentRunningState = new Connecting(1);
-    while (!ctx.cancelled.get()) {
-        ConnEvent ev = switch (currentRunningState) {                                // impure: exhaustive over RunningState
+public Failed run(SubscriberContext context) {
+    RunningState state = new Connecting(1);
+    while (!context.cancelled.get()) {
+        ConnEvent ev = switch (state) {                 // act
             case Connecting c -> tryConnect();
-            case BackingOff b -> sleep(backoffDelay(b.nextAttempt()), ctx.cancelled);
-            case Connected co -> consumeUntilDropped(co.conn(), ctx);
+            case Connected c  -> consumeUntilDropped(c.connection(), context);
+            case BackingOff b -> waitFor(
+                calculateBackoffDelay(b.nextAttempt()), context.cancelled);
         };
-        var connState = transition(currentRunningState, ev);                        // pure call
-        switch (connState) {                                                         // match on the result
-            case Running r -> { currentRunningState = r.runningState(); }
-            case Failed  f -> { return f; }
+
+        var next = transition(state, ev);               // decide
+
+        switch (next) {
+            case Running r -> state = r.state();
+            case Failed f  -> { return f; }
         }
     }
     return new Failed("cancelled");
@@ -203,9 +201,9 @@ public Failed run(SubscriberContext ctx) {
 </tr>
 </table>
 
-`Transition` never sees the connection, the clock, the cancellation token, or the message counter — it is pure ([Axiom 5](axiom-05-pure-functions.md)) and tested as a table of `(state, event, expected)` rows. The loop dispatches on the current running state: each `RunningState` variant names one natural side effect the shell performs and awaits, and the dispatch is *exhaustive over `RunningState`* — there is no `Failed` arm because the local variable's type cannot be `Failed`. That is [Axiom 6](axiom-06-honest-total-signatures.md) / [Axiom 18](axiom-18-value-objects.md)'s *illegal states unrepresentable*, applied at the FSM-state level: the type system, not a runtime guard, keeps the terminal out of the dispatch. `Transition`'s return type carries the "are we done?" decision — `Running` to continue, `Failed` to exit — which the loop pattern-matches once per tick. `ConsumeUntilDropped` is itself a tight inner loop that reads messages, increments `ctx.ProcessedCount`, and returns `Disconnected` when the connection drops — message processing lives inside the Connected dispatch, not as FSM events, because the FSM here models only the connection lifecycle. The whole tick is one Impureim sandwich from [Axiom 12](axiom-12-impureim.md) — impure dispatch, pure `Transition`, impure update — and the loop is that sandwich repeated.
+`Transition` never sees the connection, the clock, the cancellation signal or the counter. It is pure ([Axiom 5](axiom-05-pure-functions.md)) and tested as a table of (state, event, expected) rows. The loop matches on the running state, and there is no `Failed` branch to write, because the variable's type can't hold a `Failed`: the final state lives only in `Transition`'s return type. (The C# discard branch is the usual limitation of [Axiom 11](axiom-11-pattern-matching.md#definitions), not a real case; C# 15's union types would remove it.)
 
-`ConsumeUntilDropped` is the one helper that touches the Session Context — every other dispatch helper (`TryConnect`, `Sleep`, `BackoffDelay`) just produces an event without mutating ctx. Its body, schematically:
+`ConsumeUntilDropped` is the one effect that touches the Session Context. Message processing lives inside it, not as events of the machine, because the machine models only the connection's life:
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -213,11 +211,12 @@ public Failed run(SubscriberContext ctx) {
 <td>
 
 ```csharp
-// schematic — ConsumeUntilDropped
-while (!conn.IsDropped && !ctx.Cancellation.IsCancellationRequested)
+// inside ConsumeUntilDropped
+while (!connection.IsDropped
+       && !context.Cancellation.IsCancellationRequested)
 {
-    Process(conn.Read());
-    ctx.ProcessedCount++;     // session accumulator — only writer in the program
+    ProcessMessage(connection.Read());
+    context.ProcessedCount++;   // the only write to the context
 }
 return new Disconnected();
 ```
@@ -226,10 +225,10 @@ return new Disconnected();
 <td>
 
 ```java
-// schematic — consumeUntilDropped
-while (!conn.isDropped() && !ctx.cancelled.get()) {
-    process(conn.read());
-    ctx.processedCount++;     // session accumulator — only writer in the program
+// inside consumeUntilDropped
+while (!connection.isDropped() && !context.cancelled.get()) {
+    processMessage(connection.read());
+    context.processedCount++;   // the only write to the context
 }
 return new Disconnected();
 ```
@@ -238,89 +237,71 @@ return new Disconnected();
 </tr>
 </table>
 
-That `ctx.ProcessedCount++` is the entire reason `SubscriberContext` exists in this example. It demonstrates [Axiom 25](axiom-25-session-context.md)'s shape concretely: a per-session accumulator, owned by the shell, written by exactly one site, never seen by `Transition`. The cancellation check inside the inner loop is the other half of the contract — the shell honours the external signal not just at the outer `while` but everywhere a long-running effect could otherwise stall.
-
-Both versions of the dispatch are honestly exhaustive — no `default` arm, no throw, no defensive guard against an unreachable case. The C# version uses the **Match method form** from [Axiom 11](axiom-11-pattern-matching.md): `currentRunningState.Match(onConnecting: ..., onConnected: ..., onBackingOff: ...)`. Match's parameter list enumerates every variant, so the C# compiler refuses any call site that omits one — no `switch` expression, no CS8509 over `abstract record` hierarchies, no `_ =>` arm to fill with `throw new UnreachableException()`. The Java version takes the other surface from [Axiom 11](axiom-11-pattern-matching.md) — a pattern-matching `switch` over a `sealed interface` (JEP 441) — which is also exhaustive at compile-time. Both surfaces deliver the same property: an unreachable defensive arm in the dispatch cannot exist by construction. The cost C# pays for Match is per-tick closure allocation for the three lambda arms; in a hot-path loop where allocation pressure matters, the `switch` expression form remains an option, with its `_ => throw new UnreachableException()` understood as a CS8509 tooling artifact (a known platform limitation, not a guard against a real case) — that trade-off is the one [Axiom 11](axiom-11-pattern-matching.md) already drew between the two surfaces.
+That counter is the whole reason `SubscriberContext` exists here: a per-session accumulator, owned by the shell, written in exactly one place and never seen by `Transition` ([Axiom 25](axiom-25-session-context.md)). The cancellation check inside this inner loop is the other half of the contract: the shell honors the signal wherever a long-running effect could otherwise hang, not only at the outer `while`.
 
 ---
 
 ## Problem / forces
 
-When a program needs an entity that lives across many events and must do something different in each condition over time, four shapes recur:
+When something lives across many events and must act differently in each condition, four shapes are common:
 
-1. **A `while (true)` with the rules and the effects interleaved.** The body opens a socket, reads, checks status flags, sleeps, retries — all inline. The "state" is implicit in local variables and the position in the body; there is no name for any condition the loop is in; reasoning about "what is the loop doing right now?" means reading the entire body. The cost is the one [Axiom 24](axiom-24-state-machines.md) named: the decision and the effect are tangled, and the decision is not testable without standing the effect up.
-2. **Callback hell / nested response handlers.** Each effect registers a callback for its result; the result callback registers the next effect; the next effect registers a callback for its result. The state lives in the closure chain; there is no central place that says "we are in `Connecting` right now." Following the flow means tracing handlers across files; testing the decision means standing up the entire callback graph.
-3. **A configured actor framework or workflow runtime.** Akka FSM, Spring StateMachine, `gen_statem`, Temporal, Camunda. A declarative graph of states and transitions registered with a runtime that drives the machine. A long-standing option appropriate when the runtime's concerns — supervision, persistence, distribution, retries with circuit-breaking, observability, durable timers — are themselves part of the requirement; the framework solves problems that would otherwise be re-implemented by hand around the loop. Trade-off: the rules live in declarative configuration next to the type system rather than inside it, the runtime is a dependency, and testing involves standing the runtime up.
-4. **A Stateful Shell calling [Axiom 24](axiom-24-state-machines.md)'s pure `Transition`.** The loop is a small impure shell that reads state, dispatches the per-state effect, awaits the event, calls `Transition`, repeats. The rules live inside `Transition`. The runtime is whatever the host process provides — a thread, an `async` task, a virtual thread.
+1. **A `while (true)` with rules and effects mixed.** The body connects, reads, checks flags, waits and retries inline. The state hides in local variables and in *where* the code is; to know what the loop is doing, you read all of it. It is the tangle [Axiom 24](axiom-24-state-machines.md#problem--forces) describes, now in a loop.
+2. **Nested callbacks.** Each effect registers a callback for its result, which starts the next effect. The state lives in a chain of closures, with no single place that says "we are connecting right now". Testing a decision means building the whole callback graph.
+3. **An actor framework or workflow engine** (Akka, Spring Statemachine, Erlang's `gen_statem`, Temporal, Camunda). A runtime drives a declared graph of states. A good fit when what the runtime provides (supervision, persistence, distribution, durable timers) is itself a requirement. The rules sit in configuration rather than in the types, the runtime is a dependency, and testing involves it.
+4. **A Stateful Shell around a pure `Transition`.** A small loop that reads the state, carries out its effect, waits for the event, calls `Transition`, and repeats. The rules live in `Transition`; the runtime is whatever the host provides (a thread, an async task, a virtual thread).
 
-Options 1 and 2 share one cost: state and effects are entangled, and the FSM that the program *is* never gets named. Options 3 and 4 are both honest separations of *describing* the machine from *running* it. The choice between 3 and 4 is the same one [Axiom 24](axiom-24-state-machines.md)'s Problem / forces drew for the one-shot case — whether the runtime concerns the framework solves earn its presence as a dependency. The Stateful Shell is the playbook's default when the host process already gives you the needed runtime — a thread, an async loop — and the rules are simple enough to express as one pure function.
+Options 1 and 2 never name the state machine the program really is. Options 3 and 4 both separate describing the machine from running it; the choice between them is the one [Axiom 24](axiom-24-state-machines.md#problem--forces) describes for libraries. This book defaults to the Stateful Shell when the host already gives you the runtime you need and the rules fit in one pure function.
 
 ---
 
 ## Why
 
-**1. The pure core is unchanged.**
-`Transition` is the same function from [Axiom 24](axiom-24-state-machines.md), pure and total. Reviewing what the machine does means reading `Transition`; running it over a real connection means wrapping it in this loop. The two concerns stay separate: rules in one place, runtime in another.
+**1. The core is unchanged, and each iteration is a known shape.**
+`Transition` is still pure and total; reviewing what the machine does still means reading one function. Each iteration of the loop is the shell of [Axiom 24](axiom-24-state-machines.md), so the loop adds only the repetition [1].
 
-**2. Every tick is the one-shot shell from Axiom 24, iterated.**
-Read state, dispatch effect, get event, call `Transition`, take the new state. The four-step shape [Axiom 24](axiom-24-state-machines.md) named is one tick of this loop. The loop adds *only* the iteration; the per-tick structure is already understood.
+**2. The state implies the effect.**
+To learn what the program does in state X, read the one branch of the loop's `switch` for X. There is no other place where an effect might fire, and no callback registered elsewhere.
 
-**3. The state implies the effect.**
-A reviewer who wants to know "what does this program do when it's in state X?" pattern-matches on the loop's dispatch — one arm per state — and reads the body. There is no second place where effects might fire, no callback registered elsewhere, no implicit "after the previous step." The loop dispatches on the current state and only on the current state.
+**3. Both exits are visible.**
+The loop ends when `Transition` returns a final state or when cancellation arrives, and both checks are in plain sight. In a `while (true)`, exits hide as `break`s and `return`s scattered through the body.
 
-**4. Terminal states and cancellation are the exit conditions, both visible.**
-The `while` condition is a pattern check on the state (`is not Failed`) plus an external cancellation check. Both exits live in one line. Compare with `while (true)` shells where exits live as scattered `break`s and `return`s buried in the body.
+**4. The host doesn't matter.**
+The same loop runs on a dedicated thread, an async task, a virtual thread or a command-line program's main thread. Moving from blocking to async changes the effect helpers' signatures, not the loop.
 
-**5. Cross-tick working memory has a named home.**
-Counters, the cancellation token, captured callbacks — anything the loop needs to read or accumulate between ticks — lives in a [Session Context (Axiom 25)](axiom-25-session-context.md) that the shell owns and threads through. The pure `Transition` never sees it; the loop and its dispatched effects do.
-
-**6. The loop is host-agnostic.**
-The same shape runs on a dedicated thread, an `async` task, a virtual thread, a goroutine, or the main thread of a CLI program. The host provides the runtime; the loop is the shape that uses it. Moving from a blocking thread to `async` swaps the `await` keyword and the dispatch helpers' signatures; the loop's structure does not change.
-
-> **A note on Tell, Don't Ask.** [Axiom 1](axiom-01-data-is-not-behavior.md) set the OO maxim *Tell, Don't Ask* aside as the road not taken: in the pure core you pull data out as values and decide *outside* the object — the deliberate opposite of pushing behaviour into the state. The Stateful Shell is where that maxim comes back into its own. A connection, a socket, a pool, a broker handle is a genuine *place*, not a value — you cannot freeze a live connection into an immutable fact, and you should not reach into its insides to drive it by hand. So the shell *tells* them — `TryConnect()`, `conn.Read()`, `ConsumeUntilDropped(conn, ctx)` — and never asks for their internal state in order to decide externally. Tell-Don't-Ask was never wrong; it was *located*. It is the right rule on the stateful side of the seam — here, in the shell, around the resources that legitimately hold state — and the wrong rule on the pure side, where [Axiom 23](axiom-23-pure-functions-returning-actions.md) splits the decision back out as a value. The Impureim seam between core and shell is exactly the line where the maxim flips.
+> **Where Tell, Don't Ask belongs.** [Axiom 1](axiom-01-data-is-not-behavior.md#tell-dont-ask-the-road-not-taken) set *Tell, Don't Ask* aside for the pure core, where data is pulled out as values and decisions are made outside any object. The Stateful Shell is where that maxim comes back. A connection, a socket or a broker handle is a real *place*, not a value: you can't freeze a live connection into a fact, and you shouldn't reach inside it to drive it by hand. So the shell *tells* it (`TryConnect()`, `connection.Read()`) and never asks for its internals to decide outside. Tell, Don't Ask was never wrong; it has a location. It is the right rule on the stateful side of the seam, around resources that really hold state, and the wrong rule on the pure side, where [Axiom 23](axiom-23-pure-functions-returning-actions.md) takes the decision out as a value.
 
 ---
 
 ## Trade-offs
 
-**The loop's dispatch grows with the state count.** A four-state FSM has a four-arm dispatch; a fifteen-state FSM has a fifteen-arm one. The remedy is the same one [Axiom 24](axiom-24-state-machines.md) named for `Transition`: decompose into per-state helpers — `DispatchConnecting(...)`, `DispatchConnected(...)` — that the top-level dispatch delegates to. Both axes (states and the per-state effects) compose because both are values, and the helpers are unit-testable on their own.
-
-**Terminal states earn their own seam in the type system.** The example splits the state DU into a `RunningState` (variants the loop dispatches from) and a `ConnState = Running(RunningState) | Failed(reason)` outer DU. The split makes the dispatch exhaustive without a `Failed` arm — the terminal lives in `Transition`'s output, not as a runtime-guarded case in the dispatch. A flatter single-DU shape (all variants in one hierarchy) is sometimes simpler when the FSM is tiny; it pays for the simplicity with an unreachable arm in every per-state dispatch. Either way, modelling the terminal at all is the part not to forget — a Stateful Shell without an explicit terminal spins forever.
-
-**Cancellation is part of the contract.** A long-running loop without an honest cancellation path is a process leak — when the host wants to stop, the loop must too. The shell threads a `CancellationToken` (C#), an `AtomicBoolean` (Java), or an equivalent signal into both the loop condition and the long-running dispatch helpers (so `Sleep` exits early on cancellation and `ConsumeUntilDropped` aborts the read). This is a cost the one-shot shell from [Axiom 24](axiom-24-state-machines.md) did not pay.
-
-**Moore vs Mealy is a choose-once decision.** The Moore-style `Transition(state, event) → state` used above is the simplest fit when the loop's dispatch is purely state-driven. [Axiom 24](axiom-24-state-machines.md)'s Mealy-style shape — events carrying the strict-typed next state — is the better fit when *downstream consumers* (an audit log, a metrics exporter, an observer) also need the event variant. Both shapes are honest; choose per codebase and stay consistent within the FSM.
-
-**Inner loops inside a dispatch are a real engineering choice.** The example puts message processing inside `ConsumeUntilDropped` — an inner loop that reads, increments `ctx.ProcessedCount`, and returns `Disconnected` when the connection drops. The alternative is to surface every message as an FSM event (`MessageReceived(body)`) the outer loop pattern-matches with a `NoChange` arm. Both work; the inner-loop form keeps the outer FSM focused on connection lifecycle and avoids `Transition` arms that do nothing structural. When the message itself can drive a state transition — a protocol where one message type means "session is ending" — promote it to an FSM event; otherwise inline it in the dispatch.
-
-**Backpressure, batching, and partial-failure recovery live in the dispatch.** A real `ConsumeUntilDropped` would batch acks, honour backpressure, and decide whether to surface a malformed message as a parse-error-logged-and-continue or as a `Disconnected` event that drops the connection. These concerns are about *how* the Connected dispatch does its work; the FSM only cares about the resulting event. Pile them all into the FSM and the FSM stops being an FSM; pile them all into one dispatch helper and that helper grows; the practical answer is the same as [Axiom 24](axiom-24-state-machines.md)'s — decompose into smaller pure or impure helpers, each named after the concern it solves.
+- **The loop's `switch` grows with the states.** Fifteen states mean fifteen branches. As with `Transition` ([Axiom 24](axiom-24-state-machines.md#trade-offs)), split the work into one helper per state, which the loop calls.
+- **The final state needs its own place in the types.** Splitting `RunningState` from `ConnState` keeps the loop's `switch` free of a `Failed` branch. A single flat DU is simpler for a tiny machine, but then every `switch` in the loop needs a branch for a state it can never see. Either way, *have* a final state: a Stateful Shell without one runs forever.
+- **Cancellation is part of the contract.** A long-running loop that can't be stopped is a leak. The signal goes into the loop condition *and* into every long-running effect, so a wait ends early and a read stops. The one-shot shell of [Axiom 24](axiom-24-state-machines.md) never paid this cost.
+- **Inner loops are a design choice.** The example processes messages inside `ConsumeUntilDropped`. The alternative is to make each message an event (`MessageReceived`) that `Transition` mostly ignores. Keep the inner loop while messages don't change the machine's state; promote a message to an event when it does (a message that means "this session is ending").
+- **Batching, back-pressure and bad messages belong to the effect.** How `ConsumeUntilDropped` acknowledges messages in batches, slows down, or treats a malformed message is about *how* the `Connected` effect works; the machine only cares about the event it returns. Split those concerns into named helpers rather than into the machine.
 
 ---
 
 ## When NOT to
 
-**One-shot shells.** When the program loads state once, calls `Transition` once, persists, and returns — the synthesis from [Axiom 24](axiom-24-state-machines.md) — there is no loop. The Stateful Shell is for entities that live across many events and must keep deciding what to do next. A request handler, a fire-and-forget command, a `main` that runs one batch and exits — none of these need this shape.
-
-**Pure batch processors with no FSM.** A program that reads a stream of items, runs a pure function on each, writes the output, and exits has no "current state" beyond the iteration cursor — that's just `items.foreach(processOne)`. The Stateful Shell earns its vocabulary when the *next* iteration's behaviour depends on the *current* state of a stateful resource (a connection, a session, a long-running job). If every item is independent, the loop is just a loop, and the FSM machinery is dead weight.
-
-**Heavy infrastructure that already runs the machine.** Temporal, Camunda, Step Functions, Akka Persistence, durable execution platforms — these are themselves Stateful Shells with persistence and supervision baked in. Building this axiom's shape on top of them duplicates the loop. The Stateful Shell is the playbook's answer when *you* own the host process; when a workflow engine owns it, configure the engine and let it drive the FSM directly.
-
-**Single-event reactive handlers.** When the program reacts to one event at a time with no continuity between handlings — a webhook receiver, a queue consumer where each message is independent and there is no per-session state to carry across messages — there is no loop in the Stateful-Shell sense. Each handling is a one-shot shell ([Axiom 24](axiom-24-state-machines.md)); the host's dispatcher (the HTTP server, the queue listener framework) is what loops on the outside, and that is a fine division of labour.
+- **One-shot work.** A request handler that loads a state, calls `Transition` once, saves and responds ([Axiom 24](axiom-24-state-machines.md)) has no loop. Neither does a handler where each message is independent: the web server or queue listener is the loop, and each handling is a one-shot shell.
+- **Plain batch processing.** A program that runs a pure function over each item of a stream and exits has no state beyond its position in the stream: it is `foreach`, not a state machine. The Stateful Shell earns its vocabulary when the *next* step depends on the *current* state of something long-lived, such as a connection.
+- **A workflow engine already runs it.** Temporal, Camunda or AWS Step Functions are Stateful Shells with persistence built in; a hand-written loop on top would duplicate them ([Axiom 24](axiom-24-state-machines.md#when-not-to)).
 
 ---
 
 ## References
 
-[1] **Scott Wlaschin**, *Domain Modeling Made Functional*, Pragmatic Bookshelf, 2018. Cross-listed from [Axiom 16](axiom-16-result.md), [Axiom 17](axiom-17-result-combinators.md), [Axiom 18](axiom-18-value-objects.md), [Axiom 19](axiom-19-railway.md), [Axiom 20](axiom-20-validation.md), [Axiom 23](axiom-23-pure-functions-returning-actions.md), and [Axiom 24](axiom-24-state-machines.md). The state-machine chapter shows the one-shot shell; the closing chapter on long-running workflows is the F# precedent for the loop shape this axiom names — pure transitions, impure orchestration, repeated.
+[1] **Scott Wlaschin**, *Domain Modeling Made Functional*, Pragmatic Bookshelf, 2018. Also cited in [Axiom 16](axiom-16-result.md), [Axiom 17](axiom-17-result-combinators.md), [Axiom 19](axiom-19-railway.md), [Axiom 20](axiom-20-validation.md), [Axiom 23](axiom-23-pure-functions-returning-actions.md) and [Axiom 24](axiom-24-state-machines.md). Pure transitions with impure orchestration around them, the shape this loop repeats.
 <https://pragprog.com/titles/swdddf/domain-modeling-made-functional/>
 
-[2] **John Hopcroft, Rajeev Motwani, Jeffrey Ullman**, *Introduction to Automata Theory, Languages, and Computation*, Addison-Wesley, 3rd ed. 2006. The Moore machine — `(Q, Σ, δ, λ, q0)` with transition function `δ: Q × Σ → Q` and output function `λ: Q → Λ` (output per state, not per transition) — is the mathematical ancestor of this axiom's shape: `Transition(state, event) → state` is exactly `δ`, and the loop's per-state dispatch is `λ`, the output function that fires the side effect implied by the current state. Axiom 24's Mealy form combines δ and λ on the transition; this axiom's Moore form separates them — δ inside `Transition`, λ inside the dispatch.
+[2] **Edward F. Moore**, *Gedanken-experiments on Sequential Machines*, in *Automata Studies* (Annals of Mathematics Studies 34), Princeton University Press, 1956, pp. 129–153. The Moore machine, whose output depends only on its current state: `Transition` is its next-state function, and the loop's per-state effect is its output.
 
-[3] **Mark Seemann**, *The Impureim Sandwich*, 2020. Cross-listed from [Axiom 5](axiom-05-pure-functions.md), [Axiom 12](axiom-12-impureim.md), and [Axiom 23](axiom-23-pure-functions-returning-actions.md). Each tick of the Stateful Shell is one sandwich: impure dispatch → pure `Transition` → impure assignment of the next state. The loop is the iterated form of the sandwich, repeated until the FSM terminates.
+[3] **Mark Seemann**, *Impureim Sandwich*, ploeh blog, 2020. Also cited in [Axiom 12](axiom-12-impureim.md) and [Axiom 23](axiom-23-pure-functions-returning-actions.md). Each iteration of the loop is one sandwich: an impure effect, the pure `Transition`, then the next state.
 <https://blog.ploeh.dk/2020/03/02/impureim-sandwich/>
 
-[4] **Joe Armstrong**, *Programming Erlang* (2nd ed.), Pragmatic Bookshelf, 2013 — the chapters on `gen_server` and `gen_statem`. The OTP behaviours are the canonical reference for the framework form of this axiom (option 3 on the trade-off curve): the loop lives in the framework, the user supplies the per-state callback functions and a transition function. The Stateful Shell here is the hand-rolled equivalent — same shape, runtime owned by the host process rather than by OTP.
-<https://pragprog.com/titles/jaerlang2/programming-erlang/>
+[4] **Erlang/OTP**, *gen_statem* documentation. The framework form of this shape: OTP runs the loop, and the programmer supplies the per-state callbacks.
+<https://www.erlang.org/doc/apps/stdlib/gen_statem.html>
 
 ---
 
