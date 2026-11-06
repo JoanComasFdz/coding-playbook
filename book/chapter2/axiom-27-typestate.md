@@ -1,45 +1,33 @@
 # Axiom 27 — Typestate
 
-**When a sequence of operations must be executed in a particular order, give each state its own immutable type and make each operation return the type of the next state. Each operation lives only on the type of the state where it is valid; a transition is the operation whose return type is the *next* state (`S₁ → S₂`, a new value, not a mutation). The compiler refuses any out-of-order call, because the function simply does not exist on the type the caller is holding. This makes illegal call sequences unrepresentable, the same way [Axiom 18](axiom-18-value-objects.md) made illegal values unrepresentable.**
+**When operations must run in a set order, give each state its own immutable type, put each operation only on the type of the state where it is valid, and make every transition return the type of the next state. A call made in the wrong order then doesn't compile: the method isn't there on the value the caller holds.**
 
-- Each state is its own immutable type — a record, or a variant of a sealed hierarchy.
-- Operations valid in state `S₁` live as methods on `S₁`'s type, **not** on a shared base. The compiler decides what's callable by which type the value currently has.
-- A transition is a function whose signature is `S₁ → S₂` — the input is the state you're in, the output is the state you're in next. When the transition can fail, the return is `Result<S₂, string>` ([Axiom 16](axiom-16-result.md)).
-- The runtime guard `if (state != X) throw ...` and the status-field switch `if (Status == Cancelled) { ... }` **disappear** because the call that would have failed them cannot be written.
+[Axiom 18](axiom-18-value-objects.md) made illegal *values* unrepresentable, [Axiom 22](axiom-22-illegal-states.md) a record's illegal *shapes*, and [Axiom 24](axiom-24-state-machines.md) put the legal *transitions* into one pure function. Typestate does the same for *call order*. A caller holding an `AuthenticationService` can't ask whether the user is an admin, because `HasRole` only exists on `AuthenticatedSession`, and the only way to get one is to authenticate.
 
-[Axiom 18](axiom-18-value-objects.md) makes the *values* a domain accepts unrepresentable when they violate a rule — `Username.Parse("")` returns a `Failure`, not a `Username`. [Axiom 22](axiom-22-illegal-states.md) makes a record's *shape* unrepresentable when its fields combine illegally — a `Paid` bill without its payment reference cannot be constructed. [Axiom 24](axiom-24-state-machines.md) makes the *transitions* between states first-class — one pure `Transition(state, command) → event` over a sealed DU of states. This axiom completes the family by making *call sequences* unrepresentable: each state in the machine becomes its own type, and the operations that belong to that state live only on that type. A caller holding an `AuthenticationService` cannot ask "does this session have the admin role?" — the method `HasRole` does not exist on that type. The runtime guard the alternative spends every method enforcing is gone because the type system has done the work once.
+Through [Axiom 8](axiom-08-connascence.md)'s lens, typestate turns a dynamic [Connascence of Execution](axiom-08-connascence.md#connascence-of-execution-coe) (callers must remember the order, what Hunt and Thomas call *temporal coupling* [2]) into a static [Connascence of Type](axiom-08-connascence.md#connascence-of-type-cot) the compiler checks.
 
-Through [Axiom 8](axiom-08-connascence.md)'s lens, this axiom weakens the strongest connascence — a [Connascence of Execution](axiom-08-connascence.md#connascence-of-execution-coe), the *temporal coupling* of call order — into a Connascence of Type, so the out-of-order call cannot be written.
-
-This axiom comes last because most code does not need it. A chapter-one engineer reaches for the [Axiom 24](axiom-24-state-machines.md) shape constantly — every entity with a status field is a state machine. Typestate is the type-level escalation, paid for in extra named types and the discipline of returning a new value from every transition. The payoff is real where the consequence of a wrong-order call is severe — silent authorization holes, leaked resources, half-built mutable objects — but for most domain logic, the value-level state machine of [Axiom 24](axiom-24-state-machines.md) already encodes enough.
+This axiom comes last because most code doesn't need it. Every status field is a state machine, and [Axiom 24](axiom-24-state-machines.md)'s value-level `Transition` is usually enough. Typestate costs one named type per state. It pays off where a wrong-order call does real harm: an authorization hole, a leaked resource, a half-built object.
 
 ---
 
 ## Definitions
 
-A typestate is a discipline with three properties:
+A **typestate** has four properties:
 
-- **One named immutable type per state.** A record or a sealed-hierarchy variant whose data is fixed at construction ([Axiom 2](axiom-02-immutability.md)). When the entity has a single linear progression — opened then closed, draft then submitted — the states are separate records. When the entity has multiple variants of the same condition, a sealed interface with one record per variant ([Axiom 21](axiom-21-discriminated-unions.md)) is the shape, and each variant is its own typestate.
+- **One immutable type per state.** A record ([Axiom 2](axiom-02-immutability.md)). A linear lifecycle (open, then closed) gets one record per step. When a step has several variants, they form a sealed hierarchy ([Axiom 21](axiom-21-discriminated-unions.md)), and each variant is a typestate of its own.
+- **A transition returns the next type.** `S₁ → S₂`: calling it builds a new value of the next state and leaves the input untouched. When it can fail, it returns `Result<S₂, string>` ([Axiom 16](axiom-16-result.md)).
+- **Each operation lives on the type that allows it**, never on a shared base. Whether a call compiles depends only on the type the caller holds.
+- **The transition is the only way in.** If callers can build a state directly, `new AuthenticatedSession(admin)` skips authentication and the guarantee is gone. So the state's constructor is not public, the same construction control [Axiom 18](axiom-18-value-objects.md) asks of value objects:
+  - **C#:** an `internal` constructor on the record.
+  - **Java:** a `public final class` with a package-private constructor, because a public record's canonical constructor must be public.
 
-- **Transitions return a new type, not the same one.** The shape `S₁.Operation() → S₂` is the pattern: invoking the transition produces a value of the next state, leaving the input untouched. When the transition can fail, the return is `Result<S₂, string>` ([Axiom 16](axiom-16-result.md)) — the success branch carries the next state, the failure branch carries the reason. Mutation is not a transition; the old type does not become the new type, it is replaced by it.
-
-- **Operations live on the type that permits them.** An `AuthenticationService` does not have a method valid only after authentication is done; instead it has a `Result<AuthenticatedSession, string> Authenticate(...)` method, then `AuthenticatedSession` has a `bool HasRole(...)` function. The caller's value either has the method or does not, by virtue of its current type. The compiler decides which methods are callable; the engineer does not check.
-
-- **Construction is controlled — the transition is the only way in.** The guarantee holds only if callers cannot *fabricate* a state directly: a public constructor on `AuthenticatedSession` lets `new AuthenticatedSession(adminUser)` skip `Authenticate` entirely, and the security the typestate bought is gone. Make the state's constructor non-public so the only path to it is the transition — in C# an `internal` constructor on the record; in Java, whose records force a public canonical constructor, a `public final class` with a package-private constructor. This is the same construction-control [Axiom 18](axiom-18-value-objects.md) requires of value objects, raised from values to states. `private` is too strict: the transition that builds `S₂` lives on `S₁` — a *different* type — so the constructor must stay reachable within the assembly/package, not only from the state itself.
-
-This axiom replaces three mainstream defaults:
-
-- **The runtime guard at the top of every method.** `if (state != Approved) throw new InvalidOperationException("not approved")` before every method that needs a particular state. The guard is honest about the precondition but lives in the body, not the signature; every caller pays the cost of remembering, every test pays the cost of constructing an entity in the right state, and the compiler enforces nothing. The transition `Approved.Refund() → Refunded` puts the precondition in the type — there is no `Refund` to call when you do not have an `Approved`.
-
-- **The status field plus a switch on it.** An enum field on the entity (`Status status`) with methods that pattern-match on it before deciding what to do. The dishonesty hides better than the throw because the check is fused with the work, but the cost is the same — every method that needs a particular state carries its own discrimination, every refactor risks the table drifting out of sync across the methods. Typestate hoists the discrimination into the type system once; every downstream method is total over the state it lives on.
-
-- **The nullable field as state flag.** `endTime == null` means "still open"; populating it means "closed." The state lives in whether a value is null rather than in the type system; the reader has to know the convention, the compiler enforces nothing, and the entity carries fields that are valid only in some states. Promote the two conditions to two records — `OpenIssue` and `ClosedIssue` — and the nullable field disappears along with every check on it.
+  `private` is too strict: the transition that builds `S₂` is a method on `S₁`, a different type.
 
 ---
 
 ## Example
 
-A login service whose `HasRole` method silently returns `false` when called before authentication. The state lives in a nullable `user` field; the method has no way to refuse a wrong-order call.
+A login service keeps the logged-in user in a nullable field. Calling `HasRole` before `Login` compiles and quietly returns `false`.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -53,19 +41,20 @@ public class AuthenticationService
 
     public void Login(string token)
     {
-        var payload = Jwt.TryDecode(token);
+        var payload = Jwt.TryDecode(token);  // Payload?
         if (payload is not null)
             user = new User(payload.Subject, payload.Role);
     }
 
     public bool HasRole(string role) =>
-        user?.Role == role;  // silently false when not authenticated
+        user?.Role == role;  // false when not logged in
 }
 
-// Caller — wrong-order call compiles and silently misbehaves:
+// Wrong order, compiles, quietly misbehaves:
 var auth = new AuthenticationService();
-if (auth.HasRole("admin")) AdminAction();   // false; the missing
-                                            // Login goes unnoticed
+if (auth.HasRole("admin"))
+    PerformAdminAction();  // never runs; nobody notices
+                           // the missing Login
 ```
 
 </td>
@@ -76,8 +65,8 @@ public final class AuthenticationService {
     private User user;  // null until login
 
     public void login(String token) {
-        Payload p = Jwt.tryDecode(token);
-        if (p != null) this.user = new User(p.subject(), p.role());
+        Jwt.tryDecode(token)  // Optional<Payload>
+           .ifPresent(p -> user = new User(p.subject(), p.role()));
     }
 
     public boolean hasRole(String role) {
@@ -85,17 +74,18 @@ public final class AuthenticationService {
     }
 }
 
-// Caller — wrong-order call compiles and silently misbehaves:
-AuthenticationService auth = new AuthenticationService();
-if (auth.hasRole("admin")) adminAction();   // false; the missing
-                                            // login goes unnoticed
+// Wrong order, compiles, quietly misbehaves:
+var auth = new AuthenticationService();
+if (auth.hasRole("admin"))
+    performAdminAction();  // never runs; nobody notices
+                           // the missing login
 ```
 
 </td>
 </tr>
 </table>
 
-The bug is not that `HasRole` is wrong — it is that calling `HasRole` before `Login` is a silent authorization hole that the type system permits. The fix puts the precondition into the type:
+`HasRole` isn't wrong. The bug is that the type system lets anyone call it before `Login`. The fix moves the precondition into a type:
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -105,36 +95,40 @@ The bug is not that `HasRole` is wrong — it is that calling `HasRole` before `
 ```csharp
 public class AuthenticationService
 {
-    public Result<AuthenticatedSession, string> Authenticate(string token)
+    public Result<AuthenticatedSession, string>
+        Authenticate(string token)
     {
         var payload = Jwt.TryDecode(token);
-        return payload is null
-            ? new Failure<AuthenticatedSession, string>("invalid token")
-            : new Success<AuthenticatedSession, string>(
-                new AuthenticatedSession(new User(payload.Subject, payload.Role)));
+        if (payload is null)
+            return new Failure<AuthenticatedSession, string>(
+                "invalid token");
+        var user = new User(payload.Subject, payload.Role);
+        return new Success<AuthenticatedSession, string>(
+            new AuthenticatedSession(user));
     }
 }
 
 public sealed record AuthenticatedSession
 {
     public User User { get; }
-    // internal — only Authenticate (same assembly) can build one;
-    // `new AuthenticatedSession(...)` won't compile for outside callers
+
+    // internal: only code in this assembly
+    // (Authenticate) can build one
     internal AuthenticatedSession(User user) => User = user;
+
     public bool HasRole(string role) => User.Role == role;
 }
 
-// Caller — the wrong-order call is gone from the language:
+// Caller:
 var auth = new AuthenticationService();
-// auth.HasRole("admin");  // compile error — HasRole is not on
-                           // AuthenticationService
+// auth.HasRole("admin");  // doesn't compile
 
 var result = auth.Authenticate(token);
 var response = result.Match(
-    success: s => s.HasRole("admin")        // HasRole reachable only here
-        ? AdminAction(s)
+    success: session => session.HasRole("admin")
+        ? PerformAdminAction(session)
         : new HttpResponse(403, "forbidden"),
-    failure: e => new HttpResponse(401, e));
+    failure: error => new HttpResponse(401, error));
 ```
 
 </td>
@@ -142,68 +136,88 @@ var response = result.Match(
 
 ```java
 public final class AuthenticationService {
-    public Result<AuthenticatedSession, String> authenticate(String token) {
-        Payload p = Jwt.tryDecode(token);
-        return p == null
-            ? new Failure<>("invalid token")
-            : new Success<>(new AuthenticatedSession(
-                new User(p.subject(), p.role())));
+    public Result<AuthenticatedSession, String>
+            authenticate(String token) {
+        Optional<Payload> payload = Jwt.tryDecode(token);
+        if (payload.isEmpty())
+            return new Failure<>("invalid token");
+        Payload p = payload.get();
+        var user = new User(p.subject(), p.role());
+        return new Success<>(new AuthenticatedSession(user));
     }
 }
 
-// A class, not a record: a public record's canonical constructor
-// must be public, so it cannot block fabrication. A package-private
-// constructor on a public final class can.
 public final class AuthenticatedSession {
     private final User user;
-    AuthenticatedSession(User user) {   // package-private — only
-        this.user = user;               // authenticate() can build one
+
+    // package-private: only code in this package
+    // (authenticate) can build one
+    AuthenticatedSession(User user) {
+        this.user = user;
     }
+
     public boolean hasRole(String role) {
         return user.role().equals(role);
     }
 }
 
-// Caller — the wrong-order call is gone from the language:
-AuthenticationService auth = new AuthenticationService();
-// auth.hasRole("admin");  // compile error — hasRole is not on
-                           // AuthenticationService
+// Caller:
+var auth = new AuthenticationService();
+// auth.hasRole("admin");  // doesn't compile
 
 var result = auth.authenticate(token);
 HttpResponse response = result.match(
-    s -> s.hasRole("admin")                 // hasRole reachable only here
-        ? adminAction(s)
+    session -> session.hasRole("admin")
+        ? performAdminAction(session)
         : new HttpResponse(403, "forbidden"),
-    e -> new HttpResponse(401, e));
+    error -> new HttpResponse(401, error));
 ```
 
 </td>
 </tr>
 </table>
 
-`HasRole` no longer lives on `AuthenticationService`. The only way to obtain an `AuthenticatedSession` is `Authenticate`, which returns a `Result` ([Axiom 16](axiom-16-result.md)). Asking about roles before the result has been unwrapped on the success branch is not a runtime check that returns false — it is a method that does not exist on the value the caller is holding. The silent-false-from-the-bug class is gone, and so is every `if (user != null)` guard that used to defend against it.
+The only way to get an `AuthenticatedSession` is the success branch of `Authenticate`. Asking about roles before that isn't a check that returns `false`; it is a call to a method the value doesn't have. The silent-`false` bug is gone, and so is every `if (user != null)` that guarded against it.
 
-The pattern recurs across domains. A connectivity issue with `endTime == null` meaning "open" is the same shape — two records (`OpenIssue` and `ClosedIssue`), each exposing only the operations valid for that condition: `OpenIssue.Close(timestamp) → ClosedIssue`, with the closing operation absent from `ClosedIssue` because it is already closed. A widget test page object whose methods all start with `if (!rendered) throw` is the same shape — two records, `UnrenderedWidget` and `RenderedWidget`, with the render call as the transition that produces the second and every other operation living on the second. In both cases the change collapses to two records and one transition function, and a class of runtime errors stops being expressible.
+The same shape turns up elsewhere:
+
+- **An issue tracker** where `endTime == null` means "open" becomes `OpenIssue` and `ClosedIssue`, with `OpenIssue.Close(timestamp) → ClosedIssue`. `ClosedIssue` has no `Close`.
+- **A UI test page object** whose methods all start with `if (!rendered) throw` becomes `UnrenderedWidget` and `RenderedWidget`. Rendering is the transition, and every other operation lives on `RenderedWidget`.
+
+Each time: two records, one transition, and a class of runtime errors that can no longer be written.
 
 ---
 
-## Stacking parameters
+## Typestates that carry types
 
-A second shape worth naming. When each transition not only changes the type but also *carries information forward* in its generic parameters, you can build a fluent API whose final type encodes the entire sequence of choices made along the way. A SQL builder where `SELECT` returns a type carrying the column shape, `FROM` returns a type carrying that shape plus the table, `WHERE` returns a type carrying both plus the predicate, and the terminal `Build()` produces a query typed by the row shape:
+The examples above change the type at each step and nothing more. Two variants also carry *generic type parameters* from one step to the next, so a later step can be checked against an earlier choice. You have likely used both in libraries without naming them. Their extra cost is in [*Trade-offs*](#trade-offs).
+
+These [fluent interfaces](https://en.wikipedia.org/wiki/Fluent_interface) are [DSLs](https://en.wikipedia.org/wiki/Domain-specific_language), so their steps take the keywords of the language they imitate (`From`, `Where`, `Given`, `When`), not verbs: one of the exceptions to [Axiom 1](axiom-01-data-is-not-behavior.md#definitions)'s naming rule.
+
+### Carrying a type forward
+
+A SQL builder whose row type is fixed at the first step and travels through every step to the final query:
 
 ```csharp
-public sealed record Select<TRow>(IReadOnlyList<string> Columns)
+public static class Sql
 {
-    public From<TRow> FROM(string table) => new(Columns, table);
+    public static SelectStep<TRow> Select<TRow>(params string[] columns) =>
+        new(columns);
 }
 
-public sealed record From<TRow>(IReadOnlyList<string> Columns, string Table)
+public sealed record SelectStep<TRow>(IReadOnlyList<string> Columns)
 {
-    public Where<TRow> WHERE(string predicate) => new(Columns, Table, predicate);
+    public FromStep<TRow> From(string table) => new(Columns, table);
+}
+
+public sealed record FromStep<TRow>(IReadOnlyList<string> Columns, string Table)
+{
+    public WhereStep<TRow> Where(string predicate) =>
+        new(Columns, Table, predicate);
     public Query<TRow> Build() => new(Columns, Table, Predicate: null);
 }
 
-public sealed record Where<TRow>(
+public sealed record WhereStep<TRow>(
     IReadOnlyList<string> Columns, string Table, string Predicate)
 {
     public Query<TRow> Build() => new(Columns, Table, Predicate);
@@ -212,22 +226,19 @@ public sealed record Where<TRow>(
 public sealed record Query<TRow>(
     IReadOnlyList<string> Columns, string Table, string? Predicate);
 
-// Caller — the row shape (int Id, string Name) flows through every step
-// and is recoverable from the terminal type:
-var q = new Select<(int Id, string Name)>(new[] { "Id", "Name" })
-    .FROM("Users")
-    .WHERE("Active = 1")
+var query = Sql.Select<(int Id, string Name)>("Id", "Name")
+    .From("Users")
+    .Where("Active = 1")
     .Build();
-// q is Query<(int Id, string Name)> — the row shape is in the type.
+// query is a Query<(int Id, string Name)>
+// Where() before From() doesn't compile.
 ```
 
-The mechanics are identical to the headline pattern — each transition returns a new type — with the addition that the generic parameters accumulate. The same shape composes in Java with generics on records and sealed interfaces; the canonical large-scale example is jOOQ's DSL, where every fluent step is generic on the row type and the final `fetch()` returns a `Result<Record_N<…>>` whose parameters spell out the columns selected. The variant is heavier to write than the linear typestate (the type signatures grow loud, the IDE's hover tooltips become hard to read for callers, and static-language generic arity ceilings appear) but pays off when the carrier needs to *prove a structural property* about its accumulated data — that the columns selected match the columns the consumer expects, that the parameters bound match the parameters declared. In domain code the linear typestate without parameter accumulation is usually enough; the accumulating form lives in library and DSL territory.
+In this sketch nothing checks `TRow` against the column names. jOOQ [6] closes that gap by giving each column its own type: `select(A, B).from(T).fetch()` returns a jOOQ `Result<Record2<A, B>>`, so the columns you selected are in the type you get back.
 
----
+### Stacking types
 
-## Stacking generic types
-
-A third shape — and the one most readers have already used without naming it. The variant above carries a *fixed* type set (`TRow`) forward through the chain. This shape instead **stacks** type parameters: each transition produces a state with a *wider* generic signature than the last, and the terminal operation is generic over everything stacked along the way. The Given/When/Then test builder is the canonical instance — each rung adds to the arity:
+Here each step *adds* a type parameter, and the last step sees all of them. A Given/When/Then test builder:
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -237,25 +248,25 @@ A third shape — and the one most readers have already used without naming it. 
 ```csharp
 public static class Scenario
 {
-    public static Arranged<TSut> Given<TSut>(Func<TSut> arrange)
-        => new(arrange());
+    public static ArrangedScenario<TSut> Given<TSut>(
+        Func<TSut> arrange) => new(arrange());
 }
 
-public sealed record Arranged<TSut>(TSut Sut)
+public sealed record ArrangedScenario<TSut>(TSut Sut)
 {
-    public Acted<TSut, TResult> When<TResult>(
+    public ActedScenario<TSut, TResult> When<TResult>(
         Func<TSut, TResult> act) => new(Sut, act(Sut));
 }
 
-public sealed record Acted<TSut, TResult>(TSut Sut, TResult Result)
+public sealed record ActedScenario<TSut, TResult>(
+    TSut Sut, TResult Result)
 {
-    public void Then(Action<TSut, TResult> assert)
-        => assert(Sut, Result);
+    public void Then(Action<TSut, TResult> assert) =>
+        assert(Sut, Result);
 }
 
-// Each call adds a type; the terminal sees all of them:
-Scenario.Given(() => new Calculator())  // Arranged<Calculator>
-    .When(c => c.Add(2, 3))             // Acted<Calculator, int>
+Scenario.Given(() => new Calculator())  // ArrangedScenario<Calculator>
+    .When(c => c.Add(2, 3))             // ActedScenario<Calculator, int>
     .Then((sut, result) =>              // both in scope
         Assert.Equal(5, result));
 ```
@@ -265,29 +276,29 @@ Scenario.Given(() => new Calculator())  // Arranged<Calculator>
 
 ```java
 public final class Scenario {
-    public static <TSut> Arranged<TSut> given(
+    public static <TSut> ArrangedScenario<TSut> given(
             Supplier<TSut> arrange) {
-        return new Arranged<>(arrange.get());
+        return new ArrangedScenario<>(arrange.get());
     }
 }
 
-public record Arranged<TSut>(TSut sut) {
-    public <TResult> Acted<TSut, TResult> when(
+public record ArrangedScenario<TSut>(TSut sut) {
+    public <TResult> ActedScenario<TSut, TResult> when(
             Function<TSut, TResult> act) {
-        return new Acted<>(sut, act.apply(sut));
+        return new ActedScenario<>(sut, act.apply(sut));
     }
 }
 
-public record Acted<TSut, TResult>(TSut sut, TResult result) {
+public record ActedScenario<TSut, TResult>(
+        TSut sut, TResult result) {
     public void then(BiConsumer<TSut, TResult> assertion) {
         assertion.accept(sut, result);
     }
 }
 
-// Each call adds a type; the terminal sees all of them:
-Scenario.given(() -> new Calculator())  // Arranged<Calculator>
-    .when(c -> c.add(2, 3))             // Acted<Calculator, Integer>
-    .then((sut, result) ->             // both in scope
+Scenario.given(() -> new Calculator())  // ArrangedScenario<Calculator>
+    .when(c -> c.add(2, 3))             // ActedScenario<Calculator, Integer>
+    .then((sut, result) ->              // both in scope
         assertEquals(5, result));
 ```
 
@@ -295,100 +306,97 @@ Scenario.given(() -> new Calculator())  // Arranged<Calculator>
 </tr>
 </table>
 
-`Given` captures `TSut`; `When` adds `TResult`; `Then` is total over both — and, exactly as in the headline pattern, `When` does not exist before `Given` and `Then` does not exist before `When`. The crucial difference from the `RecordN` family that ends the SQL note: there is **no open-ended arity to pre-declare**. The number of states is fixed by the domain — a scenario has three rungs — so you write exactly the types you need, and the generic arity ceiling never enters the picture.
+`When` doesn't exist before `Given`, and `Then` doesn't exist before `When`. Unlike jOOQ's `Record1` to `Record22`, there is no open-ended arity to declare in advance: a scenario has three steps, so it needs three types. One type per step is only for clarity; a step can add several.
 
-The example stacks **one** type per step only for clarity; the technique imposes no such limit. A single transition can add several at once — a `Where<TSut, TResult, TError>` rung that introduces two new parameters in one move is just as valid. Each state declares whatever generic signature its data and operations require; "stacking" is about the arity *growing* down the chain, not about the size of any one step.
+Two everyday libraries use this shape:
 
-The payoff is sharpest when a *later* step must be **type-checked against an earlier step's capture**, and two mainstream C#/Java libraries show it without leaving the languages this playbook targets:
+- **[FluentValidation](https://docs.fluentvalidation.net/) (C#)** [7]. `RuleFor(x => x.Age)` captures the property's type (`int`), and the rules after it must fit: `.GreaterThan(0)` compiles, `.Length(1, 5)` (a string rule) doesn't.
+- **Moq (C#) and Mockito (Java).** `mock.Setup(x => x.Parse("a"))` and `when(mock.parse("a"))` capture the method's return type, and the `.Returns(...)` or `.thenReturn(...)` that follows doesn't compile unless the value matches it.
 
-- **FluentValidation (C#).** `RuleFor(x => x.Age)` returns an `IRuleBuilder<TModel, int>` — the property type is captured from the selector — and the rules that follow are checked against it: `.GreaterThan(0)` compiles, while `.Length(1, 5)` (a string-only rule) on an `int` property does not. The named first stage fixes a type the rest of the chain must respect.
-- **Moq (C#) / Mockito (Java).** `mock.Setup(x => x.Parse("a"))` / `when(mock.parse("a"))` captures the method's return type into `ISetup<T, int>` / `OngoingStubbing<Integer>`, and the following `.Returns(...)` / `.thenReturn(...)` will not compile unless the value matches what was captured. `Setup`/`when` and `Returns`/`thenReturn` are different states, and the captured type carries from the first to the second.
-
-As with the carry-forward variant above, this lives in library, DSL, and test-harness territory — reach for it when a later operation genuinely needs to be checked against an earlier choice. In ordinary domain lifecycle code the linear typestate, with no generics to stack, is enough.
+Both variants belong in libraries, DSLs and test helpers, where a later step really needs checking against an earlier one. In domain code, the plain typestate is enough.
 
 ---
 
 ## Problem / forces
 
-When a class has methods whose validity depends on prior calls, five shapes recur:
+When a class has methods that are only valid after certain other calls, five shapes recur:
 
-1. **Runtime guard at the top of every method.** `if (state != Open) throw ...`. The precondition is honest but lives in the body. Every caller pays the cost of remembering; every test pays the cost of constructing the entity in the right state; refactoring drift accumulates because the guards live in N methods instead of one place.
+1. **A runtime guard at the top of each method.** `if (state != Approved) throw new InvalidOperationException(...)`. Honest, but the precondition lives in the body, not the signature. Every caller has to remember it, every test has to build the object in the right state, and the guards copied into N methods drift apart.
+2. **A status field and a `switch` on it in each method.** The check is fused with the work, so it hides better than a throw. Each method is a small transition table of its own, and nothing checks that those tables agree.
+3. **A nullable field as a state flag.** `endTime == null` means open. The rule is a convention the reader has to know, the compiler checks nothing, and fields that only make sense in one state sit in all of them.
+4. **A value-level state machine** ([Axiom 24](axiom-24-state-machines.md)). One sealed union of states and one pure `Transition`. The rule is in one place, but the state is still one type, and each operation still asks which case it holds.
+5. **A typestate.** One type per state; each operation lives only where it is valid; nothing left to check.
 
-2. **Status field with switch-on-status method bodies.** Same as 1, but the discrimination is fused into each method's body. Reads as a centralised state machine without being one — every method is a tiny `Transition` over the field, with no compiler enforcement that the table is total.
+Shapes 1–3 leave the rule to convention. Shape 4 puts it in one pure function. Shape 5 puts it in the types.
 
-3. **Nullable field as state flag.** `endTime == null` for open, populated for closed. The fields valid in one state are nullable in others; the convention is documentation, not type. The pattern is sometimes called a *tombstone field* or *state-by-absence*, and one such field accumulates per state distinction.
+Both 4 and 5 are state machines. The choice between them is whether operations belong to *one* type that checks its state, or to *separate* types that never need to:
 
-4. **A value-level state machine** ([Axiom 24](axiom-24-state-machines.md)). One sealed DU of states, one pure `Transition` function. The legal transitions move into the type system at the *event* level; the methods on the entity become a thin shell over `Transition`. This is the playbook's default for entities whose state changes through named commands.
-
-5. **A typestate.** Each state is its own type; transitions return the next type; operations valid in one state live only on that state's type. The runtime guards disappear because the calls that would have failed them cannot be written.
-
-Options 1–3 share one cost: the rule lives in conventions the compiler does not check, and every method pays the cost of enforcing it. Option 4 hoists the rule into a pure function but the entity remains a single type with internal discrimination on the state field. Option 5 hoists the rule into the type system itself; the discrimination disappears because each operation lives on the type that permits it.
-
-The trade-off curve between 4 and 5 is not "use one for state machines and the other for typestate" — both encode state machines. It is "do the operations valid in each state belong to *one* type with internal discrimination, or to *separate* types with no discrimination needed?" The single-type form (4) reads naturally when most operations are valid in most states (the discrimination is the exception, not the rule). The separate-type form (5) reads naturally when each state has a *different* set of legal operations and the cost of the wrong-order call is severe — silent security holes, leaked resources, half-built mutable objects.
+- **Shape 4** fits when most operations are valid in most states.
+- **Shape 5** fits when each state has its own set of operations and a wrong-order call does real harm.
 
 ---
 
 ## Why
 
-**1. Illegal sequences cannot compile.**
-The `HasRole` method does not exist on `AuthenticationService`. There is no path to calling it without first calling `Authenticate` and pattern-matching the `Success` branch. The runtime guard the alternative spends every method enforcing is gone because the call that would have triggered it is not in the language.
+**1. A wrong-order call doesn't compile.**
+There is no path to `HasRole` except through the success branch of `Authenticate`. The guard every method used to repeat is gone, because the call it guarded against can't be written.
 
-**2. The signature documents the precondition.**
-A function whose parameter type is `AuthenticatedSession` is honest in a way a function whose parameter is `AuthenticationService` cannot be — the signature documents that the function expects an authenticated session. The reader does not have to read the body to discover the precondition; the type carries it. The same property [Axiom 18](axiom-18-value-objects.md) gave to values, applied to call sequences: Design by Contract's *precondition*, carried by the type and checked at compile time rather than asserted at runtime.
+**2. The signature states the precondition.**
+A function that takes an `AuthenticatedSession` says, in its signature, that it needs an authenticated user. A function that takes an `AuthenticationService` can't. This is the [Design by Contract](https://en.wikipedia.org/wiki/Design_by_contract) precondition that [Axiom 18](axiom-18-value-objects.md) carried in a type, now applied to call order: checked by the compiler instead of asserted at runtime.
 
-**3. The runtime guards disappear, and with them their drift.**
-A guard in N methods drifts into N slightly different guards over time. A single transition function whose return type carries the new state has one place where the rule lives. Test suites shrink because the no-longer-possible cases stop being worth testing; review surfaces shrink because the no-longer-possible classes of bug stop being worth scanning for.
+**3. The rule lives in one place.**
+Guards copied into N methods drift into N slightly different guards. A transition whose return type is the next state holds the rule once. Tests for the impossible cases go away, and so do the reviews that hunted for them.
 
-**4. The composition root holds the typestate value.**
-A long-lived shell ([Axiom 26](axiom-26-stateful-shell.md)) that holds an `AuthenticatedSession` instead of a nullable `User?` field has a smaller surface for the rest of the program to misuse. Stateful resources held in the shell are typed by what they are, not by what they might be — and the shell's seams to the pure core ([Axiom 12](axiom-12-impureim.md)) carry the same guarantee.
+**4. The shell holds a typed state, not a nullable one.**
+A long-running shell ([Axiom 26](axiom-26-stateful-shell.md)) that holds an `AuthenticatedSession` instead of a `User?` field gives the rest of the program less to misuse. What it passes to the pure core ([Axiom 12](axiom-12-impureim.md)) is typed by what it is, not by what it might be.
 
 ---
 
 ## Trade-offs
 
-**The old reference does not vanish.** In C# and Java, when a transition `s.Submit() → Submitted` is called, the caller still holds the original `s`. The compiler does not erase the pre-transition reference the way Rust's ownership does — `s.Submit(); s.Submit();` compiles and runs both calls. The mitigation is structural: make the pre-transition types behaviour-light (a record with no methods to misuse beyond the transition itself) so that holding the old reference does no work. When the requirement is "the old reference must not be usable," typestate alone is not enough — the operation has to physically destroy the source, which neither C# nor Java offers as a language feature.
+**The old reference stays usable.** After `var submitted = draft.Submit()`, the caller still holds `draft`, and `draft.Submit()` compiles a second time. Rust's ownership consumes the old value on a transition [4]; C# and Java can't. The mitigation: keep each state's type small, with little on it beyond its transitions, so the stale reference can do little harm. If the old value truly must become unusable, typestate alone isn't enough.
 
-**Persistence requires materialisation discipline.** An entity loaded from a database arrives as a row, not as a typed `OpenIssue` or `ClosedIssue`. The repository's job is to read the row, inspect a discriminator (a status column, or the presence of an `end_time`), and return the right subtype. Without that discipline, persistence punches a hole through the typestate — values arrive into the program as the wrong type and the guarantee is gone. The boundary is the same one [Axiom 18](axiom-18-value-objects.md) named for value objects; typestate joins the queue of types whose construction must be controlled at the boundary. This is also why the controlled constructor is `internal` / package-private rather than fully sealed away: the repository is the one place outside the transitions allowed to build a state, so it has to live in the same assembly/package as the states it materialises.
+**Loading from a database needs care.** A stored state arrives as a row, not as an `OpenIssue` or a `ClosedIssue`. The code that loads it reads a discriminator (a status column, or whether `end_time` is set) and builds the matching type. If it skips that step, values enter the program as the wrong type and the guarantee is gone. That loader is the one place outside the transitions allowed to call the constructor, which is why the constructor is `internal` or package-private rather than `private`: the loader lives in the same assembly or package. It is the same boundary [Axiom 18](axiom-18-value-objects.md) draws for value objects.
 
-**Vocabulary cost grows with the number of states.** Each state is a separate type. An entity with five states declares five types and the transition functions between them. The investment is real and proportional to the entity's lifecycle; in return, every method below the type boundary is total over the state it lives on, with no internal discrimination. The trade-off is the same one [Axiom 18](axiom-18-value-objects.md) and [Axiom 24](axiom-24-state-machines.md) drew at the value and machine levels — small immediate cost in named types, ongoing payoff in the methods that consume them.
+**One type per state.** A lifecycle with five states needs five types and the transitions between them. In return, every operation is total over the state it lives on. It is the same deal as [Axiom 18](axiom-18-value-objects.md) and [Axiom 24](axiom-24-state-machines.md): a few more named types now, simpler code wherever they are used.
 
-**The accumulating-generics variant is heavier.** When each transition also accumulates type parameters (the SQL-DSL shape), the type signatures grow long and the IDE's hover tooltips become hard for the consumer to read. Static languages also impose arity ceilings on generics (Java's `Function` interfaces top out at a handful of parameters; nested forms take over above that). The variant earns its keep in library and DSL territory; in domain code, the linear typestate without parameter accumulation is usually enough.
+**The carrying variants are heavier.** When types travel through the chain ([*Typestates that carry types*](#typestates-that-carry-types)), signatures grow long, IDE tooltips get hard to read, and the arity hits limits (jOOQ's typed records stop at `Record22`). Worth it in a library or DSL; rarely in domain code.
 
 ---
 
 ## When NOT to
 
-**Required-fields-only construction.** When the goal is "the caller must supply A, B, and C before the object can be used," the answer is a constructor that takes all three, or a record with mandatory components, or — in C# 11+ — the `required` modifier. Spinning up a step-builder chain just to enforce the three fields are set is ceremony around a problem the type system can solve in one line. This axiom is for *ordering*, not for required initialisation. The two smells feel similar — "the compiler doesn't catch this" — but their fixes diverge: required init is a constructor concern, ordering is a transition concern.
+**Required fields.** If the rule is "the caller must supply A, B and C," use a constructor or a record that takes all three (or, in C# 11+, `required` members). A step-by-step builder just to force three fields is ceremony. Typestate is for *order*, not for *completeness*.
 
-**Two-state machines with low blast radius.** A widget builder where the only states are "not built" and "built" earns the typestate refactor only if the wrong-order call is harmful. A double-build that idempotently does nothing is not worth a new type pair to prevent.
+**Two states and little harm.** A builder with only "not built" and "built" earns a type pair only if building twice, or using it unbuilt, actually hurts. If a second `Build` does nothing, leave it.
 
-**Framework-controlled lifecycles.** A Web Component's `connectedCallback` is invoked by the browser; the framework owns the lifecycle. A typestate that gates "do not call this before connectedCallback" cannot help because the framework, not the engineer, decides when methods run. The right fix is to *queue* the calls that arrive too early and *flush* them when the lifecycle event arrives — a runtime concern the framework expects.
+**Lifecycles a framework owns.** A Web Component's `connectedCallback` is called by the browser, not by you, so no type can stop a method from running before it. The usual fix is at runtime: queue the early calls and run them when the lifecycle event arrives.
 
-**Tree-structural constraints.** A React hook that must be called inside a `Provider` is constrained by the React tree, not by the value's type. The runtime throw — "useX must be used within an XProvider" — is the established idiom because the type system has no view of the component tree. Typestate's reach stops at the boundary of the value's identity; it cannot enforce relationships between values in a tree.
+**Rules about a tree.** A React hook that must run inside a `Provider` depends on the component tree, which the type system can't see. The runtime error ("useX must be used within an XProvider") is the established idiom. Typestate constrains a value, not how values sit in a tree.
 
-**A value-level state machine suffices.** When most operations are valid in most states and the wrong-order call is mild (a no-op, a 409, a logged warning), [Axiom 24](axiom-24-state-machines.md) is the cheaper tool. The single-`Transition` function gives you the state-to-state mapping in the type system at the *event* level already, and the methods on the entity stay on one type. Promote to typestate only when separating the operations by state genuinely helps the reader.
+**When a value-level state machine is enough.** If most operations are valid in most states and a wrong-order call is mild (a no-op, a 409, a logged warning), [Axiom 24](axiom-24-state-machines.md) is cheaper. Move to typestate only when splitting operations by state actually helps the reader.
 
 ---
 
 ## References
 
-[1] **Robert E. Strom & Shaula Yemini**, *Typestate: A Programming Language Concept for Enhancing Software Reliability*, IEEE Transactions on Software Engineering 12(1):157–171, 1986 — formalising work first done in IBM's Network Implementation Language (NIL), 1983. The original treatment of typestate as "an instance of a type's lifecycle progression that the language checks at compile time, ensuring operations are applied only to properly initialised data." The technique predates "make illegal states unrepresentable" by over twenty years and the OO renaissance of typed FP by nearly as long.
+[1] **Robert E. Strom & Shaula Yemini**, *Typestate: A Programming Language Concept for Enhancing Software Reliability*, IEEE Transactions on Software Engineering SE-12(1):157–171, 1986. The original typestate: the compiler tracks each variable's state (such as whether it has been initialized) and rejects operations invalid in that state. It grew out of Strom's work on IBM's NIL language in 1983.
 
-[2] **Andrew Hunt & David Thomas**, *The Pragmatic Programmer: From Journeyman to Master*, Addison-Wesley, 1999 — chapter "Breaking Temporal Coupling." Names the smell — when ordering exists in convention but not in the type system, it is *temporal coupling*. The book frames the fix as "design for sequence to be obvious or eliminated"; this axiom is the type-level form of that prescription.
+[2] **David Thomas & Andrew Hunt**, *The Pragmatic Programmer*, 20th anniversary edition, Addison-Wesley, 2019, topic "Breaking Temporal Coupling" (first edition 1999, "Temporal Coupling"). Names the smell: an order that callers must respect but nothing enforces. Typestate is a type-level answer to it.
 <https://pragprog.com/titles/tpp20/the-pragmatic-programmer-20th-anniversary-edition/>
 
-[3] **Yaron Minsky**, *Effective ML*, Jane Street technical talks and writing, 2010. Cross-listed from [Axiom 22](axiom-22-illegal-states.md). The "make illegal states unrepresentable" slogan as applied to *call sequences* is this axiom; as applied to values is [Axiom 18](axiom-18-value-objects.md); as applied to a record's *shape* is [Axiom 22](axiom-22-illegal-states.md); as applied to outcomes is [Axiom 21](axiom-21-discriminated-unions.md). Slices of the same principle.
+[3] **Yaron Minsky**, *Effective ML*, 2010, and *Effective ML Revisited*, Jane Street blog, 2011. Cross-listed from [Axiom 22](axiom-22-illegal-states.md). "Make illegal states unrepresentable," which this axiom applies to call order.
 
-[4] **Cliff Biffle**, *The Typestate Pattern in Rust*, cliffle.com, 2019. The canonical modern treatment in a language that gives typestate native support through ownership. Cross-listed for honesty: the linearity property Rust gives for free is the gap C#/Java carry, named in the Trade-offs section above. The axiom's idea is the same — types per state, transitions consume input — minus the consumption.
+[4] **Cliff Biffle**, *The Typestate Pattern in Rust*, 2019. The modern treatment in a language where ownership consumes the old state on each transition, the guarantee C# and Java lack (see [*Trade-offs*](#trade-offs)).
 <https://cliffle.com/blog/rust-typestate/>
 
-[5] **Adam Rodger**, *The Typestate Pattern in C# (PactNet)*, adamrodger.com, 2021. A reference implementation in C# of a multi-step interface-chained typestate: each interface represents a valid state, transitions return the next interface, and methods invalid from the current state simply do not exist on it. The shape this axiom's headline example draws on, transposed from chained interfaces to records.
+[5] **Adam Rodger**, *The Typestate Pattern in C# - Redesigning PactNet*, 2021. A C# typestate in a real library: each state is an interface, each step returns the next one, and invalid calls aren't on the interface you hold.
 <https://adamrodger.com/post/2021-10-13-typestate-pattern-in-csharp/>
 
-[6] **Lukas Eder et al.**, *jOOQ — The Easiest Way to Write SQL in Java*. The reference implementation of the accumulating-generics variant at scale: each fluent step returns a step-typed result whose generic parameters carry the column shape forward, so `select(A, B).from(T).where(...).fetch()` returns a `Result<Record2<A, B>>` rather than a `Result<Object[]>`. The shape the SQL-DSL sketch above derives from.
+[6] **Lukas Eder et al.**, *jOOQ*. The carrying variant at scale: each fluent step's generic parameters carry the selected columns' types to the final `Result<RecordN<…>>`.
 <https://www.jooq.org/>
 
-[7] **Jeremy Skinner et al.**, *FluentValidation*. A mainstream C# reference implementation of the stacking-generic-types variant: `RuleFor(x => x.Property)` returns an `IRuleBuilder<T, TProperty>` that captures the selected property's type, and the rule methods chained after it are constrained against that captured type — a string rule on a numeric property does not compile. The everyday face of the variant, alongside Moq's and Mockito's `Setup`/`when` → `Returns`/`thenReturn` chains.
+[7] **Jeremy Skinner et al.**, *FluentValidation*. The stacking variant in everyday C#: `RuleFor` captures the property's type, and the rules after it are checked against it.
 <https://docs.fluentvalidation.net/>
 
 ---

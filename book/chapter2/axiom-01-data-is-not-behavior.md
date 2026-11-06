@@ -24,6 +24,13 @@ It says one structural thing: **do not hide state behind behavior.**
 
 Not every convention draws the line here. Swift's guidelines name a function by whether calling it changes anything: one that only computes an answer reads as a noun phrase (`x.distance(to: y)`), and verbs are kept for calls that change something (`x.sort()`) [10]. The name then tells the reader whether a call can change the world, a distinction later axioms care about a great deal. This book follows C# and Java: every function gets a verb.
 
+**The rule is for business logic.** Two kinds of code have a good reason to name things differently:
+
+- **A name fixed by the language or a framework.** When you override or implement a member, it keeps the name you were given: Java's `hashCode()` and `iterator()`, C#'s `ToString()`.
+- **A [domain-specific language](https://en.wikipedia.org/wiki/Domain-specific_language) (DSL), including one you build.** When your own code is a SQL builder, a test helper or another small language, it should follow the style of the language it imitates: SQL's keywords (`From`, `Where`), a test's `Given`, `When`, `Then`. Turning them into verbs would make the code harder to read for anyone who knows that language. That is a valid use case, not a lapse.
+
+Everywhere else, the rule holds.
+
 This axiom departs from the common OO default of **fusing** the two: an object that owns mutable state *and* the methods that quietly change it.
 
 ---
