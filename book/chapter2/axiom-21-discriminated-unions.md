@@ -177,7 +177,7 @@ A pattern match over a DU sits the cases side by side, one per line: shape on th
 
 [1] **Haskell** `data` declarations (Haskell 2010 Report), **Rust** `enum`, **F#** discriminated unions, **Scala** `sealed trait` / `enum`, **TypeScript** tagged unions. The DU is the shape these languages model the case-list as a first-class type — long before C# and Java arrived at the same shape via `sealed interface`/`abstract record` plus pattern matching.
 
-[2] **OpenJDK**, *JEP 409: Sealed Classes*, finalised in Java 17 (2021). Cross-listed from [Axiom 11](axiom-11-pattern-matching.md) and [Axiom 14](axiom-14-either.md). The language feature that makes the closed-set guarantee a compile-time property: a sealed parent declares its permitted subtypes, and the compiler enforces both the closure and exhaustive consumption over it.
+[2] **OpenJDK**, *JEP 409: Sealed Classes*, finalised in Java 17 (2021). The language feature that makes the closed-set guarantee a compile-time property: a sealed parent declares its permitted subtypes, and the compiler enforces both the closure and exhaustive consumption over it.
 <https://openjdk.org/jeps/409>
 
 [3] **Scott Wlaschin**, *Designing with Types: Discriminated unions*, F# for Fun and Profit. The canonical introduction to using DUs to model business outcomes — each variant is its own shape with only its own data, the consumer dispatches by case. The C# / Java sealed-hierarchy form is the direct translation of the F# original.
@@ -186,7 +186,7 @@ A pattern match over a DU sits the cases side by side, one per line: shape on th
 [4] **Scott Wlaschin**, *Designing with Types: Making illegal states unrepresentable*, F# for Fun and Profit. Cross-listed from [Axiom 6](axiom-06-honest-total-signatures.md). The DU is the operational form of "illegal states unrepresentable" applied to multi-outcome data: each impossible combination of fields is not "checked against" but *literally not a type that exists*.
 <https://fsharpforfunandprofit.com/posts/designing-with-types-making-illegal-states-unrepresentable/>
 
-[5] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022. Cross-listed from [Axiom 1](axiom-01-data-is-not-behavior.md), [Axiom 2](axiom-02-immutability.md), [Axiom 13](axiom-13-maybe.md), and [Axiom 14](axiom-14-either.md). The broader case that distinct kinds-of-thing belong as distinct shapes of data — exactly the move from "one flat record with optional fields" to "a sealed hierarchy whose variants each declare only their own fields."
+[5] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022. Cross-listed from [Axiom 1](axiom-01-data-is-not-behavior.md) and [Axiom 2](axiom-02-immutability.md). The broader case that distinct kinds-of-thing belong as distinct shapes of data — exactly the move from "one flat record with optional fields" to "a sealed hierarchy whose variants each declare only their own fields."
 <https://www.manning.com/books/data-oriented-programming>
 
 ---
