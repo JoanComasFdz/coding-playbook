@@ -337,13 +337,18 @@ Single Level of Abstraction Per function. Both useful halves already live elsewh
 
 ---
 
-## Lenses / optics — [CONTRAST / restrained]
+## Lenses / optics — [❌ DISCARDED]
 
 **What:** the nested-immutable-update tax; composable getter+setter bundles (lens=field, prism=case, traversal=many).
 
-**Verdict:** cover the *pain* + the cheap built-in answer (`with` / withers) inside Immutability; name optics only as the *deep-nesting escape hatch*, parked in "what might change tomorrow" (JDK 25 / JEP 468 shifts the calculus). A full optic library isn't recommended for mainstream C#/Java today.
+**Verdict:** not carried: a niche problem. Deeply nested data is usually a smell in itself, and the everyday case is covered.
 
-**Source:** Kmett `lens`; Scott Logic "The Immutability Gap" series.
+- [Axiom 2 — Immutability](chapter2/axiom-02-immutability.md#trade-offs) — the pain and the built-in answer: C#'s `with`, Java's `withName(...)` methods (*Trade-offs*, "Ergonomics on update").
+- Optics themselves may fit a future chapter for niche techniques.
+
+**Revisit if** JEP 468 (derived record creation, a `with` for Java records) ships. It is a Candidate, not in any JDK release yet.
+
+**Source:** Kmett `lens`; Scott Logic "The Immutability Gap" series; Joan Comas, [*dotnet-optics*](https://github.com/JoanComasFdz/dotnet-optics), my own experiments with optics in C#.
 
 ---
 
@@ -432,8 +437,6 @@ The original "low coupling, high cohesion": a coupling ladder (content/common/ex
 
 - [Axiom 10 — Higher-order functions](chapter2/axiom-10-higher-order-functions.md) — `Aggregate`/`reduce` (Hughes' `foldr`) *is* the monoid fold.
 - [Axiom 20 — Validation](chapter2/axiom-20-validation.md) — merging `ValidationError` lists *is* the list-concatenation monoid; that associativity is the un-named reason `Combine` is order-free and arity-scales.
-
-Worth at most one paragraph of vocabulary, as an aside near that fold/aggregation material — not a chapter.
 
 ---
 
@@ -584,7 +587,7 @@ An abstraction whose underlying detail shows through — the caller must know wh
 
 ## CQRS [ARCHITECTURE - OUT OF SCOPE]
 
-🔍 **Open** — record the boundary only.
+❌ **Discarded** — system topology, out of scope; this entry only records the boundary.
 
 Note (from research): CQRS is system topology = **out of scope** (it's a *consumer* of the building blocks, not one). Its code-level sibling is **CQS** (see the Command–Query Separation entry above) — a method returns a value *xor* changes state — and that one is now folded into [Axiom 12 — Impureim](chapter2/axiom-12-impureim.md) (and named in [Axiom 5](chapter2/axiom-05-pure-functions.md) and [Axiom 23](chapter2/axiom-23-pure-functions-returning-actions.md)). Keep this section only to *record the boundary*, not to write an axiom.
 
