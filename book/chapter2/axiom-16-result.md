@@ -1,35 +1,30 @@
 # Axiom 16 — Result
 
-**A function that can succeed or fail must return both outcomes as values — never as a thrown exception nor sentinel.**
+**When a function can succeed or fail, return both outcomes as values: `Result<T, E>`, with a `Success<T>` or a `Failure<E>`. Never throw for an expected failure, and never hide it behind a sentinel.**
 
-- Reach for the named pair `Success<T>` / `Failure<E>` (also called `Ok`/`Err`) when the two outcomes carry domain meaning: the operation worked and produced a `T`, or it didn't and the reason is an `E`.
+- `Success` carries the answer the caller wanted. `Failure` carries the reason it didn't get it.
+- Rust calls the same pair `Ok` and `Err` [1].
 
-> Result is the *named* form of [Axiom 14](axiom-14-either.md): when the two outcomes are "it worked" and "it didn't," the names earn their keep. This is the form domain code should reach for; `Either` is the structural primitive it specializes.
+[Axiom 14](axiom-14-either.md) gave two-outcome results a shape, and said that in practice I reach for a type whose cases have names. Result is that type for the most common pair: it worked, or it didn't. With [Axiom 15](axiom-15-unit.md) it covers every case: success with a value, success with nothing to return (`Result<Unit, E>`), or failure with a reason.
 
-[Axiom 6](axiom-06-honest-total-signatures.md) says every outcome belongs in the return type; [Axiom 14](axiom-14-either.md) says distinct outcomes belong there *as values*. Result is the everyday named pair where the two outcomes are *success* and *failure*. Combined with [Axiom 15](axiom-15-unit.md), it covers the full grid: success carrying a value, success carrying nothing meaningful (`Result<Unit, E>`), or failure carrying an error.
-
-Through [Axiom 8](axiom-08-connascence.md)'s lens, this axiom weakens a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com) — the error codes, sentinels, and exception channels a caller must just *know* — into a Connascence of Type.
+Through [Axiom 8](axiom-08-connascence.md)'s lens, Result turns a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com) (error codes, sentinels and exceptions the caller must just *know* about) into a [Connascence of Type](axiom-08-connascence.md#connascence-of-type-cot). Unlike `Either`, the names leave no convention behind: nobody has to remember which side is the error.
 
 ---
 
 ## Definitions
 
-A type is a *Result* when:
+A Result is an [Either](axiom-14-either.md#definitions) with two changes:
 
-- **Two cases, by construction** — exactly one carries a value of type `T` (`Success<T>`), exactly one carries an error of type `E` (`Failure<E>`).
-- **The cases are disjoint** — a value is one or the other, never both.
-- **The error is a value, not a thrown event** — `E` is data the caller can read, equal-compare, store, log, or transform like any other value.
-- **No silent unwrap** — there is no public operation that reads either side without making the caller acknowledge which is present.
+- **The cases have names.** `Success` holds the answer and `Failure` holds the reason, so the left-is-error convention disappears.
+- **The error is a value.** `E` is data the caller can read, compare, store, log or transform, not an event that unwinds the stack.
 
-Structurally Result *is* [Either](axiom-14-either.md): two cases, both visible in the return type, neither side reachable without acknowledging the other. The contribution this axiom makes is the *names*: `Success` and `Failure` (or `Ok` and `Err`) carry the convention that one side is the answer the caller wanted and the other is the reason it didn't get it. The naming is what makes Result a domain primitive rather than a structural one.
-
-The error type `E` is open. It can be a `string` ("user not found"), a typed record, an enum of named failure cases — whatever the caller needs to act on. The axiom is silent on which to pick; that convention is an ADR-level decision, not a principle-level one.
+`E` can be anything the caller needs to act on: a `string` ("user not found"), a record, or a closed set of named failure cases. Which one to use is a contextual choice, not a principle (see *Trade-offs*).
 
 ---
 
 ## Example
 
-A login operation: it either authenticates the user, or it doesn't and the caller needs to know why.
+The type, and a function that can fail in two ways:
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -41,28 +36,22 @@ public abstract record Result<T, E>;
 public sealed record Success<T, E>(T Value) : Result<T, E>;
 public sealed record Failure<T, E>(E Error) : Result<T, E>;
 
-public sealed record Token(string Value);
-
-Result<Token, string> Authenticate(string username, string password)
+Result<int, string> ParseAge(string input)
 {
-    if (!users.TryGetValue(username, out var user))
-        return new Failure<Token, string>("User not found");
-    if (!Verify(password, user.PasswordHash))
-        return new Failure<Token, string>("Wrong password");
-    return new Success<Token, string>(IssueToken(user));
+    if (!int.TryParse(input, out var age))
+        return new Failure<int, string>("not a number");
+    if (age < 0)
+        return new Failure<int, string>("negative");
+    return new Success<int, string>(age);
 }
 
-var result = Authenticate("joan", "entrecote");
-
-// Using Match (Axiom 11) — the switch equivalent repeats <Token, string> on every arm:
-//   result switch
-//   {
-//       Success<Token, string> s => $"Welcome, token={s.Value.Value}",
-//       Failure<Token, string> f => $"Login failed: {f.Error}"
-//   }
-Console.WriteLine(result.Match(
-    success: t => $"Welcome, token={t.Value}",
-    failure: e => $"Login failed: {e}"));
+var result = ParseAge("42");
+var message = result switch
+{
+    Success<int, string> s => $"Age {s.Value}",
+    Failure<int, string> f => $"Invalid age: {f.Error}",
+    _ => throw new UnreachableException()
+};
 ```
 
 </td>
@@ -73,44 +62,34 @@ public sealed interface Result<T, E> permits Success, Failure {}
 public record Success<T, E>(T value) implements Result<T, E> {}
 public record Failure<T, E>(E error) implements Result<T, E> {}
 
-public record Token(String value) {}
-
-Result<Token, String> authenticate(String username, String password) {
-    var user = users.get(username);
-    if (user == null)
-        return new Failure<>("User not found");
-    if (!verify(password, user.passwordHash()))
-        return new Failure<>("Wrong password");
-    return new Success<>(issueToken(user));
+Result<Integer, String> parseAge(String input) {
+    int age;
+    try {
+        age = Integer.parseInt(input);
+    } catch (NumberFormatException e) {
+        return new Failure<>("not a number");
+    }
+    if (age < 0)
+        return new Failure<>("negative");
+    return new Success<>(age);
 }
 
-void main(String[] args) {
-    var result = authenticate("joan", "entrecote");
-
-    // Using match (Axiom 11) — the switch equivalent repeats <Token, String> per arm:
-    //   switch (result) {
-    //       case Success<Token, String> s -> System.out.println("Welcome, token=" + s.value().value());
-    //       case Failure<Token, String> f -> System.out.println("Login failed: " + f.error());
-    //   }
-    System.out.println(result.match(
-        t -> "Welcome, token=" + t.value(),
-        e -> "Login failed: " + e));
-}
+var result = parseAge("42");
+String message = switch (result) {
+    case Success<Integer, String> s -> "Age " + s.value();
+    case Failure<Integer, String> f -> "Invalid age: " + f.error();
+};
 ```
 
 </td>
 </tr>
 </table>
 
-Both failure modes — "user not found" and "wrong password" — live in the return type as values. There is no exception unwinding the stack on a wrong password; the caller treats the two outcomes symmetrically. Compare with the thrown-on-failure alternative: a signature `Token Authenticate(string, string)` that throws `AuthenticationException` is structurally lying — the type system says "you get a `Token`," and the failure mode is a different control flow the caller has to discover by reading the function's documentation.
+Both failures are in the return type. The C# version turns `TryParse`'s flag into a value; the Java version catches `parseInt`'s exception and turns it into one. Either way, the conversion happens once, inside `ParseAge`, and no caller sees a flag or an exception. The caller handles both outcomes in one `switch` ([Axiom 11](axiom-11-pattern-matching.md)).
 
----
+### With `Match`
 
-## The first synthesis
-
-Thirteen axioms converge here: Result is the first place all the pieces fit into one diagram. The sketch above shows the shape of the type; the worked example below shows the shape those thirteen axioms together push the *code* into.
-
-A login endpoint, end to end — `Result` definitions from the example above are reused as-is:
+Every branch of that `switch` repeats the generic arguments (`Success<int, string>`), which gets tiresome as the types grow. [Axiom 11](axiom-11-pattern-matching.md#the-method-form) showed the alternative: put the case analysis on the type as a `Match` method, and let each caller pass one function per case. For `Result`:
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -118,40 +97,92 @@ A login endpoint, end to end — `Result` definitions from the example above are
 <td>
 
 ```csharp
-// ── Data — immutable records ──────────────────────────────────────
-public sealed record Credentials(string Username, string Password);
-public sealed record User(string Username, string PasswordHash, DateTime? LockedUntil);
+public abstract record Result<T, E>
+{
+    public TOut Match<TOut>(
+        Func<T, TOut> success, Func<E, TOut> failure) =>
+        this switch
+        {
+            Success<T, E> s => success(s.Value),
+            Failure<T, E> f => failure(f.Error),
+            _ => throw new UnreachableException()
+        };
+}
 
-// ── Pure core — same inputs, same outputs, no I/O ─────────────────
-// Every outcome lives in the return type. The lookup arrives from
-// the boundary as a nullable reference; pattern matching creates a
-// cohesive decision block; Result carries the decision back out as a value.
-Result<Token, string> Decide(User? lookup, string submitted, DateTime now) =>
-    lookup switch
+var message = result.Match(
+    success: age   => $"Age {age}",
+    failure: error => $"Invalid age: {error}");
+```
+
+</td>
+<td>
+
+```java
+public sealed interface Result<T, E> permits Success, Failure {
+    default <R> R match(
+            Function<T, R> success, Function<E, R> failure) {
+        return switch (this) {
+            case Success<T, E> s -> success.apply(s.value());
+            case Failure<T, E> f -> failure.apply(f.error());
+        };
+    }
+}
+
+String message = result.match(
+    age   -> "Age " + age,
+    error -> "Invalid age: " + error);
+```
+
+</td>
+</tr>
+</table>
+
+Same caller, same result. Which form to use is the choice in [switch or Match?](axiom-11-pattern-matching.md#switch-or-match).
+
+---
+
+## The first synthesis
+
+Result is the first point where most of the axioms so far fit into one piece of code. Here is a login, end to end, using the `Result` type above (with `Match`):
+
+<table>
+<tr><th>C#</th><th>Java</th></tr>
+<tr>
+<td>
+
+```csharp
+// ── Data: immutable records ──
+public sealed record Credentials(
+    string Username, string Password);
+public sealed record User(
+    string Username, string PasswordHash,
+    DateTimeOffset? LockedUntil);
+
+// ── Pure core: same inputs, same output ──
+Result<User, string> Decide(
+    User? found, string password, DateTimeOffset now) =>
+    found switch
     {
-        null                                                  => new Failure<Token, string>("user not found"),
-        User u when u.LockedUntil is { } until && until > now => new Failure<Token, string>($"account locked until {until}"),
-        User u when u.PasswordHash != Hash(submitted)         => new Failure<Token, string>("wrong password"),
-        User u                                                => new Success<Token, string>(IssueToken(u))
+        null => new Failure<User, string>("user not found"),
+        User { LockedUntil: { } until } when until > now
+            => new Failure<User, string>($"locked until {until}"),
+        User u when !Verify(password, u.PasswordHash)
+            => new Failure<User, string>("wrong password"),
+        User u => new Success<User, string>(u)
     };
 
-// ── Impure shell — effects at the edges, no decisions inside ──────
-Unit Login(Credentials creds)
+// ── Impure shell: effects at the edges ──
+Unit Login(Credentials credentials)
 {
-    User? lookup = users.Find(creds.Username);           // impure: DB read
-    DateTime now = clock.Now;                            // impure: clock read
+    var found = users.Find(credentials.Username); // gather
+    var now   = clock.GetUtcNow();                // gather
 
-    var decision = Decide(lookup, creds.Password, now);  // pure: tells us what to do
+    var decision = Decide(found, credentials.Password, now);
 
-    // Using Match (Axiom 11) — the switch equivalent repeats <Token, string> per arm:
-    //   decision switch
-    //   {
-    //       Success<Token, string> s => sessions.Store(s.Value),
-    //       Failure<Token, string> f => log.Warn(f.Error)
-    //   }
-    return decision.Match(                               // impure: pattern matching to execute the decision
-        success: t => sessions.Store(t),
-        failure: e => log.Warn(e));
+    return decision.Match(                        // act
+        success: user  => sessions.Start(user),
+        failure: error => audit.LoginFailed(
+                              credentials.Username, error));
 }
 ```
 
@@ -159,38 +190,39 @@ Unit Login(Credentials creds)
 <td>
 
 ```java
-// ── Data — immutable records ──────────────────────────────────────
-public record Credentials(String username, String password) {}
-public record User(String username, String passwordHash, Optional<Instant> lockedUntil) {}
+// ── Data: immutable records ──
+public record Credentials(
+    String username, String password) {}
+public record User(
+    String username, String passwordHash,
+    @Nullable Instant lockedUntil) {}
 
-// ── Pure core ─────────────────────────────────────────────────────
-Result<Token, String> decide(Optional<User> lookup, String submitted, Instant now) {
-    return lookup
-        .<Result<Token, String>>map(u -> {
-            if (u.lockedUntil().isPresent() && u.lockedUntil().get().isAfter(now))
-                return new Failure<>("account locked until " + u.lockedUntil().get());
-            if (!u.passwordHash().equals(hash(submitted)))
-                return new Failure<>("wrong password");
-            return new Success<>(issueToken(u));
-        })
-        .orElseGet(() -> new Failure<>("user not found"));
+// ── Pure core: same inputs, same output ──
+Result<User, String> decide(
+        Optional<User> found, String password, Instant now) {
+    Objects.requireNonNull(found);
+    if (found.isEmpty())
+        return new Failure<>("user not found");
+    User u = found.orElseThrow();
+    if (u.lockedUntil() != null && u.lockedUntil().isAfter(now))
+        return new Failure<>("locked until " + u.lockedUntil());
+    if (!verify(password, u.passwordHash()))
+        return new Failure<>("wrong password");
+    return new Success<>(u);
 }
 
-// ── Impure shell ──────────────────────────────────────────────────
-Unit login(Credentials creds) {
-    Optional<User> lookup = users.find(creds.username());  // impure: DB read
-    Instant now           = clock.now();                   // impure: clock read
+// ── Impure shell: effects at the edges ──
+Unit login(Credentials credentials) {
+    Optional<User> found =
+        users.find(credentials.username());       // gather
+    Instant now = clock.instant();                // gather
 
-    var decision = decide(lookup, creds.password(), now);  // pure: tells us what to do
+    var decision = decide(found, credentials.password(), now);
 
-    // Using match (Axiom 11) — the switch equivalent repeats <Token, String> per arm:
-    //   switch (decision) {
-    //       case Success<Token, String>(var t) -> sessions.store(t);
-    //       case Failure<Token, String>(var e) -> log.warn(e);
-    //   }
-    return decision.match(                                 // impure: pattern matching to execute the decision
-        t -> sessions.store(t),
-        e -> log.warn(e));
+    return decision.match(                        // act
+        user  -> sessions.start(user),
+        error -> audit.loginFailed(
+                     credentials.username(), error));
 }
 ```
 
@@ -198,105 +230,108 @@ Unit login(Credentials creds) {
 </tr>
 </table>
 
-Read the picture from top to bottom and every prior axiom is in plain sight:
+Read it from top to bottom, and the earlier axioms are all visible:
 
-- **Data, immutable, separate from behaviour** ([Axiom 1](axiom-01-data-is-not-behavior.md), [Axiom 2](axiom-02-immutability.md)). `Credentials`, `User`, `Token` — all records, all immutable, all distinct from the functions that operate on them.
-- **Effects are named and contained** ([Axiom 3](axiom-03-side-effects.md), [Axiom 4](axiom-04-impure-functions.md)). The DB lookup, the clock read, the log write, and the session write are the only effects in the listing, and every one of them is in `Login`. The comment markers — *impure: DB read* — exist because the rest of the code earned the right not to need them.
-- **The decision is pure** ([Axiom 5](axiom-05-pure-functions.md)). `Decide(lookup, submitted, now)` is a function of its inputs and nothing else. Same triple in, same `Result` out. No clock read inside; the clock value is *passed in*. That single discipline is what makes `Decide` trivially testable — no mocks, no clock fakes, just call it.
-- **The signature is honest and total** ([Axiom 6](axiom-06-honest-total-signatures.md)). `Decide` returns `Result<Token, string>` — the success carries a `Token`, the failure carries a reason. Every outcome the function can produce lives in the return type as a value. There is no thrown exception, no nullable success, no side channel.
-- **Higher-order machinery glues the impure boundary to the pure core** ([Axiom 9](axiom-09-first-class-functions.md), [Axiom 10](axiom-10-higher-order-functions.md)). The Java version reaches for `Optional.map` and `orElseGet` to lift the present-case handler into the absent-case world; both arguments are functions passed as values. The C# version inlines the same shape in the switch expression.
-- **Pattern matching consumes the shapes** ([Axiom 11](axiom-11-pattern-matching.md)). The pure core uses `switch` on `User?` / `Optional<User>` to inspect the lookup; the impure shell uses `Match` on the `Result` to dispatch the decision. Same operation, two surfaces — `switch` when the case type is short, `Match` when the generic types would otherwise repeat on every arm. Both are exhaustive: the compiler refuses to compile until both arms are present.
-- **The whole function is an Impureim sandwich** ([Axiom 12](axiom-12-impureim.md)). I/O on the way in, pure decision in the middle, I/O on the way out. The pure middle is the only part of this code that has any business logic.
-- **Maybe carries absence at the boundary** ([Axiom 13](axiom-13-maybe.md)). The lookup may or may not find a user; that absence reaches the core as a value, not as a `null` that the core has to guess at.
-- **Result is Either with names** ([Axiom 14](axiom-14-either.md)). The two cases live in the same return slot; the names `Success` and `Failure` are exactly the convention `Left`/`Right` lacks — and the reason string the failure carries is exactly the information a thrown `AuthenticationException` would have buried in a stack trace.
-- **Unit closes the shell** ([Axiom 15](axiom-15-unit.md)). `Login` returns `Unit`: it ran. The impure side doesn't pretend to have a meaningful answer to give back.
+- **Data apart from behavior, and immutable** ([Axiom 1](axiom-01-data-is-not-behavior.md), [Axiom 2](axiom-02-immutability.md)): `Credentials` and `User` are records; the functions live elsewhere.
+- **Effects named and kept at the edges** ([Axiom 3](axiom-03-side-effects.md), [Axiom 4](axiom-04-impure-functions.md)): the database read, the clock, the session start and the audit write are the only effects, and all of them are in `Login`.
+- **A pure decision** ([Axiom 5](axiom-05-pure-functions.md)): the clock comes in as a value, so `Decide` is tested with plain values. Starting the session (which issues a random token) stays in the shell.
+- **An honest, total signature** ([Axiom 6](axiom-06-honest-total-signatures.md)): every outcome of `Decide` is in its return type.
+- **One reason to change** ([Axiom 7](axiom-07-cohesion.md)): `Decide` changes when the login rules change; `Login` changes when the plumbing does.
+- **Functions as arguments** ([Axiom 9](axiom-09-first-class-functions.md), [Axiom 10](axiom-10-higher-order-functions.md)): `Match` takes one function per outcome.
+- **Pattern matching** ([Axiom 11](axiom-11-pattern-matching.md)): the C# core uses a `switch` on the lookup, and the shell uses `Match` on the decision (see [switch or Match?](axiom-11-pattern-matching.md#switch-or-match)).
+- **The Impureim sandwich** ([Axiom 12](axiom-12-impureim.md)): gather, decide, act.
+- **Absence as a value** ([Axiom 13](axiom-13-maybe.md)): the missing user reaches the core as a value it has to handle: `User?` in C#, `Optional<User>` in Java (see *Why `Optional` as a parameter* below).
+- **Either with names** ([Axiom 14](axiom-14-either.md)): `Success` and `Failure` say what `Right` and `Left` only imply.
+- **Unit** ([Axiom 15](axiom-15-unit.md)): `Match` needs both branches to return the same type. Starting a session and writing an audit entry have nothing to return, so both return `Unit`.
 
-The payoff: every failure is a value, every value is a record, every decision is a function, every effect sits at a named edge. When something goes wrong, you find out *what* by reading `Decide` — there is no thrown exception unwinding through layers, no nullable smuggling failure as success, no side channel carrying error state.
+Every failure is a value, every decision is a function, and every effect sits at a named edge. To know why a login failed, you read `Decide`.
+
+### Why `Optional` as a parameter
+
+[Axiom 13](axiom-13-maybe.md#when-not-to) keeps `Optional` out of parameters, following Java's own guidance: it is "primarily intended for use as a method return type" [5]. The Java `decide` takes one anyway:
+
+- **The caller already has one.** `users.find` returns an `Optional`. Unwrapping it to `null` just to pass it on turns an honest value back into a dishonest one.
+- **`javac` checks it.** `@Nullable` is only checked by outside tools; `Optional` is checked by the compiler ([Axiom 13](axiom-13-maybe.md#definitions)). In the pure core, where honesty matters most, take the stronger check.
+- **The usual objections are about public APIs.** Callers having to wrap values they already hold, and overloads being cleaner, don't apply to a core function whose only caller is its own shell.
+- **The strongest objection has a fix.** A caller can pass a `null` `Optional`, which gives three states instead of two. `Objects.requireNonNull(found)` closes that, at the cost of one line [6]. It throws, and that is correct: a `null` `Optional` can only be a bug, which is [rung 3 of the ladder](#the-ladder-eliminate-then-return-then-fail-fast), not an outcome to return.
+
+The trade-off, for now: the code is a little longer. Java can't `switch` on what's inside an `Optional`, so the core uses an early return and `orElseThrow()` instead of the `case null` switch that mirrors C#. C# needs none of this: `User?` already is its Maybe.
 
 ---
 
 ## Problem / forces
 
-[Axiom 14](axiom-14-either.md) framed the three dishonest patterns for any two-outcome computation: **throw / tombstone / `out`-parameter**. Result inherits all three critiques because Result *is* an Either; the names just specialize the type. But the *dominant* mainstream form for success-or-failure specifically is throw — and it earns its own treatment here, because the temptation to throw on a failed login or a bad parse is much stronger than the temptation to throw on a divide-by-zero.
+[Axiom 6](axiom-06-honest-total-signatures.md#definitions) already covers why throwing for an expected outcome makes the signature lie. For success-or-failure that lie is the default, so it is worth seeing why.
 
-The reason throw wins by default is cultural, not technical. Languages give you `throw` as one keyword and `catch` as one statement. The success path stays linear, the error path gets out of the way "for free" by unwinding the stack. For a function several layers deep, "I'll just throw" is the shortest path to *making the immediate code work* — at the cost of every caller now living with a control flow the type system does not name.
+Throwing is the shortest path to working code. `throw` is one keyword. The success path stays straight, and the error path seems to disappear by unwinding the stack. Several layers deep, "I'll just throw" makes the code in front of you work, and every caller inherits a control flow the types don't name. The cost shows up later:
 
-The cost shows up later, in three predictable shapes:
-
-- **The signature lies.** `Token Authenticate(string, string)` reads as "returns a `Token`." It also throws on bad password, missing user, and locked account, and the signature mentions none of those. Callers have to read the function body — or the documentation, if it exists — to know which exceptions to handle. Checked exceptions (Java) push some of this back into the type system; unchecked exceptions (the C# and Java norm in practice) do not.
-
-- **Exceptions are for *exceptional* cases, and "wrong password" is not exceptional.** This is the same framing [Axiom 13](axiom-13-maybe.md) uses for "no user found": it is a normal answer to the question the function was asked. Treating the normal answer as a stack-unwinding event is expensive (exception construction captures a stack trace) and noisy (every layer between the producer and the catcher sees a transient failure that is not its concern).
-
-- **Mixed exception/return-code is a third channel.** When some failures are exceptions and some are return values (a `bool` flag, a sentinel, a nullable), the caller now reads *two* error channels for the same function. The compiler can enforce neither one. The next maintainer cannot tell, from the signature alone, which failures live where.
-
-Result fixes the same problem [Either](axiom-14-either.md) fixes — both outcomes in the return type, as values — and adds two things: the names `Success` and `Failure` carry the domain semantics, and the error side `E` is a real value the caller can hold and act on rather than an exception the runtime is unwinding around them.
+- **"Wrong password" is not exceptional.** Like "no user found" in [Axiom 13](axiom-13-maybe.md#24--an-exception-for-not-found), it is a normal answer to the question the function was asked. Delivering it by unwinding the stack is slow (the exception captures a stack trace) and noisy (every layer in between sees a failure that isn't its concern).
+- **Checked exceptions only help in Java, and only partly.** They put the failure in the signature, but most code uses unchecked exceptions, and C# has no checked exceptions at all.
+- **Mixed channels.** When some failures are thrown and others come back as a `bool`, a sentinel or a `null`, the caller has two error channels to read for one function, and the compiler enforces neither.
 
 ---
 
 ## Why
 
-**1. The names carry the convention.**
-A function returning `Result<Token, AuthFailure>` reads as "returns a `Token`, or an `AuthFailure`." The structurally identical `Either<Token, AuthFailure>` reads against the grain — the reader has to remember which side is the answer they wanted. Naming the cases removes that convention work from every call site. The right-biased convention Haskell and Scala built around `Either` is exactly this work, done by community agreement rather than by the type.
+**1. The names carry the meaning.**
+`Result<Token, AuthFailure>` reads as "a `Token`, or an `AuthFailure`". The same type written as an `Either` makes every reader remember which side is which. Naming the cases moves that knowledge from the reader's head into the type.
 
-**2. The error side `E` carries information the runtime threw away.**
-A typed `Failure<AuthFailure>` lets the caller branch on `UserNotFound` vs `WrongPassword` vs `AccountLocked` *as values*. The throwing alternative either lumps them into one `AuthenticationException` (and callers branch on a message string) or invents an exception per case (and every caller now has three `catch` blocks). The value form lets the caller use the same pattern-matching tool ([Axiom 11](axiom-11-pattern-matching.md)) used for any other Either-shaped value in the codebase.
+**2. The error is information the caller can use.**
+A typed error lets the caller branch on `UserNotFound`, `WrongPassword` or `AccountLocked` as values, with the same pattern matching it uses for everything else [2]. The thrown alternative either puts all three into one `AuthenticationException` (and callers branch on its message) or invents one exception type per case (and every caller writes three `catch` blocks).
 
-**3. Errors-as-values compose; thrown exceptions do not.**
-A `Result<T, E>`-returning function is a function — it slots into pipelines, holds in collections, returns from lambdas, and lets the caller decide what to do with each outcome. A throwing function changes shape with the surrounding `try`/`catch`: caller A sees one function, caller B sees another. The composition cost was the same point [Axiom 14](axiom-14-either.md) made for Either in general; it bites harder for Result because success-or-failure is *exactly* the case mainstream code reaches for `throw` on.
+**3. It composes like any value.**
+A function that returns a `Result` can be stored, passed, put in a list and chained, like the `Either` in [Axiom 14](axiom-14-either.md) (see its *Why*, point 3). A throwing function behaves differently depending on which `try`/`catch` surrounds it.
 
 ---
 
 ## The ladder: eliminate, then return, then fail fast
 
-Result is the *second* move, not the first. Simplicity-first — *as simple as possible, then as honest as possible, then as robust as possible* — resolves into three rungs for any would-be error, and Result owns the middle one:
+Result is the *second* move, not the first. This book's north star (as simple as possible, then as honest as possible, then as robust as possible) gives three rungs for any possible error, and Result is the middle one:
 
-1. **Eliminate it.** Before reporting a failure, ask whether the case can be designed away. Make the function total ([Axiom 6](axiom-06-honest-total-signatures.md)) — narrow the input until the bad value cannot be constructed, or broaden the operation until every input has a defined answer. An error defined out of existence needs no `Result`, no handler, no test; it is the simplest code there is, because it is the code that isn't there. (Later in the chapter the same move scales up — to a whole value, to the shape of a record, to the legal order of calls.)
-2. **Return it honestly.** When the failure is a real outcome of the function's own logic — wrong password, row not found, malformed input — it belongs in the return type as a value. This axiom is that rung: `Result` carries the outcome the runtime would otherwise have unwound the stack to deliver.
-3. **Fail fast.** When the "failure" can only mean a bug or an untrustworthy runtime — a violated invariant, an impossible state, out of memory — throw, halt, and let a higher layer log. *When NOT to* below is this rung.
+1. **Eliminate it.** First ask whether the error can be designed away. Make the function total ([Axiom 6](axiom-06-honest-total-signatures.md)): narrow the input until the bad value can't be built, or widen the operation until every input has an answer. An error that can't happen needs no `Result`, no handler and no test. (Later in this chapter, the same move works on whole values, on the shape of records, and on the order of calls.)
+2. **Return it honestly.** When the failure is a normal outcome of the function's own logic (a wrong password, a missing row, malformed input, a transient network failure), it belongs in the return type as a value. This is the rung for `Result`.
+3. **Fail fast.** When the "failure" can only mean a bug or a broken runtime (a violated invariant, an impossible state, out of memory), throw and stop, as close to the cause as possible [4]. Let a higher layer log it. Wrapping a bug in a `Result` lets a caller handle it and carry on, which hides it.
 
-The rungs are ordered, and the order is the north star. Sliding *down* a rung is always allowed — you can `Result`-wrap something you might have eliminated, and the code still works. The mistakes are sideways and up: skipping rung 1 to handle an error you could have erased, or jumping to rung 3 to *throw* an outcome that was really rung 2's to return.
+Go down the rungs in order. Wrapping in a `Result` something you could have eliminated still works, so stopping one rung early is fine. The mistakes are skipping rung 1, and jumping to rung 3 to throw what rung 2 should have returned.
+
+Where the line between rungs 2 and 3 falls depends on the context. "The database is unreachable" is fatal for a batch job that will simply be retried, and a normal outcome for a web service that wants to answer with a 503. Decide it per module, not per function.
 
 ---
 
 ## Trade-offs
 
-Result costs the same things [Either](axiom-14-either.md) costs — verbosity at the producer, a small allocation per call — plus one decision Either didn't make: **what should `E` be?** A string is cheapest and reads well at small scale, but the caller cannot branch on it without parsing. A typed enum or named failure record is honest about the cases but couples the producer to its callers' branching needs. There is no universally right answer; pick one per bounded slice of the codebase, and put the choice in an ADR rather than re-deciding it per function.
-
-The other Result-specific cost is **interoperability with code that throws**. The standard library throws. ORMs throw. HTTP clients throw. JSON parsers throw. Result does not eliminate exceptions from the codebase; it *contains* them. The rule of thumb: catch the exception at the lowest reasonable layer, lift the relevant failure cases into a `Failure<E>`, and let the rest of the codebase traffic in Results from there on. Boundary code is allowed to handle exceptions; domain code is not.
-
-The deeper question hiding behind these trade-offs is **what counts as an error?** Two heuristics, both context-dependent:
-
-- *Expected and recoverable* — a wrong password, a malformed input, a row not found, a transient HTTP failure. These are normal answers; they belong in Result.
-- *Unexpected and unrecoverable* — an out-of-memory, a broken invariant, a corrupted runtime, a contract the type system was supposed to make impossible. These belong in exceptions, where the program fails fast and a higher layer logs and shuts down.
-
-The line between them shifts by context. "Database is unreachable" is exceptional in a batch job that retries on its own and recoverable in a long-lived web service that wants to return a 503. Decide per bounded context, not per function.
+- **What should `E` be?** A `string` is cheapest and reads well in small code, but the caller can't branch on it without parsing it. A record or a closed set of named failures is honest about the cases, but ties the producer to what its callers need to branch on. Pick one convention per module and record it in an ADR, rather than deciding again for every function.
+- **The rest of the world throws.** The standard library, ORMs, HTTP clients and JSON parsers all throw. Result doesn't remove exceptions; it contains them. Catch them at the lowest layer that wraps a throwing API, turn the expected cases into a `Failure`, and let everything above it work with Results. Libraries such as CSharpFunctionalExtensions ship a ready-made `Result` for C# [3].
+- **The costs of Either.** More code at the producer, and one small allocation per call (see [Axiom 14](axiom-14-either.md#trade-offs)).
 
 ---
 
 ## When NOT to
 
-**When the failure case is genuinely exceptional.** Programmer errors (null where the type system can't catch it, a precondition the caller was supposed to satisfy), system-level failures (out of memory, stack overflow), and "the runtime is no longer trustworthy" cases are what exceptions are *for*. Reaching for `Result<T, "OutOfMemory">` is the same dishonesty as throw-on-normal-failure, in reverse: the type pretends the program can keep going. Throw and *fail fast*[4] — halt loudly at the source rather than let a bug travel as a `Result` value a caller might handle and continue past — and let the surrounding system catch and report.
-
-**At the lowest layer of a wrapper.** Code that wraps a throwing API (JDBC, `HttpClient`, file IO) is the *one* place where catching an exception and lifting it into a `Failure<E>` belongs. Pushing Result *into* that wrapper — replacing the throw inside the standard library — is not the point of this axiom. Wrap once, lift, and let the rest of the code traffic in Result from there on.
-
-**For internal helpers where failure cannot happen.** A private function whose preconditions are enforced by its only caller doesn't need to thread Result through. The type system has already removed the failure case; adding a Result wrapper to "be consistent" is noise.
-
-**At framework boundaries that expect a thrown exception.** An MVC action that signals a 404 with `throw new HttpException(...)` is talking to the framework's protocol, not to your domain. Let Result stay inside the domain; unwrap into the framework's expected throw at the seam.
+- **When the failure is a bug.** Programmer errors, broken invariants and a runtime that can't be trusted are what exceptions are for (see *The ladder*, rung 3). A `Result` whose error is "out of memory" pretends the program can carry on.
+- **Inside a helper that can't fail.** A private function whose only caller already guarantees its inputs doesn't need a `Result`. Adding one "for consistency" is noise.
+- **At a framework boundary that expects exceptions.** Some frameworks turn exceptions into HTTP responses or retries. Keep `Result` inside your own code and convert it into whatever the framework expects at that one seam.
 
 ---
 
 ## References
 
-[1] **Rust** `std::result::Result<T, E>` and **Haskell** `Data.Either` (right-biased). Rust adopted a named pair (`Ok`/`Err`) as the standard library's canonical error-handling type; Haskell uses the structural `Either` with a community convention that the right side is success. Most modern languages that ship a named Result type follow the Rust convention more closely — `Ok`/`Err` reads as the intended answer first.
+[1] **Rust** `std::result::Result<T, E>`. Rust made a named pair, `Ok` and `Err`, its standard error-handling type. Haskell expresses the same idea with `Either` and the left-is-error convention ([Axiom 14](axiom-14-either.md)).
 <https://doc.rust-lang.org/std/result/enum.Result.html>
 
-[2] **Scott Wlaschin**, *Domain Modeling Made Functional*, Pragmatic Bookshelf, 2018. The chapters on "Errors as Values" make the canonical OO/imperative-friendly argument for `Result` in F#; the framing here borrows from that treatment.
+[2] **Scott Wlaschin**, *Domain Modeling Made Functional*, Pragmatic Bookshelf, 2018. Its chapter on working with errors makes the case for errors as values, with each failure case named in the domain's words.
 <https://pragprog.com/titles/swdddf/domain-modeling-made-functional/>
 
-[3] **Vladimir Khorikov**, *CSharpFunctionalExtensions* (active, v3.7.0, March 2026) and the "Functional C#" course. The library's `Result` and `Result<T, E>` types are the pragmatic .NET answer the playbook's examples are shaped after; the docs discuss when to reach for Result and when exceptions still belong.
+[3] **Vladimir Khorikov**, *CSharpFunctionalExtensions*. A small C# library whose `Result` and `Result<T, E>` types are close to the ones in this book's examples.
 <https://github.com/vkhorikov/CSharpFunctionalExtensions>
 
-[4] **James Shore**, *Fail Fast*, IEEE Software 21(5), 2004. The discipline of halting immediately on a programmer error or broken invariant, so the defect surfaces at its origin instead of several frames downstream disguised as a recoverable value. Its complement is *offensive programming* — declining to write defensive handling for conditions that can only arise from a bug, on the grounds that silently tolerating them hides the defect rather than containing it.
+[4] **James Shore**, *Fail Fast*, IEEE Software 21(5), 2004. Stop immediately on a programmer error or a broken invariant, so the defect shows up where it starts instead of several frames later disguised as a normal value.
+
+[5] **`java.util.Optional` API note**, Java SE 21 documentation. Also cited in [Axiom 13](axiom-13-maybe.md). Brian Goetz puts it more strongly, as quoted by Nicolai Parlog: "You should almost never use it as a field of something or a method parameter."
+<https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html> · <https://nipafx.dev/stephen-colebourne-java-optional-strict-approach/>
+
+[6] **Nicolai Parlog**, *Java 8 SE Optional, a strict approach* and *Where to use Optional* (Inside Java Newscast #19). Parlog, a Java developer advocate at Oracle, is "decidedly in the Optional-everywhere camp", accepts `Optional` parameters, and rejects a `null` `Optional` with `requireNonNull`. He also lists the camps that disagree, and calls "return values only" a sound default for teams that need one shared rule.
+<https://nipafx.dev/stephen-colebourne-java-optional-strict-approach/> · <https://nipafx.dev/inside-java-newscast-19/>
 
 ---
 
