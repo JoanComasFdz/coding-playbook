@@ -79,6 +79,7 @@ The intended reader is a working engineer in a high-level OO language. When draf
 - **US spelling.** Convert a file to US spelling when it is rewritten. Never change quotes (they keep their original spelling). Don't rename files as part of a spelling pass; a rename is its own change and must update every link to the file.
 - **Never attack a discipline, language, framework, or architecture.** Present alternatives as points on a trade-off curve, never as targets. Every strong opinion is "what I do today, and why," with an explicit "when not to."
 - **Name data with nouns, behavior with verbs.** In examples, types, records and fields are nouns (`Cart`, `Line`); every function and method name contains a verb (`CalculateTotal`, `ParseAge`, `ChooseTicketType`), never a noun alone (`Total`, `Area`). See [Axiom 1](book/chapter2/axiom-01-data-is-not-behavior.md#definitions). Deliberate ❌ examples are the exception.
+- **Say *entity* only for the ORM or DDD concept.** In Chapter 2, "entity" means an identity-tracked, usually mutable object (an ORM entity, Evans' Entity). For this book's own data, say *state*, *value* or *record*, or name the type. Entity as a modeling term belongs to Chapter 3.
 - Favor examples in C# or Java unless told otherwise. Immutable-record persistence leans on EF `AsNoTracking()` (possibly Dapper) for C#, jOOQ for Java.
 
 ## How content is organized: three kinds of "why"
