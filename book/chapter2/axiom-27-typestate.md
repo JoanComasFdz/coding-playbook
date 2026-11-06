@@ -192,7 +192,7 @@ Each time: two records, one transition, and a class of runtime errors that can n
 
 The examples above change the type at each step and nothing more. Two variants also carry *generic type parameters* from one step to the next, so a later step can be checked against an earlier choice. You have likely used both in libraries without naming them. Their extra cost is in [*Trade-offs*](#trade-offs).
 
-These [fluent interfaces](https://en.wikipedia.org/wiki/Fluent_interface) name their steps after the [domain-specific language](https://en.wikipedia.org/wiki/Domain-specific_language) (DSL) they imitate (`From`, `Where`, `Given`, `When`), not with verbs. That is the DSL's vocabulary, and the one place I let a method name skip the verb.
+These [fluent interfaces](https://en.wikipedia.org/wiki/Fluent_interface) are [DSLs](https://en.wikipedia.org/wiki/Domain-specific_language), so their steps take the keywords of the language they imitate (`From`, `Where`, `Given`, `When`), not verbs: one of the exceptions to [Axiom 1](axiom-01-data-is-not-behavior.md#definitions)'s naming rule.
 
 ### Carrying a type forward
 
