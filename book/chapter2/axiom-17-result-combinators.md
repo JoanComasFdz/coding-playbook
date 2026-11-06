@@ -1,39 +1,37 @@
 # Axiom 17 — Result combinators
 
-**Reshape a `Result` by passing the next step as a function — three small higher-order operations cover the day-to-day moves: `Map` transforms the success, `MapError` transforms the failure, `Bind` chains a fallible step.**
+**Reshape a `Result` by handing it the next step as a function. Three small higher-order functions cover the everyday moves: `Map` transforms the success, `MapError` transforms the failure, and `Bind` chains a step that can fail.**
 
-- The *step* is written as a plain function (`T -> U`, `T -> Result<U, E>`, or `E -> F`); the combinator does the one-time unwrapping and rewrapping in its own body.
-- Each combinator is a higher-order function ([Axiom 10](axiom-10-higher-order-functions.md)) whose first argument is the `Result<T, E>` being reshaped and whose second argument is the step.
+- The step is a plain function: `T -> U`, `E -> F`, or `T -> Result<U, E>`.
+- The combinator checks which side is present, applies the step to it, and wraps the answer again. The caller never does.
 
-[Axiom 10](axiom-10-higher-order-functions.md) named operations *over* function values; [Axiom 16](axiom-16-result.md) named the value being reshaped here. This axiom is the meeting point: the everyday verbs the playbook reaches for whenever a `Result` flows through more than one step. The caller writes the step; the combinator handles the bookkeeping.
+[Axiom 10](axiom-10-higher-order-functions.md) introduced functions that take functions, and [Axiom 16](axiom-16-result.md) introduced the value they work on here. Once a `Result` flows through more than one step, these are the verbs that move it along.
+
+Through [Axiom 7](axiom-07-cohesion.md)'s lens, a combinator splits two ideas that every hand-written check fuses: the *propagation rule* ("on failure, pass it on"), which never changes, and the *step*, which changes every time. Each lives in one place.
 
 ---
 
 ## Definitions
 
-A **Result combinator** is a function over `Result<T, E>` parameterised by a step that operates on one of the two sides. The combinator inspects which side is present, applies the step to that side, and produces a new Result. Three combinators cover the moves that show up over and over:
+A **Result combinator** takes a `Result<T, E>` and a step that works on one of its two sides, and returns a new `Result`:
 
-- **`Map`** — type `(Result<T, E>, T -> U) -> Result<U, E>`. Transforms the success value with a non-fallible function. Failures pass through unchanged.
+- **`Map`**: `(Result<T, E>, T -> U) -> Result<U, E>`. Use it when the next step can't fail. It transforms the success; a failure passes through unchanged.
+- **`MapError`**: `(Result<T, E>, E -> F) -> Result<T, F>`. Use it to translate the failure, usually where one error vocabulary meets another. A success passes through unchanged.
+- **`Bind`**: `(Result<T, E>, T -> Result<U, E>) -> Result<U, E>`. Use it when the next step can fail too. On a failure, the step isn't called and the failure passes through; on a success, the step runs and *its* `Result` is the answer. Both sides must use the same error type `E`.
 
-- **`MapError`** — type `(Result<T, E>, E -> F) -> Result<T, F>`. Transforms the failure value. Successes pass through unchanged. Used at boundaries where the producer's error type doesn't match the caller's vocabulary.
+Pick the one whose signature fits the step.
 
-- **`Bind`** — type `(Result<T, E>, T -> Result<U, E>) -> Result<U, E>`. Chains a fallible step. If the input is `Failure`, the next step is not called and the failure flows through. If the input is `Success`, the next step runs on the carried value and *its* Result becomes the answer. The two failure types must match — both sides of the chain agree on what `E` is.
+**Names vary; the operations don't.** This book uses `Map` / `MapError` / `Bind` in C# (CSharpFunctionalExtensions' names [3]) and `map` / `mapError` / `flatMap` in Java. Rust calls them `map` / `map_err` / `and_then` [4]; F# `Result.map` / `Result.mapError` / `Result.bind` [2]; LINQ calls `Bind` `SelectMany`.
 
-**Naming.** This axiom uses `Map` / `Bind` / `MapError` for C# (the CSharpFunctionalExtensions convention) and `map` / `flatMap` / `mapError` for Java. Rust uses `map` / `and_then` / `map_err`; F# uses `Result.map` / `Result.bind` / `Result.mapError`; LINQ exposes `SelectMany` for Bind. The names vary by ecosystem; the three operations are the same.
+### Not only for `Result`
 
-The defining property of all three: **the caller never sees inside the Result**. The pattern match — "is this a Success or a Failure?" — happens once, in the combinator's body. Every call site writes the step alone. That is the contract that makes long chains readable instead of stairstepped.
-
-### Disclaimer
-
-**`Map` and `Bind` are not unique to `Result`.** They have the same shape — and often the same name — on other wrappers the reader has already met: `Optional.map` and `Optional.flatMap` from [Axiom 13](axiom-13-maybe.md), `Stream.map` and `Stream.flatMap` in Java (or `Select` and `SelectMany` in C# LINQ), and the chaining primitives on `Task` / `CompletableFuture`. Anywhere a value sits inside a wrapper that decides whether and how the next step runs, `Map` and `Bind` are how the next step is handed in. `MapError` is the operation specific to `Result`: it transforms the *second* type parameter, and only a wrapper that *has* a typed second side — `Result`, or its structural parent [Either](axiom-14-either.md) — has that side to map. The rest of this axiom focuses on `Result`, since that is the slot in the sequence, but the muscle being built here is the broader one.
-
-This axiom presents them as methods over Result to give the reader the full picture, without external dependencies, but in a real code base, Map and Bind would be generic.
+`Map` and `Bind` have the same shape, and often the same names, on other wrappers you have already met: `Optional.map` and `Optional.flatMap` ([Axiom 13](axiom-13-maybe.md#why)), `Stream.map` and `Stream.flatMap` in Java (`Select` and `SelectMany` in LINQ), and the chaining methods on `Task` and `CompletableFuture`. Wherever a wrapper decides whether the next step runs, `Map` and `Bind` are how you hand that step in. `MapError` is the one that belongs to `Result`: only a type with a typed second side (`Result`, or [Either](axiom-14-either.md)) has a failure to map.
 
 ---
 
 ## Example
 
-The three combinators, each defined once, then used.
+The three combinators, written once each over the `Result` type from [Axiom 16](axiom-16-result.md#example):
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -44,24 +42,27 @@ The three combinators, each defined once, then used.
 public static class ResultCombinators
 {
     public static Result<U, E> Map<T, U, E>(
-        this Result<T, E> r, Func<T, U> f) => r switch
+        this Result<T, E> r, Func<T, U> step) => r switch
     {
-        Success<T, E> s => new Success<U, E>(f(s.Value)),
-        Failure<T, E> e => new Failure<U, E>(e.Error)
+        Success<T, E> s => new Success<U, E>(step(s.Value)),
+        Failure<T, E> f => new Failure<U, E>(f.Error),
+        _ => throw new UnreachableException()
     };
 
     public static Result<T, F> MapError<T, E, F>(
-        this Result<T, E> r, Func<E, F> f) => r switch
+        this Result<T, E> r, Func<E, F> step) => r switch
     {
         Success<T, E> s => new Success<T, F>(s.Value),
-        Failure<T, E> e => new Failure<T, F>(f(e.Error))
+        Failure<T, E> f => new Failure<T, F>(step(f.Error)),
+        _ => throw new UnreachableException()
     };
 
     public static Result<U, E> Bind<T, U, E>(
-        this Result<T, E> r, Func<T, Result<U, E>> f) => r switch
+        this Result<T, E> r, Func<T, Result<U, E>> step) => r switch
     {
-        Success<T, E> s => f(s.Value),
-        Failure<T, E> e => new Failure<U, E>(e.Error)
+        Success<T, E> s => step(s.Value),
+        Failure<T, E> f => new Failure<U, E>(f.Error),
+        _ => throw new UnreachableException()
     };
 }
 ```
@@ -70,25 +71,27 @@ public static class ResultCombinators
 <td>
 
 ```java
+// Java has no extension methods, so these go
+// inside the Result interface, next to match.
 public sealed interface Result<T, E> permits Success, Failure {
-    default <U> Result<U, E> map(Function<T, U> f) {
+    default <U> Result<U, E> map(Function<T, U> step) {
         return switch (this) {
-            case Success<T, E> s -> new Success<>(f.apply(s.value()));
-            case Failure<T, E> e -> new Failure<>(e.error());
+            case Success<T, E> s -> new Success<>(step.apply(s.value()));
+            case Failure<T, E> f -> new Failure<>(f.error());
         };
     }
 
-    default <F> Result<T, F> mapError(Function<E, F> f) {
+    default <F> Result<T, F> mapError(Function<E, F> step) {
         return switch (this) {
             case Success<T, E> s -> new Success<>(s.value());
-            case Failure<T, E> e -> new Failure<>(f.apply(e.error()));
+            case Failure<T, E> f -> new Failure<>(step.apply(f.error()));
         };
     }
 
-    default <U> Result<U, E> flatMap(Function<T, Result<U, E>> f) {
+    default <U> Result<U, E> flatMap(Function<T, Result<U, E>> step) {
         return switch (this) {
-            case Success<T, E> s -> f.apply(s.value());
-            case Failure<T, E> e -> new Failure<>(e.error());
+            case Success<T, E> s -> step.apply(s.value());
+            case Failure<T, E> f -> new Failure<>(f.error());
         };
     }
 }
@@ -98,9 +101,7 @@ public sealed interface Result<T, E> permits Success, Failure {
 </tr>
 </table>
 
-Three definitions, one pattern match each. From here on, the caller never writes that pattern match again.
-
-The same three combinators in use, on a small pipeline — parse an integer, halve it if even, then re-tag the error with the original input.
+In use: `ParseAge` from [Axiom 16](axiom-16-result.md#example), one more step that can fail, one that can't, and an error translated for the form that sent the input.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -108,49 +109,37 @@ The same three combinators in use, on a small pipeline — parse an integer, hal
 <td>
 
 ```csharp
-public sealed record ParseError(string Raw, string Reason);
+public sealed record FormError(string Field, string Reason);
 
-Result<int, string> ParseInt(string s) =>
-    int.TryParse(s, out var n)
-        ? new Success<int, string>(n)
-        : new Failure<int, string>($"'{s}' is not a number");
+Result<int, string> RequireAdult(int age) =>
+    age >= 18
+        ? new Success<int, string>(age)
+        : new Failure<int, string>("under 18");
 
-Result<int, string> HalveIfEven(int n) =>
-    n % 2 == 0
-        ? new Success<int, string>(n / 2)
-        : new Failure<int, string>($"{n} is odd");
-
-Result<int, ParseError> Process(string input) =>
-    ParseInt(input)
-        .Bind(HalveIfEven)            // chain a fallible step
-        .Map(half => half * 10)       // transform the success
-        .MapError(msg => new ParseError(input, msg));   // re-tag the failure
+Result<string, FormError> ChooseTicketType(string ageInput) =>
+    ParseAge(ageInput)
+        .Bind(RequireAdult)                       // can fail
+        .Map(age => age >= 65 ? "senior" : "adult") // can't fail
+        .MapError(reason => new FormError("age", reason));
 ```
 
 </td>
 <td>
 
 ```java
-public record ParseError(String raw, String reason) {}
+public record FormError(String field, String reason) {}
 
-Result<Integer, String> parseInt(String s) {
-    try { return new Success<>(Integer.parseInt(s)); }
-    catch (NumberFormatException e) {
-        return new Failure<>("'" + s + "' is not a number");
-    }
+Result<Integer, String> requireAdult(int age) {
+    return age >= 18
+        ? new Success<>(age)
+        : new Failure<>("under 18");
 }
 
-Result<Integer, String> halveIfEven(int n) {
-    return n % 2 == 0
-        ? new Success<>(n / 2)
-        : new Failure<>(n + " is odd");
-}
-
-Result<Integer, ParseError> process(String input) {
-    return parseInt(input)
-        .flatMap(this::halveIfEven)           // chain a fallible step
-        .map(half -> half * 10)               // transform the success
-        .mapError(msg -> new ParseError(input, msg));  // re-tag the failure
+Result<String, FormError> chooseTicketType(String ageInput) {
+    return parseAge(ageInput)
+        .flatMap(this::requireAdult)                // can fail
+        .map(age -> age >= 65 ? "senior" : "adult") // can't fail
+        .mapError(reason -> new FormError("age", reason));
 }
 ```
 
@@ -158,75 +147,60 @@ Result<Integer, ParseError> process(String input) {
 </tr>
 </table>
 
-`Process` reads as four lines: the source, a fallible step, a non-fallible transform, an error-type adjustment at the boundary. There is no `if (result.IsFailure) return …` in sight — the combinators absorb that. If `ParseInt` fails, `HalveIfEven` is not called and the original error message flows through `MapError` to become the `ParseError`. If `HalveIfEven` fails on an odd number, the same path runs from there. If both succeed, the `Map` step runs and the answer is `Success`. The reader sees the pipeline.
+`ChooseTicketType` reads as its steps, with no `if (failed) return …` in between. If `ParseAge` fails, `RequireAdult` and the `Map` step never run, and the parse error comes out as a `FormError`. The same happens if `RequireAdult` fails. If both succeed, the `Map` step runs and the result is a `Success`.
 
 ---
 
 ## Problem / forces
 
-Once `Result<T, E>` is in the codebase ([Axiom 16](axiom-16-result.md)), the question is how a sequence of Result-producing steps composes. The options on the trade-off curve:
+Once steps return `Result`, the question is how to chain them. The options:
 
-- **Manual unwrap, check, rewrap at every step.** Pattern-match on the Result, return early on `Failure`, continue with the `Success` value. This is the right shape for a *single* step where the next action depends on the failure case in a non-uniform way — a different log, a fallback computation, a recovery. It becomes noise the moment three or four such steps run back-to-back, all doing the same "if `Failure`, propagate; if `Success`, continue" dance: every call site re-implements the dance, and the eye has to skim past the bookkeeping to find the step.
+- **Check by hand at every step.** Match on the `Result`, return early on a failure, continue with the value. That is the right shape for a single step whose failure needs special handling. For three or four steps in a row it is the same few lines each time, and the steps disappear behind them; nested, it becomes the [arrow anti-pattern](https://blog.codinghorror.com/flattening-arrow-code/).
+- **Throw to escape the chain.** When the hand-written checks feel verbose, the temptation is to throw and "skip the rest". That brings back everything [Axiom 16](axiom-16-result.md#problem--forces) removed: the signature lies again, and the failure is no longer a value. A `try` around a chain of honest `Result`s is the same mistake in a different place: dead code if the chain is honest, a bandage if it isn't.
+- **Combinators.** Name each kind of reshaping once, and let every chain be a list of steps.
 
-- **Throw inside a Result-returning function to escape the chain.** Once two or three manual pattern matches feel verbose, the temptation is to give up the value form and throw an exception to "skip" the rest. This re-introduces every problem [Axiom 16](axiom-16-result.md) named: the signature lies, the error is no longer a value, and the surrounding code now has a hidden control flow.
-
-- **Wrap the chain in a `try` block around already-Result-returning code.** A subtler variant of the previous: keep returning Results, but defensively `try`/`catch` around the chain in case one of them "really" fails. The catch is dead code if the chain is honest; it is a band-aid if the chain is dishonest. Either way it does not belong.
-
-- **Combinators.** A small fixed vocabulary — `Map`, `MapError`, `Bind` — that names each reshape once. The chain becomes a sequence of step names; the failure-propagation logic is invisible because it lives inside the combinators. This is the right shape for chains of two or more steps that share the same failure-propagation rule.
-
-The first option is appropriate when one step is genuinely special. The last is appropriate when several steps are uniform. The combinators do not eliminate the manual pattern match; they let it appear only where the case-by-case handling is the actual point.
+Checking by hand still has its place: where one step is genuinely special (see *When NOT to*). Combinators are for runs of steps that all follow the same rule.
 
 ---
 
 ## Why
 
-**1. The step is the only thing that varies; the combinator names the rest.**
-Every "if `Failure`, propagate; if `Success`, run this and rewrap" block carries two ideas: the *propagation rule* (always the same) and the *step* (different every time). Manual pattern matching fuses them; the combinator separates them. The rule is named once, in the combinator's body; the step is named at the call site as a plain function. The reader sees the step alone.
+**1. Only the step varies, so only the step is written.**
+"On failure, pass it on; on success, run this and wrap the answer" contains two ideas. The rule is always the same; the step never is. The combinator holds the rule once, so each call site shows the step and nothing else.
 
-**2. The combinator preserves the honest signature.**
-A function returning `Result<T, E>` promises every outcome lives in the return type ([Axiom 6](axiom-06-honest-total-signatures.md)). A chain built with combinators preserves that promise — the type at every link is `Result<…, E>`, and the final answer is still `Result<…, E>`. There is no point in the chain where the failure case is hidden or postponed. Compare with a chain that *throws* in the middle: the function still nominally returns `Result`, but the control flow is no longer inside the type.
-
-**3. Each combinator has a single job, and the three jobs cover what real code needs.**
-`Map` is for "the next step cannot fail" — transform the value, leave the failure alone. `MapError` is for "I want to translate the failure" — usually at the boundary between a producer that speaks one error vocabulary and a caller that speaks another. `Bind` is for "the next step can fail too, with the same error type" — keep the chain going, short-circuiting on the first failure. Three operations, three intents; the right one to reach for is the one whose signature fits.
+**2. The chain stays honest end to end.**
+Every link in the chain is a `Result<…, E>`, and so is the answer. No failure is hidden or postponed along the way, so the promise of [Axiom 6](axiom-06-honest-total-signatures.md) holds for the whole chain, not just for each function in it.
 
 ---
 
 ## Trade-offs
 
-**Stack traces and step-through.** A failure produced deep inside a long combinator chain shows the combinator and a lambda in the stack trace, not the step's source location. For a short chain this is fine; for a long one, the same remedy as [Axiom 10](axiom-10-higher-order-functions.md) applies — extract the step to a named static method or local function, and the symbol shows up in the trace.
-
-**Type-inference friction.** A chain of `.Map(…).Bind(…).MapError(…)` sometimes needs an explicit type argument when the compiler cannot infer the new type parameters from the lambda — most commonly when the first step in the chain is a generic call without enough context. The fix is local: annotate the offending lambda or assign it to a typed local.
-
-**The failure type must agree to chain with `Bind`.** `Bind` requires both sides of the chain to use the same `E`. When the upstream and downstream errors are in different vocabularies, `MapError` is the seam: lift one side into the other's vocabulary first, then chain. That is the right *shape* — the alternative is a wider `E` (often `string`) that hides the categorisation in a message.
-
-**Combinators are not free at the producer.** Defining `Map`, `MapError`, `Bind` on every Result-like type in the codebase is small bookkeeping; doing it consistently is the cost of entry for the chain-form. Most ecosystems have one library that does it once for you (Rust's standard library, F#'s `Result` module, CSharpFunctionalExtensions, Vavr); the playbook prefers picking one and reusing it over re-implementing.
+- **The usual costs of higher-order functions.** A stack trace shows the combinator and a lambda instead of the step's name, and the compiler sometimes needs an explicit type argument. Both have the fixes listed in [Axiom 10](axiom-10-higher-order-functions.md#trade-offs), such as naming the step as a method.
+- **`Bind` needs one error type.** When two steps use different error types, translate one with `MapError` first, then chain. Widening `E` to a `string` (or to a union of unrelated things) just to keep one fluent chain hides the categories in a message; the chain probably wants to be two chains, joined by a `MapError`.
+- **Someone has to write them.** Defining the three combinators for every result-like type is small, but it has to be done consistently. In real code, take them from one library rather than writing your own: Rust and F# have them built in; C# has CSharpFunctionalExtensions [3]; Java has no standard `Result`, but Vavr's `Either` has `map`, `mapLeft` and `flatMap`. This axiom writes them by hand only to show there is nothing hidden inside.
 
 ---
 
 ## When NOT to
 
-**A single Result, used once.** A function that produces a `Result<T, E>` and immediately pattern-matches on it to do two different things is *already* the right shape — there is no chain to compose. Adding `.Map(…)` or `.Bind(…)` to a one-step usage is noise. The combinators earn their keep when two or more steps run back-to-back.
-
-**When the failure case needs case-by-case handling between steps.** If step 2 should *recover* from a particular failure of step 1 — fall back to a default, retry with different inputs, log and continue — the combinators don't fit that shape. The recovery is the point of the code; pattern-match on the Result and choose.
-
-**When the steps don't share a failure type and shouldn't.** A pipeline that mixes "parse failed (a string)" and "permission denied (a typed enum)" without a deliberate translation is a sign the chain is wanting to be two chains, or a chain plus a `MapError` seam in the middle. Don't widen `E` to a union of unrelated things just to keep one fluent chain.
-
-**For chaining impure steps.** The combinators are for transforming a `Result` built from *pure* fallible functions. The moment a step reads the clock, hits the database, or sends a request — even when it dutifully returns `Result<…, string>` — the chain stops being pure: the order of effects is now hidden inside `Bind`'s body, and the expression reads like a value but acts like a script. Keep effects on the arms of the final pattern match, after the chain has produced its final value ([Axiom 12](axiom-12-impureim.md)). The chain stays a pure expression even when it is built inside an impure shell; what makes it pure is that every step is pure, not where the code lives on the page.
+- **One `Result`, used once.** A function that gets a `Result` and immediately matches on it to do two different things already has the right shape. There is no chain to compose.
+- **When a failure needs handling between steps.** If step 2 should *recover* from a particular failure of step 1 (fall back to a default, try other inputs, log and carry on), the recovery is the point of the code. Match on the `Result` and decide.
+- **For impure steps.** The combinators chain *pure* steps. Once a step reads the clock, queries the database or sends a request, the order of effects hides inside `Bind`, and an expression that reads like a value behaves like a script. Keep effects in the branches of the final match, after the chain has produced its value ([Axiom 12](axiom-12-impureim.md)). The chain can be built inside the impure shell and still be pure: what matters is that every step is pure, not where the code sits.
 
 ---
 
 ## References
 
-[1] **John Hughes**, *Why Functional Programming Matters*, Research Topics in Functional Programming, Addison-Wesley, 1990. Cross-listed from [Axiom 10](axiom-10-higher-order-functions.md). The paper's central argument — that small higher-order operations are the *glue* that makes simple definitions compose into large programs — is the foundational case for combinators in general. The Result-shaped variants in this axiom are one specialisation of that glue.
+[1] **John Hughes**, *Why Functional Programming Matters*, in *Research Topics in Functional Programming*, Addison-Wesley, 1990. Also cited in [Axiom 10](axiom-10-higher-order-functions.md). Small higher-order functions are the "glue" that lets simple definitions compose into large programs; the Result combinators are one case of that glue.
 <https://www.cs.kent.ac.uk/people/staff/dat/miranda/whyfp90.pdf>
 
-[2] **Scott Wlaschin**, *Domain Modeling Made Functional*, Pragmatic Bookshelf, 2018. Cross-listed from [Axiom 16](axiom-16-result.md). The chapters that build up `Result.map`, `Result.mapError`, and `Result.bind` are the canonical OO-friendly introduction; the operation names this axiom uses match the F# treatment there.
+[2] **Scott Wlaschin**, *Domain Modeling Made Functional*, Pragmatic Bookshelf, 2018. Also cited in [Axiom 16](axiom-16-result.md). Builds up `Result.map`, `Result.mapError` and `Result.bind` in F#, step by step.
 <https://pragprog.com/titles/swdddf/domain-modeling-made-functional/>
 
-[3] **Vladimir Khorikov**, *CSharpFunctionalExtensions* (v3.7.0, March 2026). Cross-listed from [Axiom 16](axiom-16-result.md). The library ships `Map`, `Bind`, and `MapError` on `Result<T, E>` as extension methods; the C# example above mirrors its conventions. Worth reading the source — the definitions are short, total, and consistent with the playbook's shape.
+[3] **Vladimir Khorikov**, *CSharpFunctionalExtensions*. Also cited in [Axiom 16](axiom-16-result.md). Ships `Map`, `Bind` and `MapError` on `Result<T, E>` as extension methods; the C# above follows its names.
 <https://github.com/vkhorikov/CSharpFunctionalExtensions>
 
-[4] **Rust** `std::result::Result<T, E>` — `map`, `map_err`, `and_then`. The Rust standard library's three combinators are exactly the three this axiom names, with `and_then` standing in for `Bind`. A short, well-documented reference for the operations and their type signatures.
+[4] **Rust** `std::result::Result<T, E>`: `map`, `map_err` and `and_then`, the same three operations under Rust's names.
 <https://doc.rust-lang.org/std/result/enum.Result.html#method.map>
 
 ---
