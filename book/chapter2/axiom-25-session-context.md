@@ -62,35 +62,42 @@ public sealed class BatchContext
     public Action<int> ReportProgress { get; init; } = _ => { };
 }
 
-public void ImportRows(IEnumerable<string[]> rows, BatchContext context)
+public sealed class CustomerImporter(CustomerStore customers) // dependency: wired once
 {
-    var rowNumber = 0;
-    foreach (var row in rows)
+    public void ImportRows(
+        IEnumerable<string[]> rows,
+        BatchContext context)                         // session: passed per call
     {
-        rowNumber++;
-        var validation = ValidateRow(row);       // pure
-        switch (validation)
+        var rowNumber = 0;
+        foreach (var row in rows)
         {
-            case Success<Customer, string>(var customer):
-                customers.Insert(customer);
-                break;
-            case Failure<Customer, string>(var reason):
-                context.Errors.Add(new ImportError(rowNumber, reason));
-                break;
-            default:
-                throw new UnreachableException();
+            rowNumber++;
+            var validation = ValidateRow(row);        // pure
+            switch (validation)
+            {
+                case Success<Customer, string>(var customer):
+                    customers.Insert(customer);
+                    break;
+                case Failure<Customer, string>(var reason):
+                    context.Errors.Add(new ImportError(rowNumber, reason));
+                    break;
+                default:
+                    throw new UnreachableException();
+            }
+            context.ProcessedCount++;
+            context.ReportProgress(context.ProcessedCount);
         }
-        context.ProcessedCount++;
-        context.ReportProgress(context.ProcessedCount);
     }
 }
 
-// The caller creates the context and reads it afterwards:
+// The importer is built once; each run gets a fresh context:
+var importer = new CustomerImporter(customerStore);
+
 var context = new BatchContext
 {
     ReportProgress = n => Console.WriteLine($"row {n}")
 };
-ImportRows(rows, context);
+importer.ImportRows(rows, context);
 WriteSummary(context.ProcessedCount, context.Errors);
 ```
 
@@ -111,32 +118,47 @@ public final class BatchContext {
     }
 }
 
-public void importRows(Iterable<String[]> rows, BatchContext context) {
-    int rowNumber = 0;
-    for (String[] row : rows) {
-        rowNumber++;
-        var validation = validateRow(row);       // pure
-        switch (validation) {
-            case Success<Customer, String> s ->
-                customers.insert(s.value());
-            case Failure<Customer, String> f ->
-                context.errors.add(new ImportError(rowNumber, f.error()));
+public final class CustomerImporter {
+    private final CustomerStore customers;           // dependency: wired once
+
+    public CustomerImporter(CustomerStore customers) {
+        this.customers = customers;
+    }
+
+    public void importRows(
+            Iterable<String[]> rows,
+            BatchContext context) {                  // session: passed per call
+        int rowNumber = 0;
+        for (String[] row : rows) {
+            rowNumber++;
+            var validation = validateRow(row);       // pure
+            switch (validation) {
+                case Success<Customer, String> s ->
+                    customers.insert(s.value());
+                case Failure<Customer, String> f ->
+                    context.errors.add(
+                        new ImportError(rowNumber, f.error()));
+            }
+            context.processedCount++;
+            context.reportProgress.accept(context.processedCount);
         }
-        context.processedCount++;
-        context.reportProgress.accept(context.processedCount);
     }
 }
 
-// The caller creates the context and reads it afterwards:
+// The importer is built once; each run gets a fresh context:
+var importer = new CustomerImporter(customerStore);
+
 var context = new BatchContext(
     n -> System.out.println("row " + n));
-importRows(rows, context);
+importer.importRows(rows, context);
 writeSummary(context.processedCount, context.errors);
 ```
 
 </td>
 </tr>
 </table>
+
+The two inputs have different lifetimes, and the code shows it. `CustomerStore` is a dependency: it outlives every session, so it arrives once, through the constructor. `BatchContext` belongs to one run, so it arrives as a parameter of each call.
 
 `ValidateRow` is pure: it takes a row and returns a `Result`, and doesn't know `BatchContext` exists. All the mutation is in the shell: adding an error, incrementing the count, reporting progress. The progress callback was built by the *caller*, a closure in the sense of [Axiom 9](axiom-09-first-class-functions.md), and handed in, so a new session can report progress differently without changing the importer.
 
