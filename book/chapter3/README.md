@@ -11,7 +11,7 @@
 | Test | What it tests | What it runs against | Commonly called |
 |---|---|---|---|
 | **Function** | One pure function: values in, value out. | Nothing but the function. | Unit test |
-| **Service** | One independently deployable unit, as a black box: only through its own entry points. | Its own real dependencies (a real database in a container), and simulators for systems owned by others. | Integration or acceptance test |
+| **Service** | One independently deployable unit, as a black box: only through its own entry points. | Its own real dependencies (a real database, a real message broker, in containers), and simulators for systems owned by others. | Integration or acceptance test |
 | **Product** | The whole product, as its users see it. | Every service of the product, deployed together. | End-to-end test |
 | **Solution** | Several products working together. | The products involved, deployed together. | System or end-to-end test |
 
@@ -39,7 +39,8 @@ In practice:
 
 - **The pure core gets function tests.** Decisions over immutable values need no setup and no mocks. Every edge case of a rule is one more test.
 - **The shell gets service tests.** A controller, a mapper and the database access hold no decisions of their own, so they are never tested alone. A service test runs them for real.
-- **Service tests run the service in-process, with real dependencies.** The test hosts the whole service and calls its endpoints. Its own database runs for real, in a container. Only systems owned by others are replaced, by simulators that behave like them at the protocol level (see *Simulators*).
+- **Service tests run the service in-process, with real dependencies.** The test hosts the whole service and calls its endpoints. Its own dependencies (the database, the message broker) run for real, in containers. Only systems owned by others are replaced, by simulators that behave like them at the protocol level (see *Simulators*).
+- **The service test is a black box, all the way.** It talks to the service only through the service's API. It never bypasses the service: no reading the database to check a result (ask the service), no SQL scripts or side tools to prepare data (create it through the service). And it never bypasses the service's dependencies: the database and the message broker (a real RabbitMQ, for example) run for real; only systems owned by others become simulators. This makes the service API-first: whatever a test needs to set up, the service offers through its own API.
 - **Fewer, broader service tests.** One service test covers the handler, the mapping and the database access of a path together. A few per path are enough, because the decisions are already covered.
 - **Products and solutions get a few tests on the paths that matter most.** They are the most expensive to run and to keep working.
 
@@ -49,7 +50,7 @@ In practice:
 Leaving the shell out of function tests doesn't leave it untested. A mocked repository can't fail the way a real database does: a wrong column type, a missing index, a constraint, a deadlock, a missing migration. A service test runs against the real one, so it finds exactly those failures.
 
 **2. Tests at stable boundaries survive refactoring.**
-A test that mocks what a controller calls encodes the wiring: which method is called, in which order, with which arguments. Change the wiring without changing the behavior, and the test breaks anyway. Tests that call a pure function through its signature, or a service through its own entry points, only break when the behavior changes. A service test is a black box: it knows the endpoints, not the classes behind them, so the classes are free to change.
+A test that mocks what a controller calls encodes the wiring: which method is called, in which order, with which arguments. Change the wiring without changing the behavior, and the test breaks anyway. Tests that call a pure function through its signature, or a service through its own entry points, only break when the behavior changes. A service test is a black box: it knows the API, not the classes, tables or queues behind it, so all of them are free to change.
 
 **3. The cheap level gets many tests, the expensive one few.**
 A pure function needs no setup, so thorough testing costs little there. It is also deterministic: same input, same result, every run, so a function test can't flake. The shell holds no decisions, so a few service tests cover its paths.
@@ -57,12 +58,12 @@ A pure function needs no setup, so thorough testing costs little there. It is al
 **4. A failing service test points somewhere.**
 The usual objection to service tests is that a failure doesn't say *where*. Here it mostly does. Every decision lives in the core and has function tests, so a wrong rule fails a function test that names it. A service test that fails while every function test passes points at the shell: the wiring, the mapping, the database or a simulator. The shell is thin, so that search is short. It is the property [Chapter 1](../chapter1/README.md#the-goal-a-codebase-that-is-a-search-oracle) asks of an oracle: say *where* when the answer is no.
 
-For example, a refund is decided by a pure `DecideRefund(order, request, today)`, function-tested with one test per rule. If a service test then fails with *"cannot insert NULL into column `refunded_at`"* while every `DecideRefund` test passes, the rule is fine and the mapping to the row is not.
+For example, a refund is decided by a pure `DecideRefund(order, request, today)`, function-tested with one test per rule. If a service test then gets an error back from the service, *"cannot insert NULL into column `refunded_at`"*, while every `DecideRefund` test passes, the rule is fine and the mapping to the row is not.
 
 **5. Service tests are cheaper than their reputation.**
 Starting a database container takes seconds, once per test run. After that, a request that validates input and writes a row takes milliseconds. And a service test is cheaper to keep than the mocks it replaces: it only changes when the service's behavior changes.
 
-The common complaint about broad tests is speed. The common answer is to write fewer of them: that is what the [test pyramid](https://martinfowler.com/bliki/TestPyramid.html), and the shapes that followed it, encode. I'd rather fix the cause. Broad tests are slow mostly because they run one after another, and they run one after another because they share state: the same rows, the same simulator expectations. **Isolate each test** (its own data, its own customer or tenant, its own simulator setup) and the suite can run in parallel. Isolation also removes failures that depend on test order, which is how service tests become as deterministic as function tests.
+The common complaint about broad tests is speed. The common answer is to write fewer of them: that is what the [test pyramid](https://martinfowler.com/bliki/TestPyramid.html), and the shapes that followed it, encode. I'd rather fix the cause. Broad tests are slow mostly because they run one after another, and they run one after another because they share state: the same rows, the same simulator expectations. **Isolate each test** (its own data created through the service's API, its own customer or tenant, its own simulator setup) and the suite can run in parallel. Isolation also removes failures that depend on test order, which is how service tests become as deterministic as function tests.
 
 **6. Without the mocks, the interfaces have no job.**
 Apply [Chapter 1](../chapter1/README.md)'s [decisions-vs-ceremony test](../chapter1/README.md#enforce-decisions-not-ceremony) to the `IOrderRepository` next to its only implementation: remove it, and the reader loses nothing.
@@ -81,13 +82,14 @@ A simulator is only as good as its likeness. **Contract tests** keep it honest: 
 
 ## C#/Java example
 
-> **To do.** A controller using `DbContext` / `DSLContext` directly and calling a pure decision; the function tests for the decision; and a service test that hosts the service in-process, runs the database in a container, calls one endpoint and checks the stored row.
+> **To do.** A controller using `DbContext` / `DSLContext` directly and calling a pure decision; the function tests for the decision; and a service test that hosts the service in-process, runs the database in a container, calls one endpoint and checks the result through the service's own API.
 
 ## Trade-offs & when NOT to
 
 - **The setup is real work.** Containers, test data, simulators and their upkeep cost time, most of all in a service with many dependencies. Cheaper than its reputation, not free.
 - **Large suites still add up.** Thousands of service tests are slow, however fast each one is. Keep them to the paths that matter, and push every decision down into function tests.
 - **When logic has leaked into the shell.** A handler that branches on business conditions is no longer thin, and a failing service test no longer points anywhere useful. Move the logic into the core instead of testing the handler alone (see *Open questions*).
+- **Some states are slow to reach through the API.** An order that is a year old, or in a rare state, takes several calls to build. That is the price of tests that don't depend on the schema.
 - **Isolation is a discipline.** Every test creates its own data and its own simulator setup. One shared fixture or leftover row brings back order-dependent failures, and with them the serial runs.
 - **Contract tests need the real thing.** They need access to the real system or its sandbox, and someone has to run them when the provider changes.
 - **Timing and concurrency.** A service test can show that something goes wrong under load or interleaving without showing where. Those failures need their own investigation.
