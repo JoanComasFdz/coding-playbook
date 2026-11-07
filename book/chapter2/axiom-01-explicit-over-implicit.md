@@ -28,7 +28,7 @@ Explicitness seems to clash with encapsulation, because encapsulation is often t
 | What gets hidden | Verdict |
 |---|---|
 | **Invariants.** Callers must not be able to build an invalid value. | **Keep.** Seemann: "Encapsulation is not about hiding complexity, but conversely exposing complexity in a fail-safe manner" [4]. The invariant can be enforced where the value is built, not by hiding its fields. |
-| **Secrets.** A design decision likely to change: which database, which protocol, which cache [2]. | **Keep,** at a module boundary. A caller shouldn't depend on a decision that will change. |
+| **Secrets.** A design decision likely to change: which external feed, which vendor's protocol, which caching strategy [2]. | **Keep,** at a module boundary. A caller shouldn't depend on a decision that will change. |
 | **State, effects and dependencies hidden behind a method.** | **Drop.** This is what makes intent invisible. A method that reads three hidden things and changes a fourth looks the same from outside as one that does nothing of the kind. |
 
 In one line: **be explicit about intent, hide only secrets.** Data that can't be changed after it is built can be shown to anyone: there is nothing a reader could break by looking. What remains worth hiding is a decision, not data.

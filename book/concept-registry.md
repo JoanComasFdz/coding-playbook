@@ -591,7 +591,7 @@ Echoes the [SOLID critique](#solid-critique)'s note that the **O**/**L** letters
 
 ## Information Hiding (Parnas)
 
-🔍 **Open** — its code-shaping end is a **Chapter 3 Play**, [*Information hiding*](chapter3/04-information-hiding.md) (drafted; the database question is still open), paired with [Deep vs. shallow modules](#deep-vs-shallow-modules-ousterhout).
+🔍 **Open** — its code-shaping end is a **Chapter 3 Play**, [*Information hiding*](chapter3/04-information-hiding.md) (drafted; the database is not treated as a secret), paired with [Deep vs. shallow modules](#deep-vs-shallow-modules-ousterhout).
 
 A module hides a *secret* — a design decision likely to change. The root of encapsulation and of Ousterhout's deep modules; the same idea read from the secret's side rather than the interface's.
 

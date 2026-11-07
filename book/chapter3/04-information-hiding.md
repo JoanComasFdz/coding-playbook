@@ -149,11 +149,11 @@ The shell gathers the rate and passes it in ([Axiom 13](../chapter2/axiom-13-imp
 - **A boundary costs a mapping.** Every secret needs code that translates the outside representation into domain values. Worth it for a decision likely to change, not for one that won't.
 - **Don't hide what isn't a secret.** Wrapping a stable library "in case we switch" hides nothing likely to change, and makes a shallow module: an interface as big as what it hides. Ousterhout's measure is functionality divided by interface cost [2]; a wrapper that only renames scores badly.
 - **Some details can't stay hidden.** Every abstraction leaks a little [3]. When a hidden detail affects the caller's decision (a rate can be a day old), don't hide it: put it in the returned value, as `AsOf` does above.
-- **The database is an open question in this book.** The [Testing Play](03-testing-the-core-and-the-whole.md) argues against wrapping the database, and the [Repository section](01-DDD-tactical-patterns.md#repository) is under review. Until that is settled, this Play doesn't claim the persistence technology as a secret to hide.
+- **The database is not a secret.** A layer that wraps the database so it can be swapped later promises a portability it rarely delivers. SQL Server, Oracle and PostgreSQL differ in dialect, locking, transactions and features; moving to a document store changes the data model itself. Khorikov calls database abstraction "the false myth" [4], and Zawodny named the same portability fallacy in 2004 [5]. What this book keeps is the separation, not the disguise: persistence code lives in the shell, apart from the pure core ([Axiom 13](../chapter2/axiom-13-impureim.md)), and it uses the database it has, features included. If the database ever changes, that is a port, not a swap. (The [Testing Play](03-testing-the-core-and-the-whole.md) reaches the same conclusion from the testing side.)
 
 ## What might change tomorrow
 
-- How the database question above is settled, and whether persistence joins the list of secrets.
+- A product that must genuinely run on several databases, because each customer picks their own, makes the database a real secret. If that ever becomes the common case, this Play applies to it.
 - Language support for small surfaces. C#'s `file`-scoped types and `internal`, and Java's module system and package-private access, already let a module hide more without an interface. If they get easier to use, the "concrete class, small surface" advice gets cheaper still.
 - The pairing with the *Deep modules* Play, once that is written: a deep module is the shape a well-hidden secret usually takes.
 
@@ -165,3 +165,9 @@ The shell gathers the rate and passes it in ([Axiom 13](../chapter2/axiom-13-imp
 
 [3] **Joel Spolsky**, *The Law of Leaky Abstractions*, 2002. "All non-trivial abstractions, to some degree, are leaky."
 <https://www.joelonsoftware.com/2002/11/11/the-law-of-leaky-abstractions/>
+
+[4] **Vladimir Khorikov**, *Should you abstract the database?*, Enterprise Craftsmanship, 2021. Abstracting the database to be able to switch is "the false myth": its costs are hidden, and it limits you to the features every database shares. Separating persistence from domain logic, on the other hand, is a must-have.
+<https://enterprisecraftsmanship.com/posts/should-you-abstract-database/>
+
+[5] **Jeremy Zawodny**, *Database Abstraction Layers Must Die!*, 2004. The portability fallacy: "If you use a good abstraction layer, it'll be easy to move from $this_database to $other_database down the road."
+<http://jeremy.zawodny.com/blog/archives/002194.html>
