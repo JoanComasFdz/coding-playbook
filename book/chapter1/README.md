@@ -294,6 +294,29 @@ This book is stacked by level: Chapter 1 is the motivation, Chapter 2 the buildi
 
 They are not unmapped because they do not matter. They are unmapped because they live above the level of code. Everything that *is* at the level of code already has a place in the rest of this book.
 
+## So what do I reason with instead?
+
+When reading and writing code, we need tools: a precise vocabulary to evaluate each line, each piece of data and each function, along several dimensions. Something to argue about trade-offs with, and to describe them properly.
+
+SOLID does not give us that:
+
+- In practice, it became ceremony that much of the industry applies by reflex, and the letters survive mostly as names for symptoms.
+- In theory, it wraps universal concerns in OOP-specific mechanisms. Half of it is structure that can be enforced but says nothing; the other half is judgment that tools cannot enforce.
+
+CUPID comes closer. It is an ally that points toward a destination, but it stops at the same ceiling: it cannot give you the route.
+
+Both let me *name* what I am looking at. Neither helps me *create* it.
+
+So the question is not "how do I obey five principles, or chase five properties?". It is:
+
+**What building blocks give me a precise vocabulary and metrics to reason about code?**
+
+And once I have them:
+
+**How can I enforce them in the code itself, so I do not depend on anyone's discipline at review time?** Enforce decisions, not ceremony.
+
+The compiler is the cheapest place to enforce them, and that leads to the goal of this book.
+
 ## The goal: a codebase that is a search oracle
 
 ### Correct means "matches a specification"
@@ -378,29 +401,6 @@ Every axiom in [Chapter 2](../chapter2/README.md) is chosen with one question: *
 Each one moves a mistake, as Kumar says, "from the expensive category to the cheap one".
 
 **When not to.** Even a total oracle converges on the specification you *wrote*, not the one you *meant*. If the written specification is wrong, the search returns a verified wrong program. Types check shape, not intent, so tests and people still own intent, algorithms and performance. The goal is not to replace them. It is to leave them only the questions the compiler cannot answer.
-
-## So what do I reason with instead?
-
-When reading and writing code, we need tools: a precise vocabulary to evaluate each line, each piece of data and each function, along several dimensions. Something to argue about trade-offs with, and to describe them properly.
-
-SOLID does not give us that:
-
-- In practice, it became ceremony that much of the industry applies by reflex, and the letters survive mostly as names for symptoms.
-- In theory, it wraps universal concerns in OOP-specific mechanisms. Half of it is structure that can be enforced but says nothing; the other half is judgment that tools cannot enforce.
-
-CUPID comes closer. It is an ally that points toward a destination, but it stops at the same ceiling: it cannot give you the route.
-
-Both let me *name* what I am looking at. Neither helps me *create* it.
-
-So the question is not "how do I obey five principles, or chase five properties?". It is:
-
-**What building blocks give me a precise vocabulary and metrics to reason about code?**
-
-And once I have them:
-
-**How can I enforce them in the code itself, so I do not depend on anyone's discipline at review time?** Enforce decisions, not ceremony.
-
-The compiler is the cheapest place to enforce them. That is what makes a codebase a [search oracle](#the-goal-a-codebase-that-is-a-search-oracle).
 
 ---
 
