@@ -313,9 +313,9 @@ So the question is not "how do I obey five principles, or chase five properties?
 
 And once I have them:
 
-**How can I enforce them in the code itself, so I do not depend on anyone's discipline at review time?** Enforce decisions, not ceremony.
+**How can I enforce them in the code itself, so I do not depend on anyone's discipline at review time?**
 
-The compiler is the cheapest place to enforce them, and that leads to the goal of this book.
+The compiler is the cheapest place to enforce them. But a compiler enforces ceremony just as happily: the `IFoo` next to its only `Foo` compiles fine. So what it enforces has to be a decision, not ceremony (see [*Enforce decisions, not ceremony*](#enforce-decisions-not-ceremony)). That leads to the goal of this book.
 
 ## The goal: a codebase that is a search oracle
 
