@@ -59,5 +59,4 @@ An `IOrderRepository` next to its only `OrderRepository` usually exists so a uni
 ## Open questions
 
 - **Repository section of the DDD Play.** [DDD tactical patterns](../chapter4/01-DDD-tactical-patterns.md#repository) currently defines a repository as `LoadOrder` / `SaveOrder` delegates, an abstraction this file argues against. Decide whether it goes, or when a named load/save function earns its place (for example, a query many handlers share).
-- **An earlier version of these thoughts:** [*Reevaluating Testing Strategies in Software Development*](https://github.com/JoanComasFdz/thoughts-on-testing), written before this book, in the old vocabulary.
 - **Sources to verify before citing:** Gary Bernhardt, *Boundaries* (SCNA 2012) — unit-test the core, integration-test the shell (his *Functional Core, Imperative Shell* screencast is verified and cited in [Axiom 13](../chapter2/axiom-13-impureim.md)); Spotify's "testing honeycomb" (2018).
