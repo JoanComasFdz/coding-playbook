@@ -171,7 +171,7 @@ The payoff is where the values are used:
 <td>
 
 ```csharp
-public string FormatContactLine(CustomerProfile profile) =>
+public static string FormatContactLine(CustomerProfile profile) =>
     $"{profile.Username.Value} <{profile.Email.Value}>";
 ```
 
@@ -179,7 +179,7 @@ public string FormatContactLine(CustomerProfile profile) =>
 <td>
 
 ```java
-public String formatContactLine(CustomerProfile profile) {
+public static String formatContactLine(CustomerProfile profile) {
     return profile.username().value()
         + " <" + profile.email().value() + ">";
 }

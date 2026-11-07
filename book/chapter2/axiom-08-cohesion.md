@@ -44,7 +44,7 @@ The DRY reflex says: these two render functions look 90% alike, so merge them.
 
 ```csharp
 // "They're basically the same" — so a flag is born.
-public string RenderLine(LineItem item, bool isReceipt)
+public static string RenderLine(LineItem item, bool isReceipt)
 {
     var amount = item.Amount.ToString("C");
     if (isReceipt)
@@ -59,7 +59,7 @@ public string RenderLine(LineItem item, bool isReceipt)
 
 ```java
 // "They're basically the same" — so a flag is born.
-public String renderLine(LineItem item, boolean isReceipt) {
+public static String renderLine(LineItem item, boolean isReceipt) {
     var amount = format(item.amount());
     if (isReceipt)
         return item.name() + "  " + amount
@@ -85,10 +85,10 @@ Cohesion splits by reason to change, and extracts only the part that really is o
 
 ```csharp
 // One reason to change each. The only shared concept is money formatting.
-public string RenderInvoiceLine(InvoiceLine line) =>
+public static string RenderInvoiceLine(InvoiceLine line) =>
     $"{line.PoNumber}  {line.Name}  {FormatMoney(line.Amount)}";
 
-public string RenderReceiptLine(ReceiptLine line) =>
+public static string RenderReceiptLine(ReceiptLine line) =>
     $"{line.Name}  {FormatMoney(line.Amount)}"
       + (line.TaxExempt ? "  (tax-exempt)" : "");
 
@@ -101,12 +101,12 @@ private static string FormatMoney(Money amount) =>
 
 ```java
 // One reason to change each. The only shared concept is money formatting.
-public String renderInvoiceLine(InvoiceLine line) {
+public static String renderInvoiceLine(InvoiceLine line) {
     return line.poNumber() + "  " + line.name()
          + "  " + formatMoney(line.amount());
 }
 
-public String renderReceiptLine(ReceiptLine line) {
+public static String renderReceiptLine(ReceiptLine line) {
     return line.name() + "  " + formatMoney(line.amount())
          + (line.taxExempt() ? "  (tax-exempt)" : "");
 }

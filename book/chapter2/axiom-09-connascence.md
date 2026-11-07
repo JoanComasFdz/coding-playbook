@@ -112,7 +112,7 @@ public readonly record struct Amount(decimal Value);
 public readonly record struct Fee(decimal Value);
 
 // Transfer and its callers agree on the types Amount and Fee.
-public Receipt Transfer(Account from, Account to, Amount amount, Fee fee) { ... }
+public static Receipt Transfer(Account from, Account to, Amount amount, Fee fee) { ... }
 
 var receipt = Transfer(payer, payee, new Amount(100.00m), new Fee(2.50m));
 // Hand it a Fee where it wants an Amount and the build breaks:
@@ -127,7 +127,7 @@ record Amount(BigDecimal value) {}
 record Fee(BigDecimal value) {}
 
 // transfer and its callers agree on the types Amount and Fee.
-public Receipt transfer(Account from, Account to, Amount amount, Fee fee) { ... }
+public static Receipt transfer(Account from, Account to, Amount amount, Fee fee) { ... }
 
 var receipt = transfer(payer, payee,
     new Amount(new BigDecimal("100.00")), new Fee(new BigDecimal("2.50")));
@@ -184,7 +184,7 @@ Callers must agree on the *order* of things, most often positional arguments.
 
 ```csharp
 // Four positional arguments; the order is the contract.
-public Receipt Transfer(
+public static Receipt Transfer(
     Account from, Account to, decimal amount, decimal fee) { ... }
 
 // This one looks fine...
@@ -199,7 +199,7 @@ var oops = Transfer(payer, payee, 2.50m, 100.00m);
 
 ```java
 // Four positional arguments; the order is the contract.
-public Receipt transfer(
+public static Receipt transfer(
     Account from, Account to, BigDecimal amount, BigDecimal fee) { ... }
 
 // This one looks fine...

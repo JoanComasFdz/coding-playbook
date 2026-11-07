@@ -303,6 +303,17 @@ What code needs and does is visible where it is used: inputs, dependencies, effe
 
 ---
 
+## Classes as modules, static pure functions — [🔁 FOLDED]
+
+In the pure core a class is a named group of `static` functions, like a module in a functional language. In the shell, classes stay ordinary classes.
+
+- [Axiom 6 — Pure functions](chapter2/axiom-06-pure-functions.md#definitions) — the rule: pure functions are `static`, or methods on immutable values; never instance methods on a class with mutable fields or injected services.
+- [Axiom 2 — Data is not Behavior](chapter2/axiom-02-data-is-not-behavior.md) — a static class is a module: no state, no identity.
+- [Axiom 13 — Impureim](chapter2/axiom-13-impureim.md#definitions) — the shell is ordinary object-oriented code: constructor injection, state where needed.
+- [Chapter 2 — What the code looks like](chapter2/README.md#what-the-code-looks-like) — the two halves side by side.
+
+---
+
 ## Encapsulation — [🔁 FOLDED]
 
 Often taught as "make everything private". Read precisely, it bundles three jobs, and this book keeps two of them.

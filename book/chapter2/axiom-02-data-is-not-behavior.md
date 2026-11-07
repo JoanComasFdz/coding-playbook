@@ -199,7 +199,7 @@ This book removes the premise instead. Once the data is an *immutable value*, th
 
 Same benefits (one home for the rule, no reaching into objects), different mechanism (freeze the data instead of hiding it behind behavior). Keeping things together is not lost, only moved:
 
-- **to the module**, where a function and the types it transforms sit side by side without being fused;
+- **to the module**, where a function and the types it transforms sit side by side without being fused. In C# and Java a module is a static class (`Pricing` above): a named group of functions with no state and no identity, like a [module](https://en.wikipedia.org/wiki/Modular_programming) in F# or OCaml. It groups functions; it isn't an object;
 - **to the one place where mutable state still lives** (see *Mutable resources* above).
 
 ---

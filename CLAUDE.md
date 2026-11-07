@@ -60,10 +60,11 @@ Most content should align to one model:
 
 > Pure functions over immutable types, returning values or **action DUs**; a single impure orchestrator is the only seam; stateful resources are held in the shell and fed in as values.
 
-That sentence is effectively a module's public-API contract. Three consequences to keep consistent across examples:
+That sentence is effectively a module's public-API contract. Four consequences to keep consistent across examples:
 
 - A pure function that decides *what should happen* returns a discriminated union of actions/events (e.g. `Add | Update | Remove`); the caller executes them outside the pure core — the decision is pure, the execution is impure. State machines are just the first part with the entity's state added as input and threaded into each successful variant. Treat "return actions" and "pure state machine" as the same building block, not two.
 - Once functions return `Result`/`Option`, **compose** them with map/bind/traverse rather than nesting `if`s. Distinguish short-circuiting (monadic `Result`) from accumulating (applicative validation, for collecting multiple `ValidationError`s).
+- **Pure functions are `static`** (or methods on immutable records), grouped in static classes that act as modules. Never an instance method on a class with mutable fields or injected services: `this` would be a hidden input ([Axiom 6](book/chapter2/axiom-06-pure-functions.md#definitions)). Shell classes stay ordinary classes, with constructor injection and state where needed ([Axiom 13](book/chapter2/axiom-13-impureim.md#definitions)).
 - **Always separate the pure call from the pattern match on its result** — see [Axiom 12's "match on a named value" convention](book/chapter2/axiom-12-pattern-matching.md#convention-match-on-a-named-value-never-on-an-inline-call). Shape: `var decision = Compute(...); switch (decision) { ... }`, never `switch (Compute(...)) { ... }`. Applies to `switch` and `Match` equally. The purpose is visual: pure call on one line, impure dispatch on the next, so a reviewer sees the Impureim sandwich's two halves at a glance.
 
 ## Vocabulary
