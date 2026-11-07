@@ -12,7 +12,7 @@ Most programs can't live entirely on that. A batch import counts rows as it goes
 
 Frameworks already ship this shape. ASP.NET Core's `HttpContext` is created per request and passed to middleware (`InvokeAsync(HttpContext context)`), with an `Items` dictionary for values shared between steps; EF Core's `DbContext` lives per request and collects pending changes until `SaveChanges()`. In Java, `HttpServletRequest` carries request-scoped attributes, and JPA's `EntityManager` is the persistence context of one unit of work. Each is designed to be passed explicitly, though each also offers an ambient way to reach it (`IHttpContextAccessor`, Spring's `RequestContextHolder`), the form this axiom rules out (see *Problem / forces*).
 
-Through [Axiom 9](axiom-09-connascence.md)'s lens, ambient shared state is the strongest kind of coupling, a [Connascence of Identity](axiom-09-connascence.md#connascence-of-identity-coi): any function in the call tree may reach the one shared mutable object, and no signature says which do. Passing the context explicitly doesn't remove the sharing, but it makes it visible in every signature that needs it, and keeps it inside the shell.
+Through [Axiom 9](axiom-09-connascence.md)'s lens, ambient shared state is the strongest kind of coupling, a [Connascence of Identity](axiom-09-connascence.md#connascence-of-identity-coi): any function in the call tree may reach the one shared mutable object, and no signature says which do. Passing the context explicitly doesn't remove the sharing, but it makes it visible in every signature that needs it, and keeps it inside the shell. That is [Axiom 1](axiom-01-explicit-over-implicit.md) applied to the one piece of mutable state this chapter allows.
 
 ---
 

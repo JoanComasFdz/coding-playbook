@@ -2,7 +2,7 @@
 
 **When operations must run in a set order, give each state its own immutable type, put each operation only on the type of the state where it is valid, and make every transition return the type of the next state. A call made in the wrong order then doesn't compile: the method isn't there on the value the caller holds.**
 
-[Axiom 19](axiom-19-value-objects.md) made illegal *values* unrepresentable, [Axiom 23](axiom-23-illegal-states.md) a record's illegal *shapes*, and [Axiom 25](axiom-25-state-machines.md) put the legal *transitions* into one pure function. Typestate does the same for *call order*. A caller holding an `AuthenticationService` can't ask whether the user is an admin, because `HasRole` only exists on `AuthenticatedSession`, and the only way to get one is to authenticate.
+[Axiom 19](axiom-19-value-objects.md) made illegal *values* unrepresentable, [Axiom 23](axiom-23-illegal-states.md) a record's illegal *shapes*, and [Axiom 25](axiom-25-state-machines.md) put the legal *transitions* into one pure function. Typestate does the same for *call order*. In [Axiom 1](axiom-01-explicit-over-implicit.md)'s terms, it makes the last implicit thing explicit: the order the calls must come in. A caller holding an `AuthenticationService` can't ask whether the user is an admin, because `HasRole` only exists on `AuthenticatedSession`, and the only way to get one is to authenticate.
 
 Through [Axiom 9](axiom-09-connascence.md)'s lens, typestate turns a dynamic [Connascence of Execution](axiom-09-connascence.md#connascence-of-execution-coe) (callers must remember the order, what Hunt and Thomas call *temporal coupling* [2]) into a static [Connascence of Type](axiom-09-connascence.md#connascence-of-type-cot) the compiler checks.
 

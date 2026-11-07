@@ -5,7 +5,7 @@
 - A value is exactly one of the cases at a time.
 - It is consumed with an exhaustive pattern match ([Axiom 12](axiom-12-pattern-matching.md)): the compiler checks that every case has a branch.
 
-[Axiom 15](axiom-15-either.md) and [Axiom 17](axiom-17-result.md) handled two outcomes, and both were already built the same way: a sealed parent with two case records, consumed by a `switch` with two branches. Many real decisions have more than two outcomes. A card payment can be approved, declined, or need extra verification, and each outcome carries different data. A discriminated union is that shape for any number of cases.
+[Axiom 15](axiom-15-either.md) and [Axiom 17](axiom-17-result.md) handled two outcomes, and both were already built the same way: a sealed parent with two case records, consumed by a `switch` with two branches. Many real decisions have more than two outcomes. A card payment can be approved, declined, or need extra verification, and each outcome carries different data. A discriminated union is that shape for any number of cases. It is [Axiom 1](axiom-01-explicit-over-implicit.md)'s explicitness applied to cases: each outcome named, instead of encoded in flags.
 
 Through [Axiom 9](axiom-09-connascence.md)'s lens, it turns a [Connascence of Meaning](axiom-09-connascence.md#connascence-of-meaning-com) (status codes and boolean flags every consumer decodes by convention) into a [Connascence of Type](axiom-09-connascence.md#connascence-of-type-cot) the compiler checks. It is also [Axiom 0](axiom-00-ubiquitous-language.md) at the level of a case: `Approved`, `Declined` and `RequiresVerification` are the domain's own words, each one a type.
 

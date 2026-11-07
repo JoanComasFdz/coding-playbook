@@ -5,7 +5,7 @@
 - The caller can't read the value without handling the empty case.
 - No `null` hidden behind `User`, no placeholder object, no exception for "not found".
 
-[Axiom 7](axiom-07-honest-total-signatures.md) ruled out silent nulls and sentinels, and replaced them with a `Found | NotFound` type written by hand. A Maybe (also called an [option type](https://en.wikipedia.org/wiki/Option_type)) is that type, ready-made and generic: the standard answer to the most common two-outcome question, "is there a value or not?". Its examples use the `map` from [Axiom 11](axiom-11-higher-order-functions.md) and the `switch` from [Axiom 12](axiom-12-pattern-matching.md).
+[Axiom 7](axiom-07-honest-total-signatures.md) ruled out silent nulls and sentinels, and replaced them with a `Found | NotFound` type written by hand. A Maybe (also called an [option type](https://en.wikipedia.org/wiki/Option_type)) is that type, ready-made and generic: the standard answer to the most common two-outcome question, "is there a value or not?". It is [Axiom 1](axiom-01-explicit-over-implicit.md)'s explicitness applied to absence. Its examples use the `map` from [Axiom 11](axiom-11-higher-order-functions.md) and the `switch` from [Axiom 12](axiom-12-pattern-matching.md).
 
 Through [Axiom 9](axiom-09-connascence.md)'s lens, a Maybe weakens a [Connascence of Meaning](axiom-09-connascence.md#connascence-of-meaning-com) (every caller agreeing, by convention, that `null` means *absent*) into a [Connascence of Type](axiom-09-connascence.md#connascence-of-type-cot).
 

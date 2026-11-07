@@ -5,7 +5,7 @@
 - `Success` carries the answer the caller wanted. `Failure` carries the reason it didn't get it.
 - Rust calls the same pair `Ok` and `Err` [1].
 
-[Axiom 15](axiom-15-either.md) gave two-outcome results a shape, and said that in practice I reach for a type whose cases have names. Result is that type for the most common pair: it worked, or it didn't. With [Axiom 16](axiom-16-unit.md) it covers every case: success with a value, success with nothing to return (`Result<Unit, E>`), or failure with a reason.
+[Axiom 15](axiom-15-either.md) gave two-outcome results a shape, and said that in practice I reach for a type whose cases have names. Result is that type for the most common pair: it worked, or it didn't. With [Axiom 16](axiom-16-unit.md) it covers every case: success with a value, success with nothing to return (`Result<Unit, E>`), or failure with a reason. It is [Axiom 1](axiom-01-explicit-over-implicit.md)'s explicitness applied to failure: the outcome a throwing signature hides.
 
 Through [Axiom 9](axiom-09-connascence.md)'s lens, Result turns a [Connascence of Meaning](axiom-09-connascence.md#connascence-of-meaning-com) (error codes, sentinels and exceptions the caller must just *know* about) into a [Connascence of Type](axiom-09-connascence.md#connascence-of-type-cot). Unlike `Either`, the names leave no convention behind: nobody has to remember which side is the error.
 
