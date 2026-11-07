@@ -260,7 +260,7 @@ Crash immediately on a programmer error (a bug); return a value for an *expected
 
 ## Arrow Anti-Pattern / Pyramid of Doom — [🔁 FOLDED]
 
-Deeply nested `if`/`try` blocks marching rightward — each success opens another indent. The *nested* twin of [Return early](#return-early-guard-clauses--folded); once every step returns `Result`, both give way to composition.
+Deeply nested `if`/`try` blocks marching rightward — each success opens another indent. The *nested* twin of [Return early](#return-early-guard-clauses---folded); once every step returns `Result`, both give way to composition.
 
 - [Axiom 20 — Railway](chapter2/axiom-20-railway.md) — the staircase of nested success-checks becomes one straight track.
 - [Axiom 18 — Result combinators](chapter2/axiom-18-result-combinators.md) — the nested unwrap → check → rewrap collapses into `map`/`bind`.
@@ -272,7 +272,7 @@ Deeply nested `if`/`try` blocks marching rightward — each success opens anothe
 
 ## Return early (guard clauses) — [🔁 FOLDED]
 
-Handle the exceptional case first and bail, leaving the happy path un-indented. The *flattened* twin of [Arrow / Pyramid of Doom](#arrow-anti-pattern--pyramid-of-doom--folded).
+Handle the exceptional case first and bail, leaving the happy path un-indented. The *flattened* twin of [Arrow / Pyramid of Doom](#arrow-anti-pattern--pyramid-of-doom---folded).
 
 - [Axiom 18 — Result combinators](chapter2/axiom-18-result-combinators.md) — the **named foil**: checking by hand and returning early on a failure is the right shape for a single step whose failure needs special handling, and noise once several run back-to-back, which is exactly when the combinators name the dance once.
 
@@ -282,7 +282,7 @@ Handle the exceptional case first and bail, leaving the happy path un-indented. 
 
 ## Swallowing Errors — [🔁 FOLDED]
 
-Discarding a failure instead of handling it — an empty `catch {}`, an ignored `Result`, `?.`/`??` flattening several "missing" cases into one. The **inverse** of [*Define errors out of existence*](#define-errors-out-of-existence-ousterhout--folded): that move makes the bad case *impossible*; swallowing makes a real one *invisible*.
+Discarding a failure instead of handling it — an empty `catch {}`, an ignored `Result`, `?.`/`??` flattening several "missing" cases into one. The **inverse** of [*Define errors out of existence*](#define-errors-out-of-existence-ousterhout---folded): that move makes the bad case *impossible*; swallowing makes a real one *invisible*.
 
 - [Axiom 7 — Honest, total signatures](chapter2/axiom-07-honest-total-signatures.md) — swallowing yields a *dishonest* signature claiming a success it never had; its *When NOT to* already warns that absorbing a caller-bug input masks the defect.
 - [Axiom 14 — Maybe](chapter2/axiom-14-maybe.md) — the named `user?.Manager?.Email ?? ""` case (*Trade-offs*): three different "missing" cases quietly collapsed into one.
