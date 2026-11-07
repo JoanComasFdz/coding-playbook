@@ -1,6 +1,6 @@
 # Testing the core and the whole
 
-> **Placeholder.** This file collects the author's position and the open questions around it. The full write-up, examples and sources are still to do.
+> **Draft.** The position and its why are here. The example and some sources are still to do.
 
 The split between pure and impure code ([Axiom 5](../chapter2/axiom-05-impure-functions.md), [Axiom 6](../chapter2/axiom-06-pure-functions.md), [Axiom 13](../chapter2/axiom-13-impureim.md)) decides three things at once: what to share, what to abstract, and what to test, and how.
 
@@ -29,10 +29,17 @@ The three rows hold each other up. A repository interface usually exists so a un
 
 ## Why
 
-> To do. Points to develop:
-> - Mocks test wiring, not behavior; service tests test what users see.
-> - Pure functions are cheap to test exhaustively; the shell is thin, so a few service tests cover it.
-> - Apply the [decisions-vs-ceremony test](../chapter1/README.md#enforce-decisions-not-ceremony) from [Chapter 1](../chapter1/README.md) to the repository interface: remove it, and the reader loses nothing.
+**1. The infrastructure is tested where it can fail.**
+Leaving the shell out of function tests doesn't leave it untested. A mocked repository can't fail the way a real database does: a wrong column type, a missing index, a constraint, a transaction that deadlocks. A service test runs against a real database (in a container), so it finds exactly those failures. The shell is tested at the only level where its bugs show up.
+
+**2. Tests at stable boundaries survive refactoring.**
+A function test on a controller mocks what the controller calls, so it encodes the wiring: which method is called, in which order, with which arguments. Change the wiring without changing the behavior, and those tests break anyway. The time goes into updating tests that found nothing. Tests that call a pure function through its signature, or a service through its own entry points, only break when the behavior changes.
+
+**3. Decisions are cheap to test thoroughly; the shell is thin.**
+A pure function needs no setup, so every edge case of a rule costs one line of test. The shell holds no decisions, so a few service tests cover its paths. The expensive level gets few tests, and the cheap level gets many.
+
+**4. Without the mocks, the interfaces have no job.**
+An `IOrderRepository` next to its only `OrderRepository` usually exists so a unit test can replace it. Apply [Chapter 1](../chapter1/README.md)'s [decisions-vs-ceremony test](../chapter1/README.md#enforce-decisions-not-ceremony): remove it, and the reader loses nothing.
 
 ## C#/Java example
 
@@ -52,4 +59,5 @@ The three rows hold each other up. A repository interface usually exists so a un
 ## Open questions
 
 - **Repository section of the DDD Play.** [DDD tactical patterns](../chapter4/01-DDD-tactical-patterns.md#repository) currently defines a repository as `LoadOrder` / `SaveOrder` delegates, an abstraction this file argues against. Decide whether it goes, or when a named load/save function earns its place (for example, a query many handlers share).
+- **An earlier version of these thoughts:** [*Reevaluating Testing Strategies in Software Development*](https://github.com/JoanComasFdz/thoughts-on-testing), written before this book, in the old vocabulary.
 - **Sources to verify before citing:** Gary Bernhardt, *Boundaries* (SCNA 2012) — unit-test the core, integration-test the shell (his *Functional Core, Imperative Shell* screencast is verified and cited in [Axiom 13](../chapter2/axiom-13-impureim.md)); Spotify's "testing honeycomb" (2018).

@@ -23,9 +23,11 @@ Each level up is slower and more expensive to run, and finds a bug further from 
 
 ## In this chapter
 
-- [Testing the core and the whole](01-testing-the-core-and-the-whole.md) — the position in short, and the open questions around it. *(Placeholder.)*
+- [Testing the core and the whole](01-testing-the-core-and-the-whole.md) — the position, and why the shell gets no function tests. *(Example still to do.)*
+- [A failing service test points somewhere](02-a-failing-service-test-points-somewhere.md) — with every decision in the core, a failing service test narrows the search to the shell.
+- [Service tests are cheaper than their reputation](03-service-tests-are-cheaper-than-their-reputation.md) — real dependencies in containers, simulators for what you don't own, and the honest costs.
 
-More to come: why no function test for a controller, a mapper or the database access; what makes a good simulator; how a test is designed at each level.
+More to come: what makes a good simulator, and how a test is designed at each level.
 
 ## Scope
 
