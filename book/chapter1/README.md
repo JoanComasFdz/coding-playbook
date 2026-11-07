@@ -319,7 +319,7 @@ A test suite is a partial oracle. A red test is trustworthy: something is wrong.
 
 A **search** produces many candidates and looks for one that is acceptable. A **search oracle** is an oracle that can drive that search ([Kumar, *A Type System Is a Search Oracle*](https://hiraditya.github.io/posts/a-type-system-is-a-search-oracle/)). It needs three things:
 
-- **Sound:** its *yes* means correct, or the search stops on a wrong answer and never knows.
+- **Sound:** its *yes* means correct. Otherwise the search stops on a wrong answer and never knows.
 - **Fast:** a search asks many times.
 - **Informative when it says no:** it says *where* and *why*, so the next candidate is better, not just different.
 
