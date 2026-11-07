@@ -1,12 +1,12 @@
-# Axiom 27 — Typestate
+# Axiom 28 — Typestate
 
 **When operations must run in a set order, give each state its own immutable type, put each operation only on the type of the state where it is valid, and make every transition return the type of the next state. A call made in the wrong order then doesn't compile: the method isn't there on the value the caller holds.**
 
-[Axiom 18](axiom-18-value-objects.md) made illegal *values* unrepresentable, [Axiom 22](axiom-22-illegal-states.md) a record's illegal *shapes*, and [Axiom 24](axiom-24-state-machines.md) put the legal *transitions* into one pure function. Typestate does the same for *call order*. A caller holding an `AuthenticationService` can't ask whether the user is an admin, because `HasRole` only exists on `AuthenticatedSession`, and the only way to get one is to authenticate.
+[Axiom 19](axiom-19-value-objects.md) made illegal *values* unrepresentable, [Axiom 23](axiom-23-illegal-states.md) a record's illegal *shapes*, and [Axiom 25](axiom-25-state-machines.md) put the legal *transitions* into one pure function. Typestate does the same for *call order*. In [Axiom 1](axiom-01-explicit-over-implicit.md)'s terms, it makes the last implicit thing explicit: the order the calls must come in. A caller holding an `AuthenticationService` can't ask whether the user is an admin, because `HasRole` only exists on `AuthenticatedSession`, and the only way to get one is to authenticate.
 
-Through [Axiom 8](axiom-08-connascence.md)'s lens, typestate turns a dynamic [Connascence of Execution](axiom-08-connascence.md#connascence-of-execution-coe) (callers must remember the order, what Hunt and Thomas call *temporal coupling* [2]) into a static [Connascence of Type](axiom-08-connascence.md#connascence-of-type-cot) the compiler checks.
+Through [Axiom 9](axiom-09-connascence.md)'s lens, typestate turns a dynamic [Connascence of Execution](axiom-09-connascence.md#connascence-of-execution-coe) (callers must remember the order, what Hunt and Thomas call *temporal coupling* [2]) into a static [Connascence of Type](axiom-09-connascence.md#connascence-of-type-cot) the compiler checks.
 
-This axiom comes last because most code doesn't need it. Every status field is a state machine, and [Axiom 24](axiom-24-state-machines.md)'s value-level `Transition` is usually enough. Typestate costs one named type per state. It pays off where a wrong-order call does real harm: an authorization hole, a leaked resource, a half-built object.
+This axiom comes last because most code doesn't need it. Every status field is a state machine, and [Axiom 25](axiom-25-state-machines.md)'s value-level `Transition` is usually enough. Typestate costs one named type per state. It pays off where a wrong-order call does real harm: an authorization hole, a leaked resource, a half-built object.
 
 ---
 
@@ -14,10 +14,10 @@ This axiom comes last because most code doesn't need it. Every status field is a
 
 A **typestate** has four properties:
 
-- **One immutable type per state.** A record ([Axiom 2](axiom-02-immutability.md)). A linear lifecycle (open, then closed) gets one record per step. When a step has several variants, they form a sealed hierarchy ([Axiom 21](axiom-21-discriminated-unions.md)), and each variant is a typestate of its own.
-- **A transition returns the next type.** `S₁ → S₂`: calling it builds a new value of the next state and leaves the input untouched. When it can fail, it returns `Result<S₂, string>` ([Axiom 16](axiom-16-result.md)).
+- **One immutable type per state.** A record ([Axiom 3](axiom-03-immutability.md)). A linear lifecycle (open, then closed) gets one record per step. When a step has several variants, they form a sealed hierarchy ([Axiom 22](axiom-22-discriminated-unions.md)), and each variant is a typestate of its own.
+- **A transition returns the next type.** `S₁ → S₂`: calling it builds a new value of the next state and leaves the input untouched. When it can fail, it returns `Result<S₂, string>` ([Axiom 17](axiom-17-result.md)).
 - **Each operation lives on the type that allows it**, never on a shared base. Whether a call compiles depends only on the type the caller holds.
-- **The transition is the only way in.** If callers can build a state directly, `new AuthenticatedSession(admin)` skips authentication and the guarantee is gone. So the state's constructor is not public, the same construction control [Axiom 18](axiom-18-value-objects.md) asks of value objects:
+- **The transition is the only way in.** If callers can build a state directly, `new AuthenticatedSession(admin)` skips authentication and the guarantee is gone. So the state's constructor is not public, the same construction control [Axiom 19](axiom-19-value-objects.md) asks of value objects:
   - **C#:** an `internal` constructor on the record.
   - **Java:** a `public final class` with a package-private constructor, because a public record's canonical constructor must be public.
 
@@ -192,7 +192,7 @@ Each time: two records, one transition, and a class of runtime errors that can n
 
 The examples above change the type at each step and nothing more. Two variants also carry *generic type parameters* from one step to the next, so a later step can be checked against an earlier choice. You have likely used both in libraries without naming them. Their extra cost is in [*Trade-offs*](#trade-offs).
 
-These [fluent interfaces](https://en.wikipedia.org/wiki/Fluent_interface) are [DSLs](https://en.wikipedia.org/wiki/Domain-specific_language), so their steps take the keywords of the language they imitate (`From`, `Where`, `Given`, `When`), not verbs: one of the exceptions to [Axiom 1](axiom-01-data-is-not-behavior.md#definitions)'s naming rule.
+These [fluent interfaces](https://en.wikipedia.org/wiki/Fluent_interface) are [DSLs](https://en.wikipedia.org/wiki/Domain-specific_language), so their steps take the keywords of the language they imitate (`From`, `Where`, `Given`, `When`), not verbs: one of the exceptions to [Axiom 2](axiom-02-data-is-not-behavior.md#definitions)'s naming rule.
 
 ### Carrying a type forward
 
@@ -324,7 +324,7 @@ When a class has methods that are only valid after certain other calls, five sha
 1. **A runtime guard at the top of each method.** `if (state != Approved) throw new InvalidOperationException(...)`. Honest, but the precondition lives in the body, not the signature. Every caller has to remember it, every test has to build the object in the right state, and the guards copied into N methods drift apart.
 2. **A status field and a `switch` on it in each method.** The check is fused with the work, so it hides better than a throw. Each method is a small transition table of its own, and nothing checks that those tables agree.
 3. **A nullable field as a state flag.** `endTime == null` means open. The rule is a convention the reader has to know, the compiler checks nothing, and fields that only make sense in one state sit in all of them.
-4. **A value-level state machine** ([Axiom 24](axiom-24-state-machines.md)). One sealed union of states and one pure `Transition`. The rule is in one place, but the state is still one type, and each operation still asks which case it holds.
+4. **A value-level state machine** ([Axiom 25](axiom-25-state-machines.md)). One sealed union of states and one pure `Transition`. The rule is in one place, but the state is still one type, and each operation still asks which case it holds.
 5. **A typestate.** One type per state; each operation lives only where it is valid; nothing left to check.
 
 Shapes 1–3 leave the rule to convention. Shape 4 puts it in one pure function. Shape 5 puts it in the types.
@@ -342,13 +342,13 @@ Both 4 and 5 are state machines. The choice between them is whether operations b
 There is no path to `HasRole` except through the success branch of `Authenticate`. The guard every method used to repeat is gone, because the call it guarded against can't be written.
 
 **2. The signature states the precondition.**
-A function that takes an `AuthenticatedSession` says, in its signature, that it needs an authenticated user. A function that takes an `AuthenticationService` can't. This is the [Design by Contract](https://en.wikipedia.org/wiki/Design_by_contract) precondition that [Axiom 18](axiom-18-value-objects.md) carried in a type, now applied to call order: checked by the compiler instead of asserted at runtime.
+A function that takes an `AuthenticatedSession` says, in its signature, that it needs an authenticated user. A function that takes an `AuthenticationService` can't. This is the [Design by Contract](https://en.wikipedia.org/wiki/Design_by_contract) precondition that [Axiom 19](axiom-19-value-objects.md) carried in a type, now applied to call order: checked by the compiler instead of asserted at runtime.
 
 **3. The rule lives in one place.**
 Guards copied into N methods drift into N slightly different guards. A transition whose return type is the next state holds the rule once. Tests for the impossible cases go away, and so do the reviews that hunted for them.
 
 **4. The shell holds a typed state, not a nullable one.**
-A long-running shell ([Axiom 26](axiom-26-stateful-shell.md)) that holds an `AuthenticatedSession` instead of a `User?` field gives the rest of the program less to misuse. What it passes to the pure core ([Axiom 12](axiom-12-impureim.md)) is typed by what it is, not by what it might be.
+A long-running shell ([Axiom 27](axiom-27-stateful-shell.md)) that holds an `AuthenticatedSession` instead of a `User?` field gives the rest of the program less to misuse. What it passes to the pure core ([Axiom 13](axiom-13-impureim.md)) is typed by what it is, not by what it might be.
 
 ---
 
@@ -356,9 +356,9 @@ A long-running shell ([Axiom 26](axiom-26-stateful-shell.md)) that holds an `Aut
 
 **The old reference stays usable.** After `var submitted = draft.Submit()`, the caller still holds `draft`, and `draft.Submit()` compiles a second time. Rust's ownership consumes the old value on a transition [4]; C# and Java can't. The mitigation: keep each state's type small, with little on it beyond its transitions, so the stale reference can do little harm. If the old value truly must become unusable, typestate alone isn't enough.
 
-**Loading from a database needs care.** A stored state arrives as a row, not as an `OpenIssue` or a `ClosedIssue`. The code that loads it reads a discriminator (a status column, or whether `end_time` is set) and builds the matching type. If it skips that step, values enter the program as the wrong type and the guarantee is gone. That loader is the one place outside the transitions allowed to call the constructor, which is why the constructor is `internal` or package-private rather than `private`: the loader lives in the same assembly or package. It is the same boundary [Axiom 18](axiom-18-value-objects.md) draws for value objects.
+**Loading from a database needs care.** A stored state arrives as a row, not as an `OpenIssue` or a `ClosedIssue`. The code that loads it reads a discriminator (a status column, or whether `end_time` is set) and builds the matching type. If it skips that step, values enter the program as the wrong type and the guarantee is gone. That loader is the one place outside the transitions allowed to call the constructor, which is why the constructor is `internal` or package-private rather than `private`: the loader lives in the same assembly or package. It is the same boundary [Axiom 19](axiom-19-value-objects.md) draws for value objects.
 
-**One type per state.** A lifecycle with five states needs five types and the transitions between them. In return, every operation is total over the state it lives on. It is the same deal as [Axiom 18](axiom-18-value-objects.md) and [Axiom 24](axiom-24-state-machines.md): a few more named types now, simpler code wherever they are used.
+**One type per state.** A lifecycle with five states needs five types and the transitions between them. In return, every operation is total over the state it lives on. It is the same deal as [Axiom 19](axiom-19-value-objects.md) and [Axiom 25](axiom-25-state-machines.md): a few more named types now, simpler code wherever they are used.
 
 **The carrying variants are heavier.** When types travel through the chain ([*Typestates that carry types*](#typestates-that-carry-types)), signatures grow long, IDE tooltips get hard to read, and the arity hits limits (jOOQ's typed records stop at `Record22`). Worth it in a library or DSL; rarely in domain code.
 
@@ -374,7 +374,7 @@ A long-running shell ([Axiom 26](axiom-26-stateful-shell.md)) that holds an `Aut
 
 **Rules about a tree.** A React hook that must run inside a `Provider` depends on the component tree, which the type system can't see. The runtime error ("useX must be used within an XProvider") is the established idiom. Typestate constrains a value, not how values sit in a tree.
 
-**When a value-level state machine is enough.** If most operations are valid in most states and a wrong-order call is mild (a no-op, a 409, a logged warning), [Axiom 24](axiom-24-state-machines.md) is cheaper. Move to typestate only when splitting operations by state actually helps the reader.
+**When a value-level state machine is enough.** If most operations are valid in most states and a wrong-order call is mild (a no-op, a 409, a logged warning), [Axiom 25](axiom-25-state-machines.md) is cheaper. Move to typestate only when splitting operations by state actually helps the reader.
 
 ---
 
@@ -385,7 +385,7 @@ A long-running shell ([Axiom 26](axiom-26-stateful-shell.md)) that holds an `Aut
 [2] **David Thomas & Andrew Hunt**, *The Pragmatic Programmer*, 20th anniversary edition, Addison-Wesley, 2019, topic "Breaking Temporal Coupling" (first edition 1999, "Temporal Coupling"). Names the smell: an order that callers must respect but nothing enforces. Typestate is a type-level answer to it.
 <https://pragprog.com/titles/tpp20/the-pragmatic-programmer-20th-anniversary-edition/>
 
-[3] **Yaron Minsky**, *Effective ML*, 2010, and *Effective ML Revisited*, Jane Street blog, 2011. Cross-listed from [Axiom 22](axiom-22-illegal-states.md). "Make illegal states unrepresentable," which this axiom applies to call order.
+[3] **Yaron Minsky**, *Effective ML*, 2010, and *Effective ML Revisited*, Jane Street blog, 2011. Cross-listed from [Axiom 23](axiom-23-illegal-states.md). "Make illegal states unrepresentable," which this axiom applies to call order.
 
 [4] **Cliff Biffle**, *The Typestate Pattern in Rust*, 2019. The modern treatment in a language where ownership consumes the old state on each transition, the guarantee C# and Java lack (see [*Trade-offs*](#trade-offs)).
 <https://cliffle.com/blog/rust-typestate/>
@@ -401,4 +401,4 @@ A long-running shell ([Axiom 26](axiom-26-stateful-shell.md)) that holds an `Aut
 
 ---
 
-← Previous: [Axiom 26 — Stateful Shell](axiom-26-stateful-shell.md) · [Chapter 2 Contents](README.md)
+← Previous: [Axiom 27 — Stateful Shell](axiom-27-stateful-shell.md) · [Chapter 2 Contents](README.md)

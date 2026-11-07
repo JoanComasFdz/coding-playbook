@@ -2,11 +2,11 @@
 
 > **Placeholder.** This Play collects the author's position and the open questions around it. The full write-up, examples and sources are still to do.
 
-The split between pure and impure code ([Axiom 4](../chapter2/axiom-04-impure-functions.md), [Axiom 5](../chapter2/axiom-05-pure-functions.md), [Axiom 12](../chapter2/axiom-12-impureim.md)) decides three things at once: what to share, what to abstract, and what to test, and how.
+The split between pure and impure code ([Axiom 5](../chapter2/axiom-05-impure-functions.md), [Axiom 6](../chapter2/axiom-06-pure-functions.md), [Axiom 13](../chapter2/axiom-13-impureim.md)) decides three things at once: what to share, what to abstract, and what to test, and how.
 
 | | Pure core | Impure shell |
 |---|---|---|
-| **Share (DRY)** | Yes: validation, transformations, decisions. These are business rules. | No: orchestration repeats its shape, not its knowledge ([Axiom 7](../chapter2/axiom-07-cohesion.md#what-dry-is-for)). |
+| **Share (DRY)** | Yes: validation, transformations, decisions. These are business rules. | No: orchestration repeats its shape, not its knowledge ([Axiom 8](../chapter2/axiom-08-cohesion.md#what-dry-is-for)). |
 | **Abstract** | Name concepts with types and functions. | Don't wrap it: no facade over the database or the framework. |
 | **Test** | Classic unit tests: values in, value out. | Test the whole service, module or app with real dependencies, plus simulators for systems you don't own. |
 
@@ -43,7 +43,7 @@ The three rows hold each other up. A repository interface usually exists so a un
 - Whole-service tests are slower and need test infrastructure (containers, simulators).
 - **Exception for frameworks and libraries:** infrastructure written once for many applications is its own product, with its own reason to change. It is shared, and it is tested on its own.
 
-> **Open question: "never unit-test the controller".** Is this an absolute rule, or "never, and if you feel the need, the logic is in the wrong place"? The second reading says: when an orchestrator has enough branching that you *want* to unit-test it, logic has leaked into the shell, and it should move into a pure function that returns actions ([Axiom 23](../chapter2/axiom-23-pure-functions-returning-actions.md)) instead of being mocked. To decide when this Play is written.
+> **Open question: "never unit-test the controller".** Is this an absolute rule, or "never, and if you feel the need, the logic is in the wrong place"? The second reading says: when an orchestrator has enough branching that you *want* to unit-test it, logic has leaked into the shell, and it should move into a pure function that returns actions ([Axiom 24](../chapter2/axiom-24-pure-functions-returning-actions.md)) instead of being mocked. To decide when this Play is written.
 
 ## What might change tomorrow
 
@@ -52,4 +52,4 @@ The three rows hold each other up. A repository interface usually exists so a un
 ## Open questions
 
 - **Repository section of the DDD Play.** [DDD tactical patterns](01-DDD-tactical-patterns.md#repository) currently defines a repository as `LoadOrder` / `SaveOrder` delegates, an abstraction this Play argues against. Decide whether it goes, or when a named load/save function earns its place (for example, a query many handlers share).
-- **Sources to verify before citing:** Gary Bernhardt, *Boundaries* (SCNA 2012) — unit-test the core, integration-test the shell (his *Functional Core, Imperative Shell* screencast is verified and cited in [Axiom 12](../chapter2/axiom-12-impureim.md)); Spotify's "testing honeycomb" (2018).
+- **Sources to verify before citing:** Gary Bernhardt, *Boundaries* (SCNA 2012) — unit-test the core, integration-test the shell (his *Functional Core, Imperative Shell* screencast is verified and cited in [Axiom 13](../chapter2/axiom-13-impureim.md)); Spotify's "testing honeycomb" (2018).

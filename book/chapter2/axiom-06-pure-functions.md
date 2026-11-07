@@ -1,22 +1,22 @@
-# Axiom 5 — Pure functions
+# Axiom 6 — Pure functions
 
 **A function is pure when it has no side effects and is deterministic: its output depends only on its inputs.**
 
 - Same inputs in, same output out: every call, every thread, every time.
 - Nothing is hidden: every input is in the parameters, and every output is in the return value.
 
-[Axiom 4](axiom-04-impure-functions.md) named the impure kind so this axiom can name its opposite. Impure functions are the program's *plumbing*: they gather context from the world and deliver outcomes back to it. Pure functions are the program's *reasoning*: data in, decision out, no conversation with anything else. Every useful program needs both. This axiom is about the half where the rest of this book puts structure and types.
+[Axiom 5](axiom-05-impure-functions.md) named the impure kind so this axiom can name its opposite. Impure functions are the program's *plumbing*: they gather context from the world and deliver outcomes back to it. Pure functions are the program's *reasoning*: data in, decision out, no conversation with anything else. Every useful program needs both. This axiom is about the half where the rest of this book puts structure and types.
 
 ---
 
 ## Definitions
 
-In one sentence: **a function is pure when no side effect from [Axiom 3](axiom-03-side-effects.md) is reachable from its body.** That also makes it *deterministic*: its return value depends only on its parameters.
+In one sentence: **a function is pure when no side effect from [Axiom 4](axiom-04-side-effects.md) is reachable from its body.** That also makes it *deterministic*: its return value depends only on its parameters.
 
 A function is pure when all of these are true:
 
-- **No effects in its body.** No clock or random read, no I/O, no logging, no parameter changes, and no `throw` on bad input: an exception is an output that bypasses the return value. None of [Axiom 3](axiom-03-side-effects.md#the-categories)'s categories appear.
-- **No effects through its calls.** Purity is deep, just like impurity in [Axiom 4](axiom-04-impure-functions.md). A function that does arithmetic plus one call to an impure helper is impure. Every function it calls, all the way down, must be pure too.
+- **No effects in its body.** No clock or random read, no I/O, no logging, no parameter changes, and no `throw` on bad input: an exception is an output that bypasses the return value. None of [Axiom 4](axiom-04-side-effects.md#the-categories)'s categories appear.
+- **No effects through its calls.** Purity is deep, just like impurity in [Axiom 5](axiom-05-impure-functions.md). A function that does arithmetic plus one call to an impure helper is impure. Every function it calls, all the way down, must be pure too.
 - **No hidden inputs through captures.** A captured field or reference that holds a `DbContext`, a `Random`, a settable singleton or any other mutable shared state makes the function impure. Captures are allowed, but they must be values: immutable, created once, and not shared with anything that changes.
 - **Deterministic.** Same inputs in, same output out: two calls with equal arguments must give equal results. Determinism is about *behavior*, not just *the body*: a body that looks effect-free can still read mutable state (see the CQS getter below).
 
@@ -31,7 +31,7 @@ On a pure function, the signature `(InputA, InputB) -> Output` describes *everyt
 
 The return type itself can still be vague about *which* outcomes are possible. That is a separate problem from purity: purity only guarantees there is no other channel.
 
-C# and Java can't express purity in a signature. So recognizing it is a *reading* skill, applied to the whole body and everything it calls: the same skill as in [Axiom 4](axiom-04-impure-functions.md), used to spot the opposite kind.
+C# and Java can't express purity in a signature. So recognizing it is a *reading* skill, applied to the whole body and everything it calls: the same skill as in [Axiom 5](axiom-05-impure-functions.md), used to spot the opposite kind.
 
 ---
 
@@ -115,7 +115,7 @@ The decision is more interesting than arithmetic, but the rules are the same:
 - no `throw` on rejection: the rejection is *part of the return type*;
 - no log of why, no save to a database.
 
-The caller takes the returned `CartDecision` and acts on it. The *acting* happens somewhere else, in an impure function like the ones in [Axiom 4](axiom-04-impure-functions.md). The pure function decides; the impure caller executes.
+The caller takes the returned `CartDecision` and acts on it. The *acting* happens somewhere else, in an impure function like the ones in [Axiom 5](axiom-05-impure-functions.md). The pure function decides; the impure caller executes.
 
 ---
 
@@ -161,25 +161,25 @@ The impure work (I/O, the clock, the database) is exactly the work that should b
   - A function that needs the database has to be split: an impure query, and a pure decision that takes the query's result as input.
 
   In a small program this looks like ceremony: a longer parameter list and an awkward seam where there used to be one method call. The seam stops feeling awkward as the program grows. A 500-line module with three effects scattered through it is fine; a 50,000-line system with effects in every layer is what this book is trying to prevent. The cost shows up early; the benefit shows up later, and bigger.
-- **More arguments and intermediate values.** Pure functions over immutable data sometimes carry more arguments and produce more intermediate values than the imperative version. Modern garbage collectors absorb most of this, but in tight loops it is a real cost. The same caveat as in [Axiom 2](axiom-02-immutability.md)'s *When NOT to* applies.
+- **More arguments and intermediate values.** Pure functions over immutable data sometimes carry more arguments and produce more intermediate values than the imperative version. Modern garbage collectors absorb most of this, but in tight loops it is a real cost. The same caveat as in [Axiom 3](axiom-03-immutability.md)'s *When NOT to* applies.
 
 ---
 
 ## When NOT to
 
 - **At the edges, where effects are the whole point.** The function that talks to the database, the one that publishes the event, the one that handles the incoming HTTP request: these can't be pure. Don't pretend they are. Keep them together at the edges, name them clearly, and let the pure core be richer for it. This book never asks for an all-pure program. It asks for a pure *core*.
-- **The "diagnostic" helper.** A function that returns a value and also logs once for diagnostics is impure (see [Axiom 4](axiom-04-impure-functions.md)'s *When NOT to*). Calling it "pure enough" is exactly what the binary label is meant to prevent. If you need diagnostics, return enough information for the caller to log.
+- **The "diagnostic" helper.** A function that returns a value and also logs once for diagnostics is impure (see [Axiom 5](axiom-05-impure-functions.md)'s *When NOT to*). Calling it "pure enough" is exactly what the binary label is meant to prevent. If you need diagnostics, return enough information for the caller to log.
 
 ---
 
 ## References
 
-[1] **John Hughes**, *Why Functional Programming Matters*, in *Research Topics in Functional Programming*, Addison-Wesley, 1990. Already cited in [Axiom 3](axiom-03-side-effects.md) and [Axiom 4](axiom-04-impure-functions.md). Hughes argues that the real strength of functional programming is modularity: gluing small functions together with higher-order functions and lazy evaluation. That glue only works because the functions have no side effects. <https://www.cs.kent.ac.uk/people/staff/dat/miranda/whyfp90.pdf>
+[1] **John Hughes**, *Why Functional Programming Matters*, in *Research Topics in Functional Programming*, Addison-Wesley, 1990. Already cited in [Axiom 4](axiom-04-side-effects.md) and [Axiom 5](axiom-05-impure-functions.md). Hughes argues that the real strength of functional programming is modularity: gluing small functions together with higher-order functions and lazy evaluation. That glue only works because the functions have no side effects. <https://www.cs.kent.ac.uk/people/staff/dat/miranda/whyfp90.pdf>
 
-[2] **Eric Normand**, *Grokking Simplicity*, Manning Publications, 2021. Introduces the *action / calculation / data* taxonomy: a calculation is this axiom's pure function. Most of the book is a worked example of how separating calculations from actions changes the cost of testing, refactoring and reasoning. Already cited in [Axiom 4](axiom-04-impure-functions.md). <https://www.manning.com/books/grokking-simplicity>
+[2] **Eric Normand**, *Grokking Simplicity*, Manning Publications, 2021. Introduces the *action / calculation / data* taxonomy: a calculation is this axiom's pure function. Most of the book is a worked example of how separating calculations from actions changes the cost of testing, refactoring and reasoning. Already cited in [Axiom 5](axiom-05-impure-functions.md). <https://www.manning.com/books/grokking-simplicity>
 
 [3] **Bertrand Meyer**, *Object-Oriented Software Construction*, Prentice Hall (1988; 2nd ed. 1997). The source of the *Command–Query Separation* principle: a method should either change state (a command) or return a value (a query), not both.
 
 ---
 
-← Previous: [Axiom 4 — Impure functions](axiom-04-impure-functions.md) · Next: [Axiom 6 — Honest, total signatures](axiom-06-honest-total-signatures.md) →
+← Previous: [Axiom 5 — Impure functions](axiom-05-impure-functions.md) · Next: [Axiom 7 — Honest, total signatures](axiom-07-honest-total-signatures.md) →

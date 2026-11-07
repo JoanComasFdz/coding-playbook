@@ -1,11 +1,11 @@
-# Axiom 6 — Honest, total signatures
+# Axiom 7 — Honest, total signatures
 
 **A signature is honest when every outcome the function can produce is named in its return type. It is total when the function is defined for every value of its input types.**
 
 - Honesty rules out hidden outcomes: sentinel values, silent nulls, magic strings, exceptions used as control flow.
 - Totality rules out forbidden inputs: values the function is "undefined" for, where the caller is just expected to know.
 
-[Axiom 5](axiom-05-pure-functions.md) named purity, which closes the back door between a function and the world: no hidden inputs or outputs. This axiom closes the front door. A pure function can still lie through its signature:
+[Axiom 6](axiom-06-pure-functions.md) named purity, which closes the back door between a function and the world: no hidden inputs or outputs. This axiom closes the front door. Both are [Axiom 1](axiom-01-explicit-over-implicit.md)'s explicitness, applied: purity to inputs and effects, this axiom to outcomes. A pure function can still lie through its signature:
 
 - by returning a sentinel the type system can't help the caller see;
 - by being silently undefined on inputs the type accepts but the body refuses.
@@ -88,7 +88,7 @@ public User getUser(UUID id) {
 </tr>
 </table>
 
-`FindOrderIndex` is pure under [Axiom 5](axiom-05-pure-functions.md): no clock, no I/O, no captures. `GetUser` isn't, since it reads from the repository, but purity isn't the point here. Both lie:
+`FindOrderIndex` is pure under [Axiom 6](axiom-06-pure-functions.md): no clock, no I/O, no captures. `GetUser` isn't, since it reads from the repository, but purity isn't the point here. Both lie:
 
 - `FindOrderIndex` promises an `int` and delivers "an index *or* a sentinel".
 - `GetUser` promises a `User` and delivers "a user *or* nothing".
@@ -206,7 +206,7 @@ When the return type names every outcome, the caller has to handle every case, a
 Production crashes that come down to *"the input was supposed to be valid"* are exactly what totality rules out. If the function is defined for every value its input type allows, there's no input the body hasn't thought about. When the parameter types are too loose, the way to get there is to narrow them: move the checking upstream, into the creation of the value, instead of repeating it in every function that uses it [1][2]. That work doesn't disappear. It moves to one place, where it is done *once*, where the type name makes the rules obvious, and where the rest of the code no longer has to recheck.
 
 **4. Composing needs honesty.**
-Chaining functions that each "might return `-1`" produces code that branches more often than it does work. Honest return types compose mechanically: once the outcomes are in the type, small helpers can chain fallible steps without decoding conventions. A fluent API like `step1().step2().step3()` is the simplest case. It reads cleanly only when each return value is something the next call can use directly; the moment one link returns "the answer *or* `null`", the chain has to stop and check. The structure and types that [Axiom 5](axiom-05-pure-functions.md) said live in pure functions depend on signatures that don't lie.
+Chaining functions that each "might return `-1`" produces code that branches more often than it does work. Honest return types compose mechanically: once the outcomes are in the type, small helpers can chain fallible steps without decoding conventions. A fluent API like `step1().step2().step3()` is the simplest case. It reads cleanly only when each return value is something the next call can use directly; the moment one link returns "the answer *or* `null`", the chain has to stop and check. The structure and types that [Axiom 6](axiom-06-pure-functions.md) said live in pure functions depend on signatures that don't lie.
 
 ---
 
@@ -221,7 +221,7 @@ Chaining functions that each "might return `-1`" produces code that branches mor
 
 Three cases where the criterion is wrong or harmful:
 
-- **At the edges, where the function talks to the world.** An impure function from [Axiom 4](axiom-04-impure-functions.md) can fail because the database is gone, the network blinked or the disk is full. Those failures aren't part of the function's *own* logic. They belong to the impure code at the edges, not to the signature of a domain function. Honesty applies to outcomes the function *decides on*, not to every plumbing failure.
+- **At the edges, where the function talks to the world.** An impure function from [Axiom 5](axiom-05-impure-functions.md) can fail because the database is gone, the network blinked or the disk is full. Those failures aren't part of the function's *own* logic. They belong to the impure code at the edges, not to the signature of a domain function. Honesty applies to outcomes the function *decides on*, not to every plumbing failure.
 - **When the "extra outcome" is really input validation.** "The input was malformed" isn't an outcome the function decides on; it belongs in the *parameter's* type, not in the return type of every function that takes one. Folding validation into the return type repeats the check at every call site, instead of solving it once where the input is created.
 - **When defining the error out of existence would hide a bug.** Making a function total by *absorbing* a bad input (clamping it, swallowing it, returning a default) is only right when the broader behavior is what the caller actually wants. When the bad input can only come from a caller's mistake (a negative count, an index that *should* have been in range), silently absorbing it hides the bug at the exact spot it could have surfaced. There, the honest move is the opposite: fail loudly and early, instead of letting the bug travel downstream as a plausible-looking value.
 
@@ -239,4 +239,4 @@ Three cases where the criterion is wrong or harmful:
 
 ---
 
-← Previous: [Axiom 5 — Pure functions](axiom-05-pure-functions.md) · Next: [Axiom 7 — Cohesion](axiom-07-cohesion.md) →
+← Previous: [Axiom 6 — Pure functions](axiom-06-pure-functions.md) · Next: [Axiom 8 — Cohesion](axiom-08-cohesion.md) →

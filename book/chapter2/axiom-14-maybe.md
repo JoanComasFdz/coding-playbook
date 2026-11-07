@@ -1,13 +1,13 @@
-# Axiom 13 — Maybe
+# Axiom 14 — Maybe
 
 **When a result might be absent, say so in the return type: `User?` in C#, `Optional<User>` in Java.**
 
 - The caller can't read the value without handling the empty case.
 - No `null` hidden behind `User`, no placeholder object, no exception for "not found".
 
-[Axiom 6](axiom-06-honest-total-signatures.md) ruled out silent nulls and sentinels, and replaced them with a `Found | NotFound` type written by hand. A Maybe (also called an [option type](https://en.wikipedia.org/wiki/Option_type)) is that type, ready-made and generic: the standard answer to the most common two-outcome question, "is there a value or not?". Its examples use the `map` from [Axiom 10](axiom-10-higher-order-functions.md) and the `switch` from [Axiom 11](axiom-11-pattern-matching.md).
+[Axiom 7](axiom-07-honest-total-signatures.md) ruled out silent nulls and sentinels, and replaced them with a `Found | NotFound` type written by hand. A Maybe (also called an [option type](https://en.wikipedia.org/wiki/Option_type)) is that type, ready-made and generic: the standard answer to the most common two-outcome question, "is there a value or not?". It is [Axiom 1](axiom-01-explicit-over-implicit.md)'s explicitness applied to absence. Its examples use the `map` from [Axiom 11](axiom-11-higher-order-functions.md) and the `switch` from [Axiom 12](axiom-12-pattern-matching.md).
 
-Through [Axiom 8](axiom-08-connascence.md)'s lens, a Maybe weakens a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com) (every caller agreeing, by convention, that `null` means *absent*) into a [Connascence of Type](axiom-08-connascence.md#connascence-of-type-cot).
+Through [Axiom 9](axiom-09-connascence.md)'s lens, a Maybe weakens a [Connascence of Meaning](axiom-09-connascence.md#connascence-of-meaning-com) (every caller agreeing, by convention, that `null` means *absent*) into a [Connascence of Type](axiom-09-connascence.md#connascence-of-type-cot).
 
 ---
 
@@ -121,7 +121,7 @@ public User getByEmail(String email) {
 </tr>
 </table>
 
-❌ Not honest. "No user with this email" is not exceptional: it is a normal answer to the question the function was asked. Throwing sends that answer through a side channel ([Axiom 6](axiom-06-honest-total-signatures.md#definitions)). The fix is quiz 1's honest version, and the rename helps too: `get` says "give me this", `find` says "look and see whether it's there".
+❌ Not honest. "No user with this email" is not exceptional: it is a normal answer to the question the function was asked. Throwing sends that answer through a side channel ([Axiom 7](axiom-07-honest-total-signatures.md#definitions)). The fix is quiz 1's honest version, and the rename helps too: `get` says "give me this", `find` says "look and see whether it's there".
 
 #### 3/4 — a placeholder object
 
@@ -274,7 +274,7 @@ String name = findById(42)
 </tr>
 </table>
 
-- **C#** names both cases in a `switch` ([Axiom 11](axiom-11-pattern-matching.md)). Leave out the `null` branch and the compiler warns that a `null` input isn't handled. For a one-line transformation, `FindById(42)?.Name ?? "(unknown)"` says the same thing: `?.` passes the empty case through and `??` supplies the default. Use the `switch` when each branch does real work, and the short form when the scaffolding would bury a simple transformation.
+- **C#** names both cases in a `switch` ([Axiom 12](axiom-12-pattern-matching.md)). Leave out the `null` branch and the compiler warns that a `null` input isn't handled. For a one-line transformation, `FindById(42)?.Name ?? "(unknown)"` says the same thing: `?.` passes the empty case through and `??` supplies the default. Use the `switch` when each branch does real work, and the short form when the scaffolding would bury a simple transformation.
 - **Java** threads the two cases through `map` (present) and `orElse` (empty). Neither can be skipped: `map` alone still returns an `Optional<String>`, so the caller has to resolve the empty case before it gets a `String`.
 
 ---
@@ -290,7 +290,7 @@ Line-of-business code keeps asking questions that may have no answer:
 - "Find the first item that matches."
 - "Read this optional request header."
 
-Both answers are normal: a value, or no value. [Axiom 6](axiom-06-honest-total-signatures.md#definitions) showed what it costs to deliver the second one as `null`: the signature lies, and the bug lands on the caller. Absence adds one cost of its own. `null` means many things at once: "not found", "not set yet", "doesn't apply", "unknown". It is a homonym in the sense of [Axiom 0](axiom-00-ubiquitous-language.md), at the level of the type system. A Maybe means exactly one thing: this question had no answer.
+Both answers are normal: a value, or no value. [Axiom 7](axiom-07-honest-total-signatures.md#definitions) showed what it costs to deliver the second one as `null`: the signature lies, and the bug lands on the caller. Absence adds one cost of its own. `null` means many things at once: "not found", "not set yet", "doesn't apply", "unknown". It is a homonym in the sense of [Axiom 0](axiom-00-ubiquitous-language.md), at the level of the type system. A Maybe means exactly one thing: this question had no answer.
 
 The force pulling the other way is brevity (see *Trade-offs*).
 
@@ -299,10 +299,10 @@ The force pulling the other way is brevity (see *Trade-offs*).
 ## Why
 
 **1. One standard type instead of one per function.**
-[Axiom 6](axiom-06-honest-total-signatures.md)'s `FindResult` works, but writing a `Found | NotFound` pair for every lookup gets repetitive, and every copy is slightly different. A Maybe is the shared shape. Every lookup returns the same type, every caller handles it the same way, and the language and its standard library already know how to transform it.
+[Axiom 7](axiom-07-honest-total-signatures.md)'s `FindResult` works, but writing a `Found | NotFound` pair for every lookup gets repetitive, and every copy is slightly different. A Maybe is the shared shape. Every lookup returns the same type, every caller handles it the same way, and the language and its standard library already know how to transform it.
 
 **2. Absence is a value.**
-[Axiom 1](axiom-01-data-is-not-behavior.md) says data is a value. `null` is the absence of an object; `Optional.empty()` is an object that means absence. You can store it, return it, compare it and test it, and it means the same thing everywhere [4].
+[Axiom 2](axiom-02-data-is-not-behavior.md) says data is a value. `null` is the absence of an object; `Optional.empty()` is an object that means absence. You can store it, return it, compare it and test it, and it means the same thing everywhere [4].
 
 **3. Absence travels without checks in between.**
 A chain of steps that may each find nothing needs no `if` between them:
@@ -319,7 +319,7 @@ Optional<String> email = findUser(id)
 
 ## Trade-offs
 
-- **It costs some length.** `value.map(f).orElse(d)` is longer than `f(value)`, and `user?.Name ?? ""` is longer than `user.Name`. That is the same price honesty charges in [Axiom 6](axiom-06-honest-total-signatures.md#trade-offs): the author pays once, so that no caller pays later.
+- **It costs some length.** `value.map(f).orElse(d)` is longer than `f(value)`, and `user?.Name ?? ""` is longer than `user.Name`. That is the same price honesty charges in [Axiom 7](axiom-07-honest-total-signatures.md#trade-offs): the author pays once, so that no caller pays later.
 - **A short chain can hide different absences.** `user?.Manager?.Email ?? ""` turns three different "missing" cases (no user, no manager, no email) into the same empty string. When the caller needs to know which one happened, see *When NOT to*.
 - **Java allocates.** Every `Optional` is an object, and `Optional<Integer>` also [boxes](https://en.wikipedia.org/wiki/Boxing_(computer_programming)) the `int`. `OptionalInt`, `OptionalLong` and `OptionalDouble` avoid the box. C# pays nothing at runtime: `T?` on a reference type is only an annotation, and `int?` is a struct (`Nullable<int>`).
 - **Frameworks need help with `Optional` fields.** Serializers and ORMs were built around nullable fields. An `Optional` field needs extra configuration (Jackson, for example, needs an extra module), and the defaults vary between frameworks. This is one reason `Optional` stays out of fields (see *When NOT to*).
@@ -330,8 +330,8 @@ Optional<String> email = findUser(id)
 
 - **Fields, and parameters of public APIs.** `Optional` is designed as a return type [2]. Callers shouldn't have to wrap values they already hold just to call you. On a field or a record component it drags a wrapper through every serializer and ORM (see *Trade-offs*). Use the nullable annotation instead: `string? MiddleName` in C#, and in Java `@Nullable String middleName` from [JSpecify](https://jspecify.dev/). In Java that annotation is checked by tools such as NullAway or the IDE, not by `javac`. Boundary types (DTOs, request bodies) can keep nullable fields; parse them into domain types once, at the edge.
 - **Inside collections.** A list already means "zero or more", so `List<Optional<String>>` adds a second kind of absence with no meaning. Use a list that may be empty. Use `Optional<List<T>>` only when "not loaded" and "loaded, but empty" really are different facts.
-- **When the caller needs to know why.** A Maybe only says "nothing". If there are several reasons for nothing (not found, expired, not allowed) and the caller reacts differently to each, a Maybe hides outcomes, which is [Axiom 6](axiom-06-honest-total-signatures.md)'s lie again. Name each reason in the return type, the way `FindResult` does.
-- **When absence is a bug.** A database URL that the configuration always provides is not an honest "maybe": if it's missing, the program is broken. Fail loudly at startup ([Axiom 6](axiom-06-honest-total-signatures.md#when-not-to), last point).
+- **When the caller needs to know why.** A Maybe only says "nothing". If there are several reasons for nothing (not found, expired, not allowed) and the caller reacts differently to each, a Maybe hides outcomes, which is [Axiom 7](axiom-07-honest-total-signatures.md)'s lie again. Name each reason in the return type, the way `FindResult` does.
+- **When absence is a bug.** A database URL that the configuration always provides is not an honest "maybe": if it's missing, the program is broken. Fail loudly at startup ([Axiom 7](axiom-07-honest-total-signatures.md#when-not-to), last point).
 - **A measured hot path in Java.** If profiling shows the `Optional` allocations matter, use `OptionalInt` and friends, or a sentinel that never leaves one private function.
 
 ---
@@ -374,7 +374,7 @@ Which option to pick is a contextual choice, not a principle. It depends on the 
 [3] **Microsoft**, *Nullable reference types*, C# documentation. "The runtime behavior of your program is unchanged. Nullable reference types are entirely a compile-time feature." `string` and `string?` are both `System.String` at runtime.
 <https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references>
 
-[4] **Rich Hickey**, *The Value of Values*, keynote at JaxConf 2012. Also cited in [Axiom 1](axiom-01-data-is-not-behavior.md) and [Axiom 2](axiom-02-immutability.md). Values are the same everywhere and don't depend on a place, which is why absence works better as a value than as a missing reference.
+[4] **Rich Hickey**, *The Value of Values*, keynote at JaxConf 2012. Also cited in [Axiom 2](axiom-02-data-is-not-behavior.md) and [Axiom 3](axiom-03-immutability.md). Values are the same everywhere and don't depend on a place, which is why absence works better as a value than as a missing reference.
 <https://www.infoq.com/presentations/Value-Values/>
 
 [5] **The .NET Maybe libraries.**
@@ -388,4 +388,4 @@ Which option to pick is a contextual choice, not a principle. It depends on the 
 
 ---
 
-← Previous: [Axiom 12 — Impureim](axiom-12-impureim.md) · Next: [Axiom 14 — Either](axiom-14-either.md) →
+← Previous: [Axiom 13 — Impureim](axiom-13-impureim.md) · Next: [Axiom 15 — Either](axiom-15-either.md) →

@@ -1,11 +1,11 @@
-# Axiom 2 — Immutability
+# Axiom 3 — Immutability
 
 **Data cannot be modified after it is created.**
 
 - Model facts as values: once constructed, they never change.
 - Carry the discipline all the way down: a single mutable field anywhere makes the whole object mutable.
 
-[Axiom 1](axiom-01-data-is-not-behavior.md) already touches on immutability: its claim that data is a *value* depends on it. This axiom goes deeper: what immutability is, how to recognize it, what it costs and what it buys.
+[Axiom 2](axiom-02-data-is-not-behavior.md) already touches on immutability: its claim that data is a *value* depends on it. This axiom goes deeper: what immutability is, how to recognize it, what it costs and what it buys.
 
 ---
 
@@ -538,14 +538,14 @@ The usual tool, a class with private mutable fields and getters and setters, wor
 - Every getter that returns an internal collection or sub-object has to clone it, or callers can reach in and change it. Every method that accepts one has to clone it on the way in.
 - The value a field held two seconds ago only exists in the logs you remembered to write. There is no clean way to ask "what was this at 14:03?"
 
-One force pulls the other way: **ergonomics**. Updating in place reads naturally ("the counter increments"), and much of the tooling expects it (see *Trade-offs*). This axiom does not deny that force; it moves it. Mutation belongs at the edges of the program, where [Axiom 1](axiom-01-data-is-not-behavior.md) already left room for mutable resources, not in the data itself.
+One force pulls the other way: **ergonomics**. Updating in place reads naturally ("the counter increments"), and much of the tooling expects it (see *Trade-offs*). This axiom does not deny that force; it moves it. Mutation belongs at the edges of the program, where [Axiom 2](axiom-02-data-is-not-behavior.md) already left room for mutable resources, not in the data itself.
 
 ---
 
 ## Why
 
 **1. A value is a fact, and facts do not change.**
-Data represents facts about the world, and facts do not change after they happen. The order *was* placed at 14:03. The customer's birthday *is* 1987-04-12. Overwriting a memory cell with new information does not change the old fact; it only loses your reference to it. This is Hickey's critique of place-oriented programming [2], and it is what [Axiom 1](axiom-01-data-is-not-behavior.md) was already pointing at when it called data a *value*. This axiom enforces that claim.
+Data represents facts about the world, and facts do not change after they happen. The order *was* placed at 14:03. The customer's birthday *is* 1987-04-12. Overwriting a memory cell with new information does not change the old fact; it only loses your reference to it. This is Hickey's critique of place-oriented programming [2], and it is what [Axiom 2](axiom-02-data-is-not-behavior.md) was already pointing at when it called data a *value*. This axiom enforces that claim.
 
 **2. No action at a distance.**
 One of the most expensive kinds of bug in OO code is one piece of code changing an object that another piece is still using. Immutability removes that whole kind:
@@ -614,7 +614,7 @@ How these are built (finger trees, amortized versus worst-case bounds) is Okasak
 
 Mutable state earns its place in two cases:
 
-- **Inner loops where allocation dominates.** In a tight hot path (a parser tokenizing megabytes per second, a renderer building a frame, a physics step over millions of bodies), copying loses to in-place update on the only axis that matters. This is the Mike Acton territory that [Axiom 1](axiom-01-data-is-not-behavior.md) already marked as out of scope for this book [5]: a *performance* argument, not a *complexity* one.
+- **Inner loops where allocation dominates.** In a tight hot path (a parser tokenizing megabytes per second, a renderer building a frame, a physics step over millions of bodies), copying loses to in-place update on the only axis that matters. This is the Mike Acton territory that [Axiom 2](axiom-02-data-is-not-behavior.md) already marked as out of scope for this book [5]: a *performance* argument, not a *complexity* one.
 - **Boundary objects you don't own.** ORM entities, framework callbacks and generated DTOs sometimes come with setters you cannot remove. Convert them into immutable records at the boundary, work with immutable types in the core, and convert back on the way out. The edges may be mutable; the core is not.
 
 ---
@@ -623,13 +623,13 @@ Mutable state earns its place in two cases:
 
 [1] **JLS / `java.lang.reflect`** and **`sun.misc.Unsafe`** are the canonical Java escape hatches; **`System.Reflection`** with `BindingFlags.NonPublic | BindingFlags.Instance` (and `FieldInfo.SetValue`) is the equivalent in .NET. Their existence means no JVM- or CLR-level guarantee of immutability is possible; the contract is enforced at the source level only.
 
-[2] **Rich Hickey**, *The Value of Values*, keynote at JaxConf 2012 (also delivered at GOTO Copenhagen 2012). Recording on InfoQ, published 14 August 2012: <https://www.infoq.com/presentations/Value-Values/>. The argument that values (immutable, location-independent) are what make concurrency and distribution manageable. Already cited in [Axiom 1](axiom-01-data-is-not-behavior.md) as reference [4]; listed again here because the argument matters just as much for Axiom 2.
+[2] **Rich Hickey**, *The Value of Values*, keynote at JaxConf 2012 (also delivered at GOTO Copenhagen 2012). Recording on InfoQ, published 14 August 2012: <https://www.infoq.com/presentations/Value-Values/>. The argument that values (immutable, location-independent) are what make concurrency and distribution manageable. Already cited in [Axiom 2](axiom-02-data-is-not-behavior.md) as reference [4]; listed again here because the argument matters just as much for Axiom 3.
 
 [3] **Yehonathan Sharvit**, *Data-Oriented Programming: Reduce software complexity*, Manning Publications, 2022. Principle #3 ("Data is immutable"). <https://www.manning.com/books/data-oriented-programming>
 
 [4] **Chris Okasaki**, *Purely Functional Data Structures*, Cambridge University Press, 1998. The standard reference on how to build immutable data structures (lists, queues, heaps, finger trees) with asymptotic costs comparable to their mutable counterparts. The answer to "but isn't copy-on-write slow?" for everything outside the absolute hottest loops.
 
-[5] **Mike Acton**, *Data-Oriented Design and C++*, keynote at CppCon 2014: <https://www.youtube.com/watch?v=rX0ItVEVjHc>. Already cited in [Axiom 1](axiom-01-data-is-not-behavior.md) as reference [6]; relevant here as the dominant counter-argument inside performance-critical inner loops.
+[5] **Mike Acton**, *Data-Oriented Design and C++*, keynote at CppCon 2014: <https://www.youtube.com/watch?v=rX0ItVEVjHc>. Already cited in [Axiom 2](axiom-02-data-is-not-behavior.md) as reference [6]; relevant here as the dominant counter-argument inside performance-critical inner loops.
 
 [6] **Joshua Bloch**, *Effective Java*, 3rd ed., Addison-Wesley, 2018, Item 17, "Minimize mutability". The canonical Java-specific statement of the rules listed in this axiom's *Definitions* section, with the same five-point recipe (no mutators, ensure the class cannot be extended, make all fields final, make all fields private, ensure exclusive access to any mutable components).
 
@@ -637,4 +637,4 @@ Mutable state earns its place in two cases:
 
 ---
 
-← Previous: [Axiom 1 — Data is not Behavior](axiom-01-data-is-not-behavior.md) · Next: [Axiom 3 — Side effects](axiom-03-side-effects.md) →
+← Previous: [Axiom 2 — Data is not Behavior](axiom-02-data-is-not-behavior.md) · Next: [Axiom 4 — Side effects](axiom-04-side-effects.md) →

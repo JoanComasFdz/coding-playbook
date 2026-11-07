@@ -1,12 +1,12 @@
-# Axiom 11 — Pattern matching
+# Axiom 12 — Pattern matching
 
 **[Pattern matching](https://en.wikipedia.org/wiki/Pattern_matching) lets one `switch` check what kind of value it has, cast it for you, and take it apart, all in one step.**
 
 - When the possible kinds are a *closed* set (a sealed hierarchy, an enum), the compiler can check that the `switch` handles every one of them.
 
-[Axiom 1](axiom-01-data-is-not-behavior.md) separates data from behavior. When data comes in several shapes, a behavior over it needs one branch per shape, and pattern matching is how you write those branches.
+[Axiom 2](axiom-02-data-is-not-behavior.md) separates data from behavior. When data comes in several shapes, a behavior over it needs one branch per shape, and pattern matching is how you write those branches.
 
-Through [Axiom 8](axiom-08-connascence.md)'s lens, an exhaustive match turns "did every consumer remember every case?" into a [Connascence of Type](axiom-08-connascence.md#connascence-of-type-cot) that the build checks (see *Why*, point 3).
+Through [Axiom 9](axiom-09-connascence.md)'s lens, an exhaustive match turns "did every consumer remember every case?" into a [Connascence of Type](axiom-09-connascence.md#connascence-of-type-cot) that the build checks (see *Why*, point 3).
 
 ---
 
@@ -262,7 +262,7 @@ An `if` chain (see *Problem / forces*) gives each case its own braces, type test
 For a closed type, the compiler knows every shape (fully in Java; with the limits in *Definitions* in C#). A match that misses one is flagged at build time, and adding a shape points you at every match that has to handle it.
 
 **4. The dispatch lives where the decision lives.**
-The consumer that needs to branch on a shape holds the branching logic; the data type stays a passive description of *what it is*. A second consumer with a different question writes its own match, and neither touches the data type. This is the practical payoff of [Axiom 1](axiom-01-data-is-not-behavior.md): data is data, and the operations over it live with the consumers that need them. (When it reads better, the case list can move onto the type instead: see *The method form*.)
+The consumer that needs to branch on a shape holds the branching logic; the data type stays a passive description of *what it is*. A second consumer with a different question writes its own match, and neither touches the data type. This is the practical payoff of [Axiom 2](axiom-02-data-is-not-behavior.md): data is data, and the operations over it live with the consumers that need them. (When it reads better, the case list can move onto the type instead: see *The method form*.)
 
 ---
 
@@ -335,7 +335,7 @@ A property access (`x.Status`) is fine to inline; the rule is about real *calls*
 
 [1] **Philip Wadler**, *Views: A Way for Pattern Matching to Cohabit with Data Abstraction*, POPL 1987. Shows that pattern matching can coexist with information hiding: a value's internal representation can stay private while patterns still read a meaningful shape.
 
-[2] **Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides**, *Design Patterns: Elements of Reusable Object-Oriented Software*, Addison-Wesley, 1994. Also cited in [Axiom 9](axiom-09-first-class-functions.md) and [Axiom 10](axiom-10-higher-order-functions.md). Its *Visitor* chapter is the classic reference for case analysis over a closed type hierarchy in an OO language without pattern matching.
+[2] **Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides**, *Design Patterns: Elements of Reusable Object-Oriented Software*, Addison-Wesley, 1994. Also cited in [Axiom 10](axiom-10-first-class-functions.md) and [Axiom 11](axiom-11-higher-order-functions.md). Its *Visitor* chapter is the classic reference for case analysis over a closed type hierarchy in an OO language without pattern matching.
 
 [3] **OpenJDK**, *JEP 441: Pattern Matching for switch*, final in Java 21 (2023). The reference for Java's pattern-matching syntax, exhaustiveness rules and interaction with sealed types. <https://openjdk.org/jeps/441>
 
@@ -343,4 +343,4 @@ A property access (`x.Status`) is fine to inline; the rule is about real *calls*
 
 ---
 
-← Previous: [Axiom 10 — Higher-order functions](axiom-10-higher-order-functions.md) · Next: [Axiom 12 — Impureim](axiom-12-impureim.md) →
+← Previous: [Axiom 11 — Higher-order functions](axiom-11-higher-order-functions.md) · Next: [Axiom 13 — Impureim](axiom-13-impureim.md) →

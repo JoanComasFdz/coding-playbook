@@ -1,14 +1,14 @@
-# Axiom 7 — Cohesion
+# Axiom 8 — Cohesion
 
 **A function is cohesive when it has exactly one reason to change: one input shape, one decision, one output shape. Group code together, and split it apart, by reason to change; never by surface similarity.**
 
 - A function with one reason to change can be described without the word "and". The moment an honest description needs an "and", the function is doing two jobs.
 - The metric is *reason to change*, not how alike two pieces of code look. Two functions that read the same but change for different reasons are **not** duplication. One function that reads as a unit but changes for two reasons is not cohesive.
 
-[Axiom 6](axiom-06-honest-total-signatures.md) made the signature *honest*: every outcome named, every input defined. But a signature can tell the whole truth and still promise too much. A function that validates an order *and* prices it *and* records the decision can have a perfectly honest signature around three jobs.
+[Axiom 7](axiom-07-honest-total-signatures.md) made the signature *honest*: every outcome named, every input defined. But a signature can tell the whole truth and still promise too much. A function that validates an order *and* prices it *and* records the decision can have a perfectly honest signature around three jobs.
 
-- Purity ([Axiom 5](axiom-05-pure-functions.md)) limits what a function may touch.
-- Honesty and totality ([Axiom 6](axiom-06-honest-total-signatures.md)) limit how it reports its outcomes.
+- Purity ([Axiom 6](axiom-06-pure-functions.md)) limits what a function may touch.
+- Honesty and totality ([Axiom 7](axiom-07-honest-total-signatures.md)) limit how it reports its outcomes.
 - This axiom limits *how much it decides at all*.
 
 Honest, total **and cohesive** is the full test for a well-formed function. Of the three, cohesion is the one the compiler can't help with (see *Trade-offs*).
@@ -74,7 +74,7 @@ public String renderLine(LineItem item, boolean isReceipt) {
 
 The `bool isReceipt` is the giveaway. One function now has two reasons to change: invoice rules and receipt rules share a body and an `if`. The day receipts get a second marker, you reopen the function that also renders invoices, and the diff touches code that had no reason to change. Looking alike bought you a shared body and a shared blast radius.
 
-The flag is also *boolean-blind* at the call site, as [Axiom 6](axiom-06-honest-total-signatures.md) describes: `RenderLine(item, true)`, true of *what*? But the unreadable argument is the smaller problem here. Two reasons to change sharing one body is the one that costs you.
+The flag is also *boolean-blind* at the call site, as [Axiom 7](axiom-07-honest-total-signatures.md) describes: `RenderLine(item, true)`, true of *what*? But the unreadable argument is the smaller problem here. Two reasons to change sharing one body is the one that costs you.
 
 Cohesion splits by reason to change, and extracts only the part that really is one concept:
 
@@ -141,7 +141,7 @@ The merge that was meant to reduce duplication has instead tied together two thi
 
 ### What DRY is for
 
-In practice, the knowledge DRY protects is the business rules. In this book, those live in pure functions ([Axiom 5](axiom-05-pure-functions.md)):
+In practice, the knowledge DRY protects is the business rules. In this book, those live in pure functions ([Axiom 6](axiom-06-pure-functions.md)):
 
 - input validation;
 - transformations from one shape to another;
@@ -149,7 +149,7 @@ In practice, the knowledge DRY protects is the business rules. In this book, tho
 
 Share those. A rule that lives in one place changes in one place.
 
-Impure orchestration ([Axiom 4](axiom-04-impure-functions.md)) is different. Three handlers that each load data, transform it, and then save, publish or return the result look alike. But they share a *shape*, not knowledge: each changes for its own reasons, with its own data, its own consumers, its own endpoint. Let them repeat. Share the pure parts they call (the validation, the transformation), not the plumbing around them.
+Impure orchestration ([Axiom 5](axiom-05-impure-functions.md)) is different. Three handlers that each load data, transform it, and then save, publish or return the result look alike. But they share a *shape*, not knowledge: each changes for its own reasons, with its own data, its own consumers, its own endpoint. Let them repeat. Share the pure parts they call (the validation, the transformation), not the plumbing around them.
 
 Merging them into one generic handler that takes the transformation as a parameter doesn't fix this. It is the `bool isReceipt` flag from the example in disguise: a parameter that picks the behavior, with three reasons to change behind one body.
 
@@ -164,13 +164,13 @@ The discipline is to wait until the reason to change shows itself before you pic
 ## Why
 
 **1. One reason to change is a unit you can hold in your head.**
-A function with one input shape, one decision and one output shape fits in your head at once: you can read it, test it and review it without loading a second context. The honest signature of [Axiom 6](axiom-06-honest-total-signatures.md) tells you *what* outcomes exist; cohesion keeps the number of decisions behind them at one, so the signature stays small enough to be honest about. Two jobs in one function means two sets of test cases multiplied together, and a review that has to reason about how they interact.
+A function with one input shape, one decision and one output shape fits in your head at once: you can read it, test it and review it without loading a second context. The honest signature of [Axiom 7](axiom-07-honest-total-signatures.md) tells you *what* outcomes exist; cohesion keeps the number of decisions behind them at one, so the signature stays small enough to be honest about. Two jobs in one function means two sets of test cases multiplied together, and a review that has to reason about how they interact.
 
 **2. Reason to change is a better metric than similarity.**
 As *Definitions* says, the question is whether code changes together, not whether it looks alike, and only that question predicts what a future edit will cost. Code that really is one concept (it changes in one place, for one reason) earns a single home. Code that merely rhymes doesn't, and merging it buys a shared blast radius for nothing. This is the simplicity-first move: cohesion *removes* a rule ("remove duplication on sight") and replaces it with a sharper one that fires less often, and more accurately, on sameness instead of resemblance.
 
 **3. A cohesive function is the unit that composes.**
-Functions that each answer a single question fit together; functions that each answer three resist it. When a behavior is built from small, single-purpose pieces, you can see each contract at a glance, and a changing requirement lands on the one piece that owns that reason, not on a tangle that owns several. That is why cohesion sits beside [Axiom 6](axiom-06-honest-total-signatures.md) at the foundation: an honest, total, single-purpose function is about as clean a building block as there is.
+Functions that each answer a single question fit together; functions that each answer three resist it. When a behavior is built from small, single-purpose pieces, you can see each contract at a glance, and a changing requirement lands on the one piece that owns that reason, not on a tangle that owns several. That is why cohesion sits beside [Axiom 7](axiom-07-honest-total-signatures.md) at the foundation: an honest, total, single-purpose function is about as clean a building block as there is.
 
 **4. Grouping by reason scales, but this axiom stops at the function.**
 The same metric, pointed at a folder instead of a function, says that code that changes together belongs together. Beck puts it as "put everything that changes at the same time in one place" [6], and his principle of *local consequences* asks for code where a change in one place doesn't force changes elsewhere [7]. Feature-folder and vertical-slice layouts aim for exactly that. That is a real and good instinct, and it belongs one level up, where functions are composed into modules. This axiom claims only the function-level form.
@@ -209,8 +209,8 @@ The same metric, pointed at a folder instead of a function, says that code that 
 
 [7] **Kent Beck**, *Implementation Patterns*, Addison-Wesley, 2007, ch. 3 ("A Theory of Programming"). The first of its six principles, *Local Consequences*: structure the code so that changes have local consequences.
 
-[8] **Carson Gross**, *Locality of Behaviour (LoB)*, htmx.org, 29 May 2020. <https://htmx.org/essays/locality-of-behaviour/>
+[8] **Carson Gross**, *Locality of Behaviour (LoB)*, htmx.org, 29 May 2020. Also cited in [Axiom 1](axiom-01-explicit-over-implicit.md). <https://htmx.org/essays/locality-of-behaviour/>
 
 ---
 
-← Previous: [Axiom 6 — Honest, total signatures](axiom-06-honest-total-signatures.md) · Next: [Axiom 8 — Connascence](axiom-08-connascence.md) →
+← Previous: [Axiom 7 — Honest, total signatures](axiom-07-honest-total-signatures.md) · Next: [Axiom 9 — Connascence](axiom-09-connascence.md) →

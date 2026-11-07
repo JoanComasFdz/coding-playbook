@@ -1,4 +1,4 @@
-# Axiom 3 — Side effects
+# Axiom 4 — Side effects
 
 **A side effect is any interaction with state outside a function's parameters and return value.**
 
@@ -7,7 +7,7 @@
 
 This axiom names side effects so later axioms can refer to them. The point is not to avoid them; every useful program does I/O eventually. The point is to recognize them when you see them.
 
-[Axiom 1](axiom-01-data-is-not-behavior.md) says data is a value, and [Axiom 2](axiom-02-immutability.md) removes one source of bugs by making data unchangeable. This axiom adds another source: code that reaches outside its declared interface, where the compiler can't see it.
+[Axiom 2](axiom-02-data-is-not-behavior.md) says data is a value, and [Axiom 3](axiom-03-immutability.md) removes one source of bugs by making data unchangeable. This axiom adds another source: code that reaches outside its declared interface, where the compiler can't see it. It is the first of the hidden things [Axiom 1](axiom-01-explicit-over-implicit.md) listed, the effect, given a name so it can be spotted.
 
 Most of this file is the recognition test: what counts as a side effect, what it looks like in code, and why the category needs a name before anything else can be said about it.
 
@@ -198,4 +198,4 @@ Logging is *not* an edge case, even when it is deterministic. It is still a writ
 
 ---
 
-← Previous: [Axiom 2 — Immutability](axiom-02-immutability.md) · Next: [Axiom 4 — Impure functions](axiom-04-impure-functions.md) →
+← Previous: [Axiom 3 — Immutability](axiom-03-immutability.md) · Next: [Axiom 5 — Impure functions](axiom-05-impure-functions.md) →
