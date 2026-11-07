@@ -1,6 +1,6 @@
 # Chapter 3 — Testing
 
-[Chapter 2](../chapter2/README.md) split every module into a pure core and an impure shell. That split also decides how the code is tested. This chapter says how, before any Play: testing doesn't depend on whether the shell talks to a database, a feed or a queue. Every Play in [Chapter 4](../chapter4/README.md) is tested the way this chapter describes.
+[Chapter 2](../chapter2/README.md) split every module into a pure core and an impure shell. That split also decides how the code is tested. This chapter says how. None of it depends on whether the shell talks to a database, a feed or a queue.
 
 ## Name tests by what they test
 
