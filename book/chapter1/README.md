@@ -22,7 +22,7 @@ This chapter explains why. I criticize SOLID on two levels:
 - **In practice.** In most codebases I have worked on or reviewed, and in most of the write-ups below, SOLID means one way of working, and it is not what its authors intended. That is the only SOLID most people ever meet. When that version is criticized, the usual reply is "you're doing it wrong". Maybe. But it is not one critic doing it wrong, it is a large part of the industry, for decades. At that point the misreading *is* the principle as it exists, so that is what I judge.
 - **In theory.** Even read charitably, SOLID wraps universal concerns (cohesion, coupling) in OOP-specific mechanisms. It helps you name a problem after the fact. It does not help you design.
 
-Then I look at CUPID, the best alternative I know, and why it stops short too.
+Then I look at CUPID, the best alternative I know, and why it stops short too. Last, I set the goal the rest of this book aims at: a codebase that is a search oracle.
 
 ## The evidence: what others have said
 
@@ -294,6 +294,91 @@ This book is stacked by level: Chapter 1 is the motivation, Chapter 2 the buildi
 
 They are not unmapped because they do not matter. They are unmapped because they live above the level of code. Everything that *is* at the level of code already has a place in the rest of this book.
 
+## The goal: a codebase that is a search oracle
+
+### Correct means "matches a specification"
+
+There is no correctness without a specification, and a real program's specification lives in three places:
+
+- the **intent** in someone's head;
+- the part **written down**: types, signatures, tests;
+- the **implicit** properties nobody writes: no crash, no null dereference.
+
+A machine can check only the last two. Whatever stays in someone's head is invisible to any checker, however strong.
+
+### Oracles
+
+An [oracle](https://en.wikipedia.org/wiki/Test_oracle) is anything you can hand a candidate and ask: *is this correct?* What matters is whether its answers can be trusted ([Barr et al., *The Oracle Problem in Software Testing: A Survey*](https://discovery.ucl.ac.uk/1471263/)):
+
+- **Sound:** when it says *yes*, the answer really is correct.
+- **Total:** sound, and it always gives a definite answer. A **partial** oracle can be trusted in only one direction.
+
+A test suite is a partial oracle. A red test is trustworthy: something is wrong. A green test only means "not wrong in the ways these tests check". An empty method, or one that always returns `true`, can pass. Testing can show the presence of bugs, never their absence ([Dijkstra, *Notes on Structured Programming*](https://www.cs.utexas.edu/~EWD/transcriptions/EWD02xx/EWD249.html)).
+
+### Search oracles
+
+A **search** produces many candidates and looks for one that is acceptable. A **search oracle** is an oracle that can drive that search ([Kumar, *A Type System Is a Search Oracle*](https://hiraditya.github.io/posts/a-type-system-is-a-search-oracle/)). It needs three things:
+
+- **Sound:** its *yes* means correct, or the search stops on a wrong answer and never knows.
+- **Fast:** a search asks many times.
+- **Informative when it says no:** it says *where* and *why*, so the next candidate is better, not just different.
+
+With a search oracle, brute force becomes a method: produce a candidate, ask, read the rejection, fix, ask again. With a sound oracle you end with a program that satisfies the written specification, or with nothing, and you know which. With a partial oracle the search "succeeds" on programs that are still wrong, and you are back to reading the code. Kumar puts it in two sentences: "A cheap verifier turns a mediocre generator into a good one. Brute force becomes admissible."
+
+### What a search oracle did for mathematics
+
+A proof written in [Lean](https://lean-lang.org/) is checked by its kernel: it either checks or it doesn't, and when it doesn't, Lean names the step that failed. That is a total search oracle.
+
+- **AlphaProof** (Google DeepMind) learned to find Lean proofs by trying millions and keeping what Lean accepted. Together with AlphaGeometry 2 it reached silver-medal level at the 2024 International Mathematical Olympiad ([*Nature*, 2025](https://research.google/pubs/olympiad-level-formal-mathematical-reasoning-with-reinforcement-learning/)).
+- **Aristotle** (Harmonic) reached gold-medal-equivalent level in 2025, built on Lean proof search ([Achim et al., 2025](https://arxiv.org/abs/2510.01346)).
+
+Other systems reached gold in 2025 with proofs in plain language, which humans had to grade. The Lean proofs needed no grader: the checker had already said yes.
+
+Ordinary programming languages show it too. In a study Kumar cites, GPT-5 solved 22 of 56 problems in Idris, a strongly typed language with little training data. Fed the compiler's own errors, it solved 54 of 56 ([Li & Krishnamachari, 2026](https://arxiv.org/abs/2602.11481)).
+
+### The cheapest oracle is the compiler
+
+A bug can be found at many points, from far to near:
+
+| Where the bug shows up | What it costs to ask |
+|---|---|
+| Performance test | A production-like environment, data, and a long run. |
+| End-to-end test | The whole system bootstrapped. |
+| Service integration test | The service, its dependencies, maybe some simulators. Still compile, bootstrap, run. |
+| Unit test | Milliseconds, but a separate step: someone has to decide to run it. |
+| Compiler | Nothing. It answers while I type, and points at the line. |
+
+Every rung down is faster, cheaper, and closer to the line that is wrong. This is [shift left](https://en.wikipedia.org/wiki/Shift-left_testing) taken to its end: not "test earlier", but **make the mistake fail to compile**.
+
+It helps a human, who sees the error before the commit instead of in the incident review. It helps an LLM even more: a precise, instant *no* is what lets it fix its own code in a loop, without a human in it. The more the compiler knows, the further that loop goes on its own.
+
+### A default compile promises too little
+
+How sound the compiler's *yes* is depends, in Kumar's words, on "how much a successful compile promises". Out of the box, a C# or Java compile says that names resolve and types line up. It does not say:
+
+- that nothing is `null`;
+- that every failure is handled;
+- that every case of a closed set is covered;
+- that a `string` is a valid email;
+- that an object is fully built.
+
+Every gap is a place where a wrong program compiles.
+
+This book is about closing those gaps through deliberate choices about what the code *is*. When teams talk about code quality, the conversation often turns to static analysis tools such as SonarQube. They are useful: they catch known patterns in code that already exists. But they inspect code after it is written. The choices in this book make whole classes of mistake impossible to write, so that a codebase that follows them everywhere is clean by design, not by inspection.
+
+That is the yardstick for every axiom in [Chapter 2](../chapter2/README.md): *does it move part of the specification into the compiler?*
+
+- A missing value becomes a type, not a `null` ([Axiom 13](../chapter2/axiom-13-maybe.md)).
+- A failure becomes part of the signature ([Axiom 6](../chapter2/axiom-06-honest-total-signatures.md), [Axiom 16](../chapter2/axiom-16-result.md)).
+- A malformed value can't be built ([Axiom 18](../chapter2/axiom-18-value-objects.md)), nor an illegal combination of fields ([Axiom 22](../chapter2/axiom-22-illegal-states.md)).
+- A forgotten case is flagged by the compiler ([Axiom 11](../chapter2/axiom-11-pattern-matching.md), [Axiom 21](../chapter2/axiom-21-discriminated-unions.md)).
+- A call in the wrong order doesn't compile ([Axiom 27](../chapter2/axiom-27-typestate.md)).
+- [Axiom 8](../chapter2/axiom-08-connascence.md) names the line: *enforced by the compiler* versus *carried by convention*.
+
+Each one moves a mistake, as Kumar says, "from the expensive category to the cheap one".
+
+**When not to.** Even a total oracle converges on the specification you *wrote*, not the one you *meant*. If the written specification is wrong, the search returns a verified wrong program. Types check shape, not intent, so tests and people still own intent, algorithms and performance. The goal is not to replace them. It is to leave them only the questions the compiler cannot answer.
+
 ## So what do I reason with instead?
 
 When reading and writing code, we need tools: a precise vocabulary to evaluate each line, each piece of data and each function, along several dimensions. Something to argue about trade-offs with, and to describe them properly.
@@ -314,6 +399,8 @@ So the question is not "how do I obey five principles, or chase five properties?
 And once I have them:
 
 **How can I enforce them in the code itself, so I do not depend on anyone's discipline at review time?** Enforce decisions, not ceremony.
+
+The compiler is the cheapest place to enforce them. That is what makes a codebase a [search oracle](#the-goal-a-codebase-that-is-a-search-oracle).
 
 ---
 
