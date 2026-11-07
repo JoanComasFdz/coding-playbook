@@ -36,7 +36,7 @@ Source: Dan North, "CUPID — for joyful coding" (2022), dannorth.net; cupid.dev
 
 The goal behind the axioms: a codebase whose compiler is a sound, fast, informative oracle, so mistakes are rejected at compile time with a precise message, for a human or an LLM.
 
-- [Chapter 1](chapter1/README.md#the-goal-a-codebase-that-is-a-search-oracle) — the home: oracles, search oracles, the feedback ladder from performance test to compiler, and the yardstick every axiom answers to.
+- [Chapter 1](chapter1/README.md#the-goal-a-codebase-that-is-a-search-oracle) — the home: oracles, search oracles, the feedback ladder from performance test to compiler, and the question every axiom is chosen with.
 - [Axiom 8 — Connascence](chapter2/axiom-08-connascence.md) — the line it rests on: enforced by the compiler versus carried by convention.
 
 **Source:** Aditya Kumar, *A Type System Is a Search Oracle* (2026); Barr et al., *The Oracle Problem in Software Testing: A Survey* (IEEE TSE, 2015).
