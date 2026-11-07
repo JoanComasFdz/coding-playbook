@@ -28,4 +28,4 @@ Shorter is good, but it isn't the only goal. Don't cut nuance, evidence or the c
 
 ## Links
 
-Chapter 1 is the one place allowed to link forward into Chapters 2 and 3.
+Chapter 1 is the one place allowed to link forward into Chapters 2, 3 and 4.
