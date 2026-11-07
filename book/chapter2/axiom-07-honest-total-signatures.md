@@ -56,7 +56,7 @@ Two dishonest functions:
 <td>
 
 ```csharp
-public int FindOrderIndex(IReadOnlyList<Order> orders, Guid id)
+public static int FindOrderIndex(IReadOnlyList<Order> orders, Guid id)
 {
     for (var i = 0; i < orders.Count; i++)
         if (orders[i].Id == id) return i;
@@ -73,7 +73,7 @@ public User GetUser(Guid id)
 <td>
 
 ```java
-public int findOrderIndex(List<Order> orders, UUID id) {
+public static int findOrderIndex(List<Order> orders, UUID id) {
     for (var i = 0; i < orders.size(); i++)
         if (orders.get(i).id().equals(id)) return i;
     return -1; // not found: the caller must know to check
@@ -107,7 +107,7 @@ public abstract record FindResult;
 public sealed record Found(int Index) : FindResult;
 public sealed record NotFound : FindResult;
 
-public FindResult FindOrderIndex(IReadOnlyList<Order> orders, Guid id)
+public static FindResult FindOrderIndex(IReadOnlyList<Order> orders, Guid id)
 {
     for (var i = 0; i < orders.Count; i++)
         if (orders[i].Id == id) return new Found(i);
@@ -123,7 +123,7 @@ public sealed interface FindResult permits Found, NotFound {}
 public record Found(int index) implements FindResult {}
 public record NotFound() implements FindResult {}
 
-public FindResult findOrderIndex(List<Order> orders, UUID id) {
+public static FindResult findOrderIndex(List<Order> orders, UUID id) {
     for (var i = 0; i < orders.size(); i++)
         if (orders.get(i).id().equals(id)) return new Found(i);
     return new NotFound();
@@ -145,7 +145,7 @@ That was one path to honesty and totality: widen the *output* until every outcom
 
 ```csharp
 // NonZeroInt can only hold values that aren't zero.
-public decimal Divide(int numerator, NonZeroInt denominator)
+public static decimal Divide(int numerator, NonZeroInt denominator)
 {
     return (decimal)numerator / denominator.Value;
 }
@@ -156,7 +156,7 @@ public decimal Divide(int numerator, NonZeroInt denominator)
 
 ```java
 // NonZeroInt can only hold values that aren't zero.
-public BigDecimal divide(int numerator, NonZeroInt denominator) {
+public static BigDecimal divide(int numerator, NonZeroInt denominator) {
     return BigDecimal.valueOf(numerator)
         .divide(BigDecimal.valueOf(denominator.value()),
                 MathContext.DECIMAL128);

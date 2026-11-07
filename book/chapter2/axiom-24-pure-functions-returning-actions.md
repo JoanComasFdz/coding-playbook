@@ -211,7 +211,7 @@ An action can be logged ("here is what the cart decided"), replayed against anot
 
 ## When NOT to
 
-- **One value, one trivial use.** `TotalWithTax(items, rate)` from [Axiom 6](axiom-06-pure-functions.md) returns a number the caller writes into a response. With no second case, an action DU would only wrap the number.
+- **One value, one trivial use.** `CalculateTotalWithTax(items, rate)` from [Axiom 6](axiom-06-pure-functions.md) returns a number the caller writes into a response. With no second case, an action DU would only wrap the number.
 - **The result *is* the answer.** When the core returns a domain value (an `Order`, an `Invoice`) and the shell always does the same thing with it, there is nothing to discriminate. Action DUs are for when the shell must do one of *several different* things.
 - **The set of actions is open.** Actions that arrive from plugins can't live in one sealed type; use a command interface with `Execute()` (see [Axiom 22](axiom-22-discriminated-unions.md#when-not-to)).
 - **A one-rule script.** A small job that loads one row, applies one rule and writes one row may not earn the split. It pays off as the rules grow.

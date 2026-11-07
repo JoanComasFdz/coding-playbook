@@ -194,4 +194,19 @@ Most *Leads to* lines are strict dependencies: the next axiom needs the previous
 
 ---
 
+## What the code looks like
+
+After the axioms, a codebase has two kinds of code, and classes mean something different in each:
+
+| | Pure core | Impure shell |
+|---|---|---|
+| **Types** | Immutable records ([3](axiom-03-immutability.md)) and unions ([22](axiom-22-discriminated-unions.md)) | Ordinary classes ([13](axiom-13-impureim.md#definitions)) |
+| **Functions** | `static`, or methods on immutable values ([6](axiom-06-pure-functions.md#definitions)) | Instance methods |
+| **Grouping** | Static classes, used as modules ([2](axiom-02-data-is-not-behavior.md)) | Classes with dependencies injected through the constructor ([13](axiom-13-impureim.md#definitions), [26](axiom-26-session-context.md)) |
+| **State** | None | Where needed: caches and connections ([27](axiom-27-stateful-shell.md)), a session's working memory ([26](axiom-26-session-context.md)) |
+
+Object-oriented programming doesn't disappear. It moves: out of the core, where a class is only a named group of functions, into the shell, where classes stay classes, with dependency injection and state.
+
+---
+
 ← Previous: [Chapter 1](../chapter1/README.md) · Start: [Axiom 0 — Ubiquitous Language](axiom-00-ubiquitous-language.md) →

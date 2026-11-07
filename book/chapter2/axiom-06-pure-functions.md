@@ -31,7 +31,9 @@ On a pure function, the signature `(InputA, InputB) -> Output` describes *everyt
 
 The return type itself can still be vague about *which* outcomes are possible. That is a separate problem from purity: purity only guarantees there is no other channel.
 
-C# and Java can't express purity in a signature. So recognizing it is a *reading* skill, applied to the whole body and everything it calls: the same skill as in [Axiom 5](axiom-05-impure-functions.md), used to spot the opposite kind.
+C# and Java can't express purity in a signature. They can express one part of it: **`static`**. A static method has no `this`, so it can't read a field its signature doesn't show. That is why the pure functions in this book are `static`, grouped in the static classes of [Axiom 2](axiom-02-data-is-not-behavior.md). The one exception is a method on an immutable value, a record whose fields can't change: there `this` is just one more immutable input, read like a parameter. What a pure function never is: an instance method on a class with mutable fields or injected services, where `this` brings in exactly the hidden input this axiom rules out (the "stateless service" above).
+
+The rest of recognizing purity is a *reading* skill, applied to the whole body and everything it calls: the same skill as in [Axiom 5](axiom-05-impure-functions.md), used to spot the opposite kind.
 
 ---
 
@@ -45,7 +47,7 @@ A function where every line depends only on its parameters:
 <td>
 
 ```csharp
-public decimal TotalWithTax(IReadOnlyList<LineItem> items, decimal taxRate)
+public static decimal CalculateTotalWithTax(IReadOnlyList<LineItem> items, decimal taxRate)
 {
     var subtotal = items.Sum(item => item.UnitPrice * item.Quantity);
     return subtotal * (1 + taxRate);
@@ -56,7 +58,7 @@ public decimal TotalWithTax(IReadOnlyList<LineItem> items, decimal taxRate)
 <td>
 
 ```java
-public BigDecimal totalWithTax(List<LineItem> items, BigDecimal taxRate) {
+public static BigDecimal calculateTotalWithTax(List<LineItem> items, BigDecimal taxRate) {
     var subtotal = items.stream()
         .map(item -> item.unitPrice().multiply(BigDecimal.valueOf(item.quantity())))
         .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -78,7 +80,7 @@ And a richer pure function, one that *decides* what should happen instead of jus
 <td>
 
 ```csharp
-public CartDecision DecideAdd(Cart cart, Product product, int quantity)
+public static CartDecision DecideAdd(Cart cart, Product product, int quantity)
 {
     if (quantity <= 0)
         return new CartDecision.Rejected("quantity must be positive");
@@ -94,7 +96,7 @@ public CartDecision DecideAdd(Cart cart, Product product, int quantity)
 <td>
 
 ```java
-public CartDecision decideAdd(Cart cart, Product product, int quantity) {
+public static CartDecision decideAdd(Cart cart, Product product, int quantity) {
     if (quantity <= 0)
         return new CartDecision.Rejected("quantity must be positive");
     if (cart.lines().size() >= MAX_LINES && !cart.contains(product))
