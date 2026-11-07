@@ -178,7 +178,7 @@ Practitioners working with coding agents report the same pattern: agents do well
 
 ## When NOT to
 
-- **A real secret.** Which external feed, which vendor's protocol, which caching strategy: these are decisions likely to change, and callers should not depend on them [2]. Hide them behind a small surface. That is the deep module Ousterhout argues for [5], and the subject of the [*Information hiding*](../chapter3/04-information-hiding.md) Play in Chapter 3. Hiding *how* is fine; hiding *what the call needs and does* is not.
+- **A real secret.** Which external feed, which vendor's protocol, which caching strategy: these are decisions likely to change, and callers should not depend on them [2]. Hide them behind a small surface. That is the deep module Ousterhout argues for [5], and the subject of the [*Information hiding*](../chapter4/03-information-hiding.md) Play in Chapter 4. Hiding *how* is fine; hiding *what the call needs and does* is not.
 - **Plumbing nobody decides per call.** A logging scope or a correlation ID that every call carries the same way can live in infrastructure. If a function's behavior depends on it, it is an input, not plumbing.
 - **When the explicit form only adds noise.** Inside a small private function whose context the reader already has in view, passing everything again can repeat what is on screen. The rule is about what a reader can't see, not about spelling out what they can.
 

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A personal **Coding Playbook** by the author — a curated set of building blocks, concise how-tos, and dated decisions for writing simple, honest, robust code in high-level general-purpose languages (C# and Java are the named targets).
 
-The book is organized in three chapters. **Chapter 1 — the SOLID critique** is the motivating hook: it argues that SOLID names real smells but can't be *acted on* to generate design, and ends on the question the rest of the book answers — so what do I reason with instead? It sits *before* the code altitudes as motivation, not as a third altitude. The two code altitudes are Chapters 2 and 3. **Chapter 2 — Fundamentals** is the anatomy of a module and its functions: the axioms (explicit over implicit, data vs behavior, immutability, purity, honest signatures, `Result`, value objects, …). **Chapter 3 — Plays** is one level up: how those axioms compose into a designed, persisted domain — FP-style DDD tactical patterns, immutable-data persistence, deep modules. Each chapter has its own scope rules below; the voice, the three-kinds-of-why model, the registry, and the per-topic template apply to all three.
+The book is organized in four chapters. **Chapter 1 — the SOLID critique** is the motivating hook: it argues that SOLID names real smells but can't be *acted on* to generate design, and ends on the question the rest of the book answers — so what do I reason with instead? It sits *before* the code altitudes as motivation, not as a third altitude. The two code altitudes are Chapters 2 and 4, with Chapter 3 between them. **Chapter 2 — Fundamentals** is the anatomy of a module and its functions: the axioms (explicit over implicit, data vs behavior, immutability, purity, honest signatures, `Result`, value objects, …). **Chapter 3 — Testing** follows straight from Chapter 2's pure/impure split: tests named by what they test (function, service, product, solution), the pure core tested at function level, the shell at service level. **Chapter 4 — Plays** is one level up: how those axioms compose into a designed, persisted domain — FP-style DDD tactical patterns, immutable-data persistence, deep modules. Each chapter has its own scope rules below; the voice, the three-kinds-of-why model, the registry, and the per-topic template apply to all four.
 
 It is **documentation, not software**. There is no build system, no test suite, and no runnable code at present. Content lives (or will live) as Markdown files. The `.gitignore` is a stock .NET template — its presence does not imply a .NET project; treat it as boilerplate until actual code appears.
 
@@ -17,7 +17,7 @@ It is **documentation, not software**. There is no build system, no test suite, 
 
 ## Scope: two altitudes, neither is system architecture
 
-This is a *Coding* Playbook, not an architecture book. The two code chapters (2 and 3) sit *below* system topology; what changes between them is how far up from a single function they reach. Chapter 1 is the preface that motivates them.
+This is a *Coding* Playbook, not an architecture book. The two code chapters (2 and 4) sit *below* system topology; what changes between them is how far up from a single function they reach. Chapter 3 says how to test code written that way. Chapter 1 is the preface that motivates them.
 
 Two things are **out of scope for the whole book**:
 
@@ -36,7 +36,13 @@ What a signature promises, what a function receives and returns, how its interna
 
 A few edge concerns are explicitly **in** scope at this level *because they shape code*: the composition root / wiring, mapping between boundary↔domain↔persistence representations, and where stateful resources (caches, connection pools, connections) live — the answer being the impure shell, never the core.
 
-### Chapter 3 — Plays: composing the axioms into a designed, persisted domain
+### Chapter 3 — Testing: what to test, at which level
+
+How to test code built on Chapter 2's split, independent of any Play. Tests are named by **what they test**, not by how many components run: **function** tests (the pure core, values in and out), **service** tests (one deployable with its own real dependencies, simulators for third parties), **product** tests (the whole product as its users see it) and **solution** tests (several products together). Avoid "unit", "integration" and "end-to-end" as names except to map to these.
+
+In scope: what to test at which level, what not to test on its own (a controller, a mapper, database access), test design and the compiler's place below every level. Out of scope: CI pipelines, test environments as infrastructure, deployment. Tool picks (Testcontainers, WireMock, …) are contextual choices for ADRs. Chapter 4 Plays say how they are tested by linking here.
+
+### Chapter 4 — Plays: composing the axioms into a designed, persisted domain
 
 One level up from a single function: how the Chapter 2 building blocks assemble into a *designed module* and reach the outside world. This chapter is allowed material Chapter 2 deliberately excludes:
 
@@ -46,7 +52,7 @@ One level up from a single function: how the Chapter 2 building blocks assemble 
 - **Deep modules, small interfaces** — Ousterhout's "functionality ÷ interface cost"; the counterweight to tiny-function enthusiasm.
 - **Information hiding** — Parnas's "a module hides a design decision likely to change," at the in-scope, code-shaping end (the impure shell hiding the stateful secret), not as architectural decomposition.
 
-Chapter 3 is **Plays, not new principles**: it should *apply and compose* the Chapter 2 axioms, link back to them for the durable why, and never re-teach them under a DDD name. When a Chapter 3 technique is really a Chapter 2 axiom wearing a pattern's clothes (a DDD value object *is* Axiom 19), say so and link, rather than redefining it.
+Chapter 4 is **Plays, not new principles**: it should *apply and compose* the Chapter 2 axioms, link back to them for the durable why, and never re-teach them under a DDD name. When a Chapter 4 technique is really a Chapter 2 axiom wearing a pattern's clothes (a DDD value object *is* Axiom 19), say so and link, rather than redefining it.
 
 ## The central model
 
@@ -64,7 +70,7 @@ That sentence is effectively a module's public-API contract. Three consequences 
 
 Use these terms consistently — they are the playbook's building blocks: explicit over implicit, data vs behavior, immutable records, `Option`/`Maybe`, `Result`/`Either`, discriminated unions, pattern matching, total/honest signatures, pure vs impure functions, first-class & higher-order functions, the **Impureim sandwich**, value objects with smart constructors, **parse don't validate**, **make illegal states unrepresentable**, the **Decider**, composition/combinators.
 
-Chapter 3 adds its own tactical vocabulary — aggregate, entity, repository, deep module, information hiding — each introduced by linking back to the Chapter 2 axiom it composes, never as a fresh definition.
+Chapter 4 adds its own tactical vocabulary — aggregate, entity, repository, deep module, information hiding — each introduced by linking back to the Chapter 2 axiom it composes, never as a fresh definition.
 
 ## Audience and voice
 
@@ -79,7 +85,7 @@ The intended reader is a working engineer in a high-level OO language. When draf
 - **US spelling.** Convert a file to US spelling when it is rewritten. Never change quotes (they keep their original spelling). Don't rename files as part of a spelling pass; a rename is its own change and must update every link to the file.
 - **Never attack a discipline, language, framework, or architecture.** Present alternatives as points on a trade-off curve, never as targets. Every strong opinion is "what I do today, and why," with an explicit "when not to."
 - **Name data with nouns, behavior with verbs.** In examples, types, records and fields are nouns (`Cart`, `Line`); every function and method name contains a verb (`CalculateTotal`, `ParseAge`, `ChooseTicketType`), never a noun alone (`Total`, `Area`). See [Axiom 2](book/chapter2/axiom-02-data-is-not-behavior.md#definitions). The rule is for business logic. The exceptions: members a language or framework names for you (`hashCode()`, `ToString()`); DSLs, including ones you build, which follow the style of the language they imitate (SQL's `From`, `Where`; `Given`, `When`, `Then`); and deliberate ❌ examples.
-- **Say *entity* only for the ORM or DDD concept.** In Chapter 2, "entity" means an identity-tracked, usually mutable object (an ORM entity, Evans' Entity). For this book's own data, say *state*, *value* or *record*, or name the type. Entity as a modeling term belongs to Chapter 3.
+- **Say *entity* only for the ORM or DDD concept.** In Chapter 2, "entity" means an identity-tracked, usually mutable object (an ORM entity, Evans' Entity). For this book's own data, say *state*, *value* or *record*, or name the type. Entity as a modeling term belongs to Chapter 4.
 - Favor examples in C# or Java unless told otherwise. Immutable-record persistence leans on EF `AsNoTracking()` (possibly Dapper) for C#, jOOQ for Java.
 
 ## How content is organized: three kinds of "why"
@@ -103,11 +109,12 @@ Prose density runs in three tiers: a **how-to** file is near-zero prose (mechani
 ## Per-topic template
 
 - **Chapter 2 axioms:** Definitions → Example → Problem / forces → Why → Trade-offs → When NOT to → References. No per-axiom "What might change tomorrow": axioms are stable ideas, and how this book changes is covered once, in the main README.
-- **Chapter 3 Plays:** Problem / forces → What I do today → Why → C#/Java example → Trade-offs & when NOT to → What might change tomorrow. Plays are compositions and tactical choices that can change, so the last two sections are their non-dogmatism. Don't skip them.
+- **Chapter 3 (Testing):** no fixed template yet. Each file states a position (what to test, at which level), its why, an example, and when not to. Tool picks go to ADRs.
+- **Chapter 4 Plays:** Problem / forces → What I do today → Why → C#/Java example → Trade-offs & when NOT to → What might change tomorrow. Plays are compositions and tactical choices that can change, so the last two sections are their non-dogmatism. Don't skip them.
 
 ## When adding content
 
 - Prefer extending or splitting existing Markdown files over new top-level files. Once a directory structure emerges, follow it; until then, **ask before introducing one** (ADRs conventionally collect in one place — confirm the location before creating it).
-- Mind the structure: **Chapter 1 is the SOLID critique** (the motivating preface), **Chapter 2 is the Fundamentals** (the axioms), **Chapter 3 is the Plays** (axioms composed into a designed, persisted domain). A Play must link back to every Chapter 2 axiom it rests on and must not restate the axiom's argument; guard the tactical/strategic line in Chapter 3 the way Chapter 2 guards the code/architecture line. Chapter 1 is the exception that links freely *forward* into Chapter 2 — pointing ahead to the axioms is its job.
+- Mind the structure: **Chapter 1 is the SOLID critique** (the motivating preface), **Chapter 2 is the Fundamentals** (the axioms), **Chapter 3 is Testing** (how code built on the axioms is tested), **Chapter 4 is the Plays** (axioms composed into a designed, persisted domain). A Play must link back to every Chapter 2 axiom it rests on and must not restate the axiom's argument; guard the tactical/strategic line in Chapter 4 the way Chapter 2 guards the code/architecture line. Chapter 1 is the exception that links freely *forward* into Chapters 2–4 — pointing ahead to the axioms is its job.
 - **(Chapter 2.) Situate new construct axioms against the two evaluative lenses.** Whenever it reads naturally, an axiom should note what it does through [Cohesion](book/chapter2/axiom-08-cohesion.md) (Axiom 8) and [Connascence](book/chapter2/axiom-09-connascence.md) (Axiom 9) — typically a short *"Through Axiom 9's lens, this weakens a Connascence of X into Y"* aside in the intro. Keep it an aside, not the argument, and skip it where there is genuinely no angle (some carrier/composition axioms rate only a one-liner, or none).
-- **(Chapter 2.) Foreshadow, don't spoil.** Reference *earlier* axioms freely — backward links build the argument. A *later* axiom may be **foreshadowed** (a concept glimpsed at altitude, no pointer) but never **spoiled** (linked, numbered, or named). When a forward thread is worth drawing, write it as a backward link *from* the later axiom, not a forward link *to* it. (The strict axiom-numbering arc is a Chapter 2 device; Chapter 3 Plays link freely across chapters, and Chapter 1's preface is exempt — forward-referencing the axioms is its purpose.)
+- **(Chapter 2.) Foreshadow, don't spoil.** Reference *earlier* axioms freely — backward links build the argument. A *later* axiom may be **foreshadowed** (a concept glimpsed at altitude, no pointer) but never **spoiled** (linked, numbered, or named). When a forward thread is worth drawing, write it as a backward link *from* the later axiom, not a forward link *to* it. (The strict axiom-numbering arc is a Chapter 2 device; Chapter 4 Plays link freely across chapters, and Chapter 1's preface is exempt — forward-referencing the axioms is its purpose.)

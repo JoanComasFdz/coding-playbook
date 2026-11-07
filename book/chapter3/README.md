@@ -1,25 +1,36 @@
-# Chapter 3 — Plays
+# Chapter 3 — Testing
 
-Chapter 2 built the **Fundamentals**: the anatomy of a module and its functions, as a sequence of axioms. This chapter is one level up — the **Plays**: how those axioms compose into a *designed, persisted domain*.
+[Chapter 2](../chapter2/README.md) split every module into a pure core and an impure shell. That split also decides how the code is tested. This chapter says how, before any Play: testing doesn't depend on whether the shell talks to a database, a feed or a queue. Every Play in [Chapter 4](../chapter4/README.md) is tested the way this chapter describes.
 
-Nothing here is a new principle. Every Play applies and combines Chapter 2 axioms; where a pattern is really an axiom wearing different clothes (a DDD value object *is* [Axiom 19](../chapter2/axiom-19-value-objects.md)), it links back rather than re-teaching. The chapter stays on the **tactical** (code-shaped) side of design — not bounded contexts, context maps, or system topology.
+## Name tests by what they test
 
-One stance holds the chapter together: **FP-style DDD**. Behaviour is pure functions and deciders over immutable data — invariants in smart constructors, decisions returning action DUs — not methods on mutable entities. The "rich domain model" / Tell-Don't-Ask orthodoxy is the road not taken, presented as a trade-off, never attacked. See [Axiom 2 — Data is not Behaviour](../chapter2/axiom-02-data-is-not-behavior.md).
+"Unit", "integration" and "end-to-end" name a test by how many components it runs, and teams rarely agree on what a unit is. I name a test by what it tests:
 
-## What's expected here
+| Test | What it tests | What it runs against | Commonly called |
+|---|---|---|---|
+| **Function** | One pure function: values in, value out. | Nothing but the function. | Unit test |
+| **Service** | One deployable service, through its own entry points. | Its own real dependencies (a real database in a container), and simulators for systems owned by others. | Integration or acceptance test |
+| **Product** | The whole product, as its users see it. | Every service of the product, deployed together. | End-to-end test |
+| **Solution** | Several products working together. | The products involved, deployed together. | System or end-to-end test |
 
-- **FP-style DDD tactical patterns.** Aggregates, entities, repositories, domain events — modelled the book's way. An aggregate is a **Decider**: a pure `decide` returning action/event DUs ([Axiom 24](../chapter2/axiom-24-pure-functions-returning-actions.md)), an `evolve` folding them back into state — an entity's lifecycle *is* a [state machine](../chapter2/axiom-25-state-machines.md), a domain event *is* a [discriminated union](../chapter2/axiom-22-discriminated-unions.md), a value object *is* [Axiom 19](../chapter2/axiom-19-value-objects.md). This is where the FP-style domain answers the *"isn't that just an anemic model?"* charge: it looks anemic only by the misreading that equates richness with mutable methods; by the real definition — the domain's logic lives *in* the domain, as pure functions — it is not.
+Each level up is slower and more expensive to run, and finds a bug further from the line that caused it. Below all of them sits the compiler, the cheapest check of all ([Chapter 1](../chapter1/README.md#the-goal-a-codebase-that-is-a-search-oracle)).
 
-- **Designing errors out of existence.** The design-level face of the fold already in [Axiom 7](../chapter2/axiom-07-honest-total-signatures.md) and [Axiom 17](../chapter2/axiom-17-result.md): how aggregate boundaries, value objects, and invariants-at-construction erase whole *classes* of error before any `Result` is reached for. The recurring instinct of the chapter — make the bad case unrepresentable, don't handle it.
+## What I test where
 
-- **Deep modules, small interfaces.** Ousterhout's "module value = functionality ÷ interface cost": designing a module that hides a lot behind a little — and the counterweight to tiny-function enthusiasm, where over-splitting multiplies *shallow* interfaces and adds complexity. Chapter 2's two evaluative lenses carry up here at module grain: a deep module is high [Cohesion](../chapter2/axiom-08-cohesion.md) behind a thin surface, and a small interface is less [Connascence](../chapter2/axiom-09-connascence.md) crossing the boundary. Its other face is **information hiding**, below — the secret is exactly what the small interface hides.
+- **The pure core: function tests.** Decisions over immutable values need no setup and no mocks. Test them thoroughly here.
+- **The shell: service tests, not function tests.** A controller, a mapper and the database access hold no decisions of their own. Testing them alone means mocking what they call, which tests the wiring, not the behavior. A service test covers them by running the real thing.
+- **Products and solutions: a few tests on the paths that matter most.** They are the most expensive to run and to keep working.
 
-- **Vertical slices.** Grouping code by feature instead of by technical layer, inside one deployable: [Cohesion](../chapter2/axiom-08-cohesion.md) and [Connascence](../chapter2/axiom-09-connascence.md) applied to the folder layout, with each slice one Impureim sandwich. Not service decomposition. See the [skeleton](02-vertical-slices.md).
+## In this chapter
 
-- **Testing the core and the whole.** Share and unit-test pure code; let orchestration repeat; don't wrap the database; test the whole service with real dependencies and simulators. See the [placeholder](03-testing-the-core-and-the-whole.md).
+- [Testing the core and the whole](01-testing-the-core-and-the-whole.md) — the position in short, and the open questions around it. *(Placeholder.)*
 
-- **Immutable-data persistence.** Reading and writing immutable records without an identity-tracking ORM fighting you: EF `AsNoTracking()` (and Dapper) for C#, jOOQ for Java. This is the concrete shell of the Impureim sandwich — the *gather* step materializes immutable records for the pure core, the *act* step maps action DUs back to commands. Mapping boundary↔domain↔persistence representations lives here. The *technique* is the Play; the specific tool pick (`AsNoTracking` by default, jOOQ) is a dated contextual choice that resolves to an ADR, linked from here rather than argued in prose.
+More to come: why no function test for a controller, a mapper or the database access; what makes a good simulator; how a test is designed at each level.
 
-- **Information hiding (Parnas).** "A module hides a design decision likely to change," at the in-scope, code-shaping end: the impure shell hiding the stateful secret ([Axiom 27](../chapter2/axiom-27-stateful-shell.md)), not architectural decomposition. The other face of **deep modules** above — same idea read from the secret's side rather than the interface's. See the [draft](04-information-hiding.md).
+## Scope
 
-> This README is a skeleton — the scope and planned Plays, not yet the Plays themselves. Order still to be decided (likely: design the immutable domain first, then persist it).
+This chapter is about tests as code: what to test, at which level, and how. CI pipelines, test environments as infrastructure and deployment are out of scope, as they are for the whole book. Tool picks (Testcontainers, WireMock and similar) are dated choices that belong in ADRs.
+
+---
+
+← Previous: [Chapter 2](../chapter2/README.md) · Next: [Chapter 4 — Plays](../chapter4/README.md) →
