@@ -118,7 +118,7 @@ That answers the questions at the top of this chapter. The first three almost ne
 
 ### SRP survives because it is undefined
 
-Marston, above, says SRP has no working definition. I agree, and I think that is exactly why it survives. Its vagueness is not a bug. It is the main place in SOLID where real judgment about [cohesion](../chapter2/axiom-07-cohesion.md) happens. The other letters became settled convention. SRP is still debated because it cannot be turned into a rule.
+Marston, above, says SRP has no working definition. I agree, and I think that is exactly why it survives. Its vagueness is not a bug. It is the main place in SOLID where real judgment about [cohesion](../chapter2/axiom-08-cohesion.md) happens. The other letters became settled convention. SRP is still debated because it cannot be turned into a rule.
 
 But vague judgment has a cost: two reviewers rarely draw the class boundary in the same place.
 
@@ -129,7 +129,7 @@ Cohesion cannot be checked by a tool either. Replacing SRP with it would just sw
 - **A smaller unit.** It applies to a function, not a class. "One reason to change" is far easier to agree on for ten lines than for a whole class.
 - **Concrete checks.** One input shape, one decision, one output shape. If the honest description needs the word "and", it does two jobs. A `bool` or enum that switches the body is the visible symptom.
 - **A clear metric.** Group and split code by reason to change, never by how similar it looks.
-- **A partner for the outside.** [Connascence](../chapter2/axiom-08-connascence.md) names the kind of binding *between* units and ranks it, from what the compiler enforces to what only a convention keeps.
+- **A partner for the outside.** [Connascence](../chapter2/axiom-09-connascence.md) names the kind of binding *between* units and ranks it, from what the compiler enforces to what only a convention keeps.
 
 Cohesion will not make two reviewers always agree. It makes them agree far more often, and when they disagree, they disagree about something specific: which input, which decision, which output.
 
@@ -146,7 +146,7 @@ Now read SOLID charitably, the way its authors meant it. It still does not give 
 ### SOLID splits in two
 
 - **D, I, and the strategy-pattern form of O are structural.** Their usual *form* (an interface, an injected dependency) can be enforced by a convention, a container or a linter.
-- **S and L are semantic.** They are about [cohesion](../chapter2/axiom-07-cohesion.md) and honest behavior. No tool can fully enforce them.
+- **S and L are semantic.** They are about [cohesion](../chapter2/axiom-08-cohesion.md) and honest behavior. No tool can fully enforce them.
 
 This split explains what happened in practice. The structural letters were easy to mechanize, so they became ceremony: an `IFoo` next to its only `Foo` is enforced, but it encodes no design decision. The semantic letters could not be mechanized at all, so they stayed vague. Neither half became something you can act on.
 
@@ -187,23 +187,23 @@ The unit that stays closed moved from the *class* to the *slice*, and there it b
 
 Henney and Oldwood, above, point out that LSP is often misread as a structural rule. Read correctly, LSP is about behavior: a subtype must keep the promises of its parent. But in a typical OO signature those promises are invisible. A method can throw, return `null` or have side effects without saying so. So LSP is checked by reading every implementation, or by tests that each one must pass.
 
-[Honest, total signatures](../chapter2/axiom-06-honest-total-signatures.md) move much of the promise into the type, where the compiler checks it. Tests cover the rest.
+[Honest, total signatures](../chapter2/axiom-07-honest-total-signatures.md) move much of the promise into the type, where the compiler checks it. Tests cover the rest.
 
 ### SOLID wraps universal concerns in OOP mechanisms
 
-You rarely hear about SOLID in functional code, and Mikulski, above, notes it does not transfer well. Part of the reason is that most of the mechanisms SOLID corrects come from objects that bundle mutable state with behavior. In FP, [data and behavior are separate](../chapter2/axiom-01-data-is-not-behavior.md), so those mechanisms are gone. The concerns underneath are not.
+You rarely hear about SOLID in functional code, and Mikulski, above, notes it does not transfer well. Part of the reason is that most of the mechanisms SOLID corrects come from objects that bundle mutable state with behavior. In FP, [data and behavior are separate](../chapter2/axiom-02-data-is-not-behavior.md), so those mechanisms are gone. The concerns underneath are not.
 
 | Letter | What it corrects in OOP | In FP | What remains |
 |---|---|---|---|
-| **S** | Classes collecting unrelated methods around shared state | Functions over separate data; no state to gather around | Modules can still mix reasons to change → [Cohesion](../chapter2/axiom-07-cohesion.md) |
-| **O** | Changing behavior by editing or subclassing | Pass a [function](../chapter2/axiom-09-first-class-functions.md); no base class to inherit | Knowing which part will vary, still only after the fact |
-| **L** | Subclasses breaking their parent's promises | No subclasses, but interfaces and type classes still have laws | Laws can still be broken → [honest signatures](../chapter2/axiom-06-honest-total-signatures.md) and tests |
+| **S** | Classes collecting unrelated methods around shared state | Functions over separate data; no state to gather around | Modules can still mix reasons to change → [Cohesion](../chapter2/axiom-08-cohesion.md) |
+| **O** | Changing behavior by editing or subclassing | Pass a [function](../chapter2/axiom-10-first-class-functions.md); no base class to inherit | Knowing which part will vary, still only after the fact |
+| **L** | Subclasses breaking their parent's promises | No subclasses, but interfaces and type classes still have laws | Laws can still be broken → [honest signatures](../chapter2/axiom-07-honest-total-signatures.md) and tests |
 | **I** | Fat interfaces forcing unused methods on clients | A function parameter asks for exactly one operation | Fat parameters: passing a whole record when one field is needed |
-| **D** | Policy code creating or reaching for its details | Dependencies are passed in as values or functions | Direction still matters → the [Impureim sandwich](../chapter2/axiom-12-impureim.md) gives it a shape, no container needed |
+| **D** | Policy code creating or reaching for its details | Dependencies are passed in as values or functions | Direction still matters → the [Impureim sandwich](../chapter2/axiom-13-impureim.md) gives it a shape, no container needed |
 
 Even Seemann, a careful defender of SOLID, argues that SOLID taken seriously leads to FP: push ISP to role interfaces and you end up with single-method interfaces, which *are* functions ([Seemann, *SOLID: the next step is Functional*](https://blog.ploeh.dk/2014/03/10/solid-the-next-step-is-functional/)).
 
-The last column is the point. Those concerns are universal, and a pure FP codebase can fail at every one of them. They deserve tools that work in any paradigm: Cohesion gives concrete checks inside a unit, and [Connascence](../chapter2/axiom-08-connascence.md) gives a scale for the binding between units.
+The last column is the point. Those concerns are universal, and a pure FP codebase can fail at every one of them. They deserve tools that work in any paradigm: Cohesion gives concrete checks inside a unit, and [Connascence](../chapter2/axiom-09-connascence.md) gives a scale for the binding between units.
 
 So SOLID is useful to name OOP smells, but it is not the level where design happens.
 
@@ -214,7 +214,7 @@ Criticism is only fair if it also says what works. SOLID got a lot right:
 - **It asked the right questions.** Every concern in the "What remains" column above is a SOLID concern: one reason to change, safe substitution, small interfaces, dependency direction. This book keeps all of them. My critique is about how SOLID answers them, not about what it asks.
 - **It made design something teams talk about.** For many teams, the five letters were the first shared words for design. Even a vague vocabulary starts the conversation.
 - **It pushed back on inheritance.** Uncle Bob's version of OCP, and LSP, steered people toward composition and interfaces, away from deep class hierarchies.
-- **DIP at real boundaries is sound.** Policy should not depend on details. The [Impureim sandwich](../chapter2/axiom-12-impureim.md) keeps exactly that rule. It just gets there with a code shape instead of a container.
+- **DIP at real boundaries is sound.** Policy should not depend on details. The [Impureim sandwich](../chapter2/axiom-13-impureim.md) keeps exactly that rule. It just gets there with a code shape instead of a container.
 
 ### When SOLID still fits
 
@@ -254,22 +254,22 @@ Every property maps to something I already reason with, or to a level above this
 | Property | Where it lands | Why |
 |---|---|---|
 | **Composable:** small surface area | The future *Deep modules, small interfaces* Play (Chapter 3) | A module's value is its functionality divided by the cost of its interface |
-| **Composable:** intention-revealing | [Honest signatures](../chapter2/axiom-06-honest-total-signatures.md), [value objects](../chapter2/axiom-18-value-objects.md), [illegal states unrepresentable](../chapter2/axiom-22-illegal-states.md), [discriminated unions](../chapter2/axiom-21-discriminated-unions.md) | The type, not a comment, reveals the intent |
+| **Composable:** intention-revealing | [Honest signatures](../chapter2/axiom-07-honest-total-signatures.md), [value objects](../chapter2/axiom-19-value-objects.md), [illegal states unrepresentable](../chapter2/axiom-23-illegal-states.md), [discriminated unions](../chapter2/axiom-22-discriminated-unions.md) | The type, not a comment, reveals the intent |
 | **Composable:** minimal dependencies | Above this book (see the note below) | North means external packages, a packaging concern |
-| **Composable:** composing itself | [Higher-order functions](../chapter2/axiom-10-higher-order-functions.md) and `Result` composition (map/bind/traverse) | Composability is built, with combinators |
-| **Unix philosophy:** does one thing | [Cohesion](../chapter2/axiom-07-cohesion.md) | "One thing" from the caller's view: what the function takes, decides and returns |
-| **Unix philosophy:** composes via pipes | [Connascence](../chapter2/axiom-08-connascence.md), plus the combinators above | Pieces connect cleanly only when what couples them is weak and explicit |
-| **Predictable:** behaves as expected | [Honest signatures](../chapter2/axiom-06-honest-total-signatures.md) | What can come back is visible in the signature, not hidden in the body |
-| **Predictable:** deterministic | [Pure functions](../chapter2/axiom-05-pure-functions.md) | A pure function is deterministic by definition |
+| **Composable:** composing itself | [Higher-order functions](../chapter2/axiom-11-higher-order-functions.md) and `Result` composition (map/bind/traverse) | Composability is built, with combinators |
+| **Unix philosophy:** does one thing | [Cohesion](../chapter2/axiom-08-cohesion.md) | "One thing" from the caller's view: what the function takes, decides and returns |
+| **Unix philosophy:** composes via pipes | [Connascence](../chapter2/axiom-09-connascence.md), plus the combinators above | Pieces connect cleanly only when what couples them is weak and explicit |
+| **Predictable:** behaves as expected | [Honest signatures](../chapter2/axiom-07-honest-total-signatures.md) | What can come back is visible in the signature, not hidden in the body |
+| **Predictable:** deterministic | [Pure functions](../chapter2/axiom-06-pure-functions.md) | A pure function is deterministic by definition |
 | **Predictable:** observable | Above this book | Operational: telemetry, monitoring |
 | **Idiomatic:** language and team idioms | ADRs, as contextual choices (see the note below) | What feels natural depends on the reader, not on the code |
-| **Domain-based:** language | [Value objects](../chapter2/axiom-18-value-objects.md) and the [DDD tactical patterns](../chapter3/01-DDD-tactical-patterns.md) Play | `Surname`, not `string`: close the gap between code and conversation |
+| **Domain-based:** language | [Value objects](../chapter2/axiom-19-value-objects.md) and the [DDD tactical patterns](../chapter3/01-DDD-tactical-patterns.md) Play | `Surname`, not `string`: close the gap between code and conversation |
 | **Domain-based:** structure | The [Vertical slices](../chapter3/02-vertical-slices.md) Play | Folders mirror the domain, not technical layers. Also where [OCP moved to](#ocp-did-not-die-it-moved-up-the-stack) |
 | **Domain-based:** boundaries | Above this book | Module = deployment unit is architecture |
 
 Two properties need more than a table cell:
 
-- **Minimal dependencies.** At the level of a single function, it is *similar to*, but not the same as, two axioms: [purity](../chapter2/axiom-05-pure-functions.md) (the function depends only on its arguments) and [Impureim](../chapter2/axiom-12-impureim.md) (dependencies are handed in from the shell, never fetched).
+- **Minimal dependencies.** At the level of a single function, it is *similar to*, but not the same as, two axioms: [purity](../chapter2/axiom-06-pure-functions.md) (the function depends only on its arguments) and [Impureim](../chapter2/axiom-13-impureim.md) (dependencies are handed in from the shell, never fetched).
 - **Idiomatic.** My axioms sometimes go *against* the local idiom: `Result<int, string>` instead of the idiomatic `bool TryParse(string, out int)`.
   - I trade idiom for honesty (simplicity first: honest before familiar).
   - I pay the idiom back in the mechanics: records, `switch` expressions, pattern matching, LINQ.
@@ -391,12 +391,13 @@ This book is about closing those gaps through deliberate choices about what the 
 
 Every axiom in [Chapter 2](../chapter2/README.md) is chosen with one question: *does it move part of the specification into the compiler?*
 
-- A missing value becomes a type, not a `null` ([Axiom 13](../chapter2/axiom-13-maybe.md)).
-- A failure becomes part of the signature ([Axiom 6](../chapter2/axiom-06-honest-total-signatures.md), [Axiom 16](../chapter2/axiom-16-result.md)).
-- A malformed value can't be built ([Axiom 18](../chapter2/axiom-18-value-objects.md)), nor an illegal combination of fields ([Axiom 22](../chapter2/axiom-22-illegal-states.md)).
-- A forgotten case is flagged by the compiler ([Axiom 11](../chapter2/axiom-11-pattern-matching.md), [Axiom 21](../chapter2/axiom-21-discriminated-unions.md)).
-- A call in the wrong order doesn't compile ([Axiom 27](../chapter2/axiom-27-typestate.md)).
-- [Axiom 8](../chapter2/axiom-08-connascence.md) names the line: *enforced by the compiler* versus *carried by convention*.
+- What a function needs and does is in its signature, not in a global or a locator ([Axiom 1](../chapter2/axiom-01-explicit-over-implicit.md)).
+- A missing value becomes a type, not a `null` ([Axiom 14](../chapter2/axiom-14-maybe.md)).
+- A failure becomes part of the signature ([Axiom 7](../chapter2/axiom-07-honest-total-signatures.md), [Axiom 17](../chapter2/axiom-17-result.md)).
+- A malformed value can't be built ([Axiom 19](../chapter2/axiom-19-value-objects.md)), nor an illegal combination of fields ([Axiom 23](../chapter2/axiom-23-illegal-states.md)).
+- A forgotten case is flagged by the compiler ([Axiom 12](../chapter2/axiom-12-pattern-matching.md), [Axiom 22](../chapter2/axiom-22-discriminated-unions.md)).
+- A call in the wrong order doesn't compile ([Axiom 28](../chapter2/axiom-28-typestate.md)).
+- [Axiom 9](../chapter2/axiom-09-connascence.md) names the line: *enforced by the compiler* versus *carried by convention*.
 
 Each one moves a mistake, as Kumar says, "from the expensive category to the cheap one".
 

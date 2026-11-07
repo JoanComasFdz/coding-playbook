@@ -1,11 +1,11 @@
-# Axiom 4 — Impure functions
+# Axiom 5 — Impure functions
 
 **A function is impure when its execution performs, or depends on, any side effect.**
 
 - One hidden read or write is enough. The label is binary: there is no "a bit impure".
 - When the side effect is a *read* of outside state, the function is also *non-deterministic*: same inputs in, different outputs out.
 
-[Axiom 3](axiom-03-side-effects.md) named the side effects; this axiom names the functions that contain them. The split matters because side effects are how an application:
+[Axiom 4](axiom-04-side-effects.md) named the side effects; this axiom names the functions that contain them. The split matters because side effects are how an application:
 
 - **gathers context** from the world: a database row, a clock tick, a configuration value, an incoming message;
 - **delivers the outcomes it decides on**: a saved record, a published event, a log line.
@@ -16,9 +16,9 @@ They are the program's plumbing. Everything else is business logic: the rules th
 
 ## Definitions
 
-In one sentence: **a function is impure if any side effect from [Axiom 3](axiom-03-side-effects.md) is reachable from its body.** "Reachable" means anywhere:
+In one sentence: **a function is impure if any side effect from [Axiom 4](axiom-04-side-effects.md) is reachable from its body.** "Reachable" means anywhere:
 
-- **directly in the body:** a line matches a category from [Axiom 3](axiom-03-side-effects.md#the-categories), such as a clock read, a logger call, a `throw`, a parameter change, a database call or a singleton lookup;
+- **directly in the body:** a line matches a category from [Axiom 4](axiom-04-side-effects.md#the-categories), such as a clock read, a logger call, a `throw`, a parameter change, a database call or a singleton lookup;
 - **in a function it calls, however deep:** impurity spreads upward. A function that does arithmetic plus a single `logger.info` is impure, and so is its caller, and so is the caller's caller;
 - **in a constructor it runs;**
 - **in a field or reference it captures:** capturing a `DbContext`, an `HttpClient` or a `Random` taints the function as much as creating one inline;
@@ -100,7 +100,7 @@ public boolean isValid(Token token) {
 </tr>
 </table>
 
-One line, one comparison, nothing that announces *I touch the world*. The function is impure all the same: `DateTime.UtcNow` / `Instant.now()` reads the system clock ([Axiom 3](axiom-03-side-effects.md#time-randomness-and-environment)'s *Reading the clock*), so two calls with the same `token` will eventually disagree. Spotting this case is the reason the category needs a name. The loud function is easy to recognize; the quiet one is what the skill is for.
+One line, one comparison, nothing that announces *I touch the world*. The function is impure all the same: `DateTime.UtcNow` / `Instant.now()` reads the system clock ([Axiom 4](axiom-04-side-effects.md#time-randomness-and-environment)'s *Reading the clock*), so two calls with the same `token` will eventually disagree. Spotting this case is the reason the category needs a name. The loud function is easy to recognize; the quiet one is what the skill is for.
 
 ---
 
@@ -145,7 +145,7 @@ Java's checked exceptions put one effect (throwing) in the signature and miss th
 
 There is no case where you shouldn't label a function. But two cases make the label look awkward:
 
-- **The memoized function.** A function whose body is deterministic arithmetic, with its result [memoized](https://en.wikipedia.org/wiki/Memoization) behind the scenes, looks effect-free from outside: same input, same output. But the cache is mutable shared state. As in [Axiom 3](axiom-03-side-effects.md): the cache is impure, and the memoized function is a value-returning front for it. Useful in production; just don't pretend the cache isn't there.
+- **The memoized function.** A function whose body is deterministic arithmetic, with its result [memoized](https://en.wikipedia.org/wiki/Memoization) behind the scenes, looks effect-free from outside: same input, same output. But the cache is mutable shared state. As in [Axiom 4](axiom-04-side-effects.md): the cache is impure, and the memoized function is a value-returning front for it. Useful in production; just don't pretend the cache isn't there.
 - **The "one tiny effect" function.** A function that computes deterministically but logs once for diagnostics is impure. There is no "mostly safe" category. The line is binary because the consequences are binary: you can either cache, parallelize and replay it, or you can't.
 
 ---
@@ -154,8 +154,8 @@ There is no case where you shouldn't label a function. But two cases make the la
 
 [1] **Eric Normand**, *Grokking Simplicity*, Manning Publications, 2021. Chapters 2 and 3 introduce the categories *action*, *calculation* and *data*. An action is a function whose outcome depends on when or how often it is called (this axiom's *impure function*); a calculation is a function whose outcome depends only on its inputs. The same line, drawn with different words. <https://www.manning.com/books/grokking-simplicity>
 
-[2] **John Hughes**, *Why Functional Programming Matters*, in *Research Topics in Functional Programming*, Addison-Wesley, 1990. Already cited in [Axiom 3](axiom-03-side-effects.md) as reference [3]. Listed again here because Hughes' argument relies on functions having no hidden inputs or outputs, that is, on being able to separate the kind of function this axiom names from its opposite.
+[2] **John Hughes**, *Why Functional Programming Matters*, in *Research Topics in Functional Programming*, Addison-Wesley, 1990. Already cited in [Axiom 4](axiom-04-side-effects.md) as reference [3]. Listed again here because Hughes' argument relies on functions having no hidden inputs or outputs, that is, on being able to separate the kind of function this axiom names from its opposite.
 
 ---
 
-← Previous: [Axiom 3 — Side effects](axiom-03-side-effects.md) · Next: [Axiom 5 — Pure functions](axiom-05-pure-functions.md) →
+← Previous: [Axiom 4 — Side effects](axiom-04-side-effects.md) · Next: [Axiom 6 — Pure functions](axiom-06-pure-functions.md) →

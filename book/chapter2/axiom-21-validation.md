@@ -1,11 +1,11 @@
-# Axiom 20 — Validation
+# Axiom 21 — Validation
 
 **When one value is built from several independent inputs that can each fail, check them all and return *every* failure at once: a `Result<T, IReadOnlyList<ValidationError>>`.**
 
 - Every input is checked. The value is built only if all of them pass; otherwise the failures are collected into one list.
 - The caller sees the whole list in one go, instead of finding the errors one fix-and-resubmit at a time.
 
-[Axiom 19](axiom-19-railway.md) stopped at the first failure. That is right when each step needs the previous one's result. When the inputs are independent (every field of a form, every row of a CSV file), stopping early hides errors the caller could have fixed in the same attempt. This axiom is the other propagation rule: collect instead of stop.
+[Axiom 20](axiom-20-railway.md) stopped at the first failure. That is right when each step needs the previous one's result. When the inputs are independent (every field of a form, every row of a CSV file), stopping early hides errors the caller could have fixed in the same attempt. This axiom is the other propagation rule: collect instead of stop.
 
 ---
 
@@ -27,7 +27,7 @@ The difference from the railway is only the propagation rule:
 
 ## Example
 
-A `CustomerProfile` built from two raw strings. The value objects are the ones from [Axiom 18](axiom-18-value-objects.md), except that `Parse` now returns a `ValidationError` instead of a `string`:
+A `CustomerProfile` built from two raw strings. The value objects are the ones from [Axiom 19](axiom-19-value-objects.md), except that `Parse` now returns a `ValidationError` instead of a `string`:
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -94,7 +94,7 @@ public final class Username {
                 "username", "username is over 30 characters"));
         return new Success<>(new Username(raw));
     }
-    // equals, hashCode and toString as in Axiom 18
+    // equals, hashCode and toString as in Axiom 19
 }
 
 public final class EmailAddress {
@@ -111,7 +111,7 @@ public final class EmailAddress {
                 "email", "email has no '@'"));
         return new Success<>(new EmailAddress(raw));
     }
-    // equals, hashCode and toString as in Axiom 18
+    // equals, hashCode and toString as in Axiom 19
 }
 
 public record CustomerProfile(Username username, EmailAddress email) {}
@@ -121,7 +121,7 @@ public record CustomerProfile(Username username, EmailAddress email) {}
 </tr>
 </table>
 
-First, the shape we *don't* want: the railway from [Axiom 19](axiom-19-railway.md).
+First, the shape we *don't* want: the railway from [Axiom 20](axiom-20-railway.md).
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -299,8 +299,8 @@ Two failures, two entries, one round trip. A record with five fields uses the fi
 
 When a value is built from several independent inputs, four shapes come up:
 
-1. **Throw on the first invalid input.** One error per response, so N invalid fields take N round trips. The failure is also outside the return type, the problem [Axiom 16](axiom-16-result.md#problem--forces) already ruled out.
-2. **A separate accumulator.** A `Validate(profile)` method appends messages to a list. It collects everything, but nothing forces the caller to read the list, and `new CustomerProfile(...)` still accepts invalid input: the separate validation step [Axiom 18](axiom-18-value-objects.md#definitions) rejected.
+1. **Throw on the first invalid input.** One error per response, so N invalid fields take N round trips. The failure is also outside the return type, the problem [Axiom 17](axiom-17-result.md#problem--forces) already ruled out.
+2. **A separate accumulator.** A `Validate(profile)` method appends messages to a list. It collects everything, but nothing forces the caller to read the list, and `new CustomerProfile(...)` still accepts invalid input: the separate validation step [Axiom 19](axiom-19-value-objects.md#definitions) rejected.
 3. **The railway.** Honest, but it stops at the first failure: right for dependent steps, wrong for independent ones.
 4. **An accumulating combinator.** Every input is checked, every failure is a value in the return type, and the caller can't reach the built value without handling the list.
 
@@ -323,16 +323,16 @@ Two invalid fields produce two entries in one response. The user's mental model 
 
 ## Trade-offs
 
-- **`Field` is a plain string.** The literal `"username"` written in two places breaks silently in a refactor. Through [Axiom 8](axiom-08-connascence.md)'s lens it is a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com): the factory that writes it and every reader that matches on it must agree on what it means. An `enum` turns it into a Connascence of Type, at the cost of one more type per codebase. Plain strings are the default here; the alternatives are an ADR decision.
+- **`Field` is a plain string.** The literal `"username"` written in two places breaks silently in a refactor. Through [Axiom 9](axiom-09-connascence.md)'s lens it is a [Connascence of Meaning](axiom-09-connascence.md#connascence-of-meaning-com): the factory that writes it and every reader that matches on it must agree on what it means. An `enum` turns it into a Connascence of Type, at the cost of one more type per codebase. Plain strings are the default here; the alternatives are an ADR decision.
 - **No variadic generics.** C# and Java can't express "any number of differently typed `Result`s", so `Combine` needs one overload per arity, typically 2 to 8. Java also needs its own `Function3` to `Function8`. Beyond eight independent fields, splitting the record into smaller parts is usually better anyway. Libraries ship this ready-made: Vavr's `Validation.combine(...).ap(...)` in Java [3], and helpers such as `Result.Combine` in CSharpFunctionalExtensions [4].
-- **Each value object owns its field name.** `Username.Parse` always reports `"username"`. That keeps the composition site clean, but when the same type fills two fields (a billing and a shipping `EmailAddress`), you need either a `Parse(raw, field)` overload or two distinct types. The other direction, returning a `string` as in [Axiom 18](axiom-18-value-objects.md) and adding the field with `MapError` at each composition site, keeps the type reusable but repeats a line at every call.
+- **Each value object owns its field name.** `Username.Parse` always reports `"username"`. That keeps the composition site clean, but when the same type fills two fields (a billing and a shipping `EmailAddress`), you need either a `Parse(raw, field)` overload or two distinct types. The other direction, returning a `string` as in [Axiom 19](axiom-19-value-objects.md) and adding the field with `MapError` at each composition site, keeps the type reusable but repeats a line at every call.
 - **The boundary changes shape.** An HTTP layer that turned one error string into a 400 now turns a list into a 400 with an array. Written once per boundary, it covers every endpoint, and front ends usually expect that shape anyway.
 
 ---
 
 ## When NOT to
 
-- **One check.** A single `Result` from [Axiom 16](axiom-16-result.md) has nothing to collect. Wrap it in a one-item list only if the response format demands it.
+- **One check.** A single `Result` from [Axiom 17](axiom-17-result.md) has nothing to collect. Wrap it in a one-item list only if the response format demands it.
 - **Dependent steps.** When step 2 can't run without step 1's result, use the railway; `Combine` would need placeholders for steps that never ran. There is nothing useful to say about a token's expiry when the token didn't even parse.
 - **Internal construction.** A private factory whose caller has already checked the input doesn't need field-located errors; nobody will render a form from them. A `Result<T, string>` is enough. Field-located lists are for the boundary, where the list *is* the answer.
 - **One-off scripts.** If the operator's loop is "fix and rerun", stopping at the first bad row with a clear message is simpler.
@@ -341,7 +341,7 @@ Two invalid fields produce two entries in one response. The user's mental model 
 
 ## References
 
-[1] **Scott Wlaschin**, *Domain Modeling Made Functional*, Pragmatic Bookshelf, 2018. Also cited in [Axiom 16](axiom-16-result.md), [Axiom 17](axiom-17-result-combinators.md) and [Axiom 19](axiom-19-railway.md). Composes validation the same way in F#: each smart constructor returns a structured error, the call site combines them, and a final function builds the record.
+[1] **Scott Wlaschin**, *Domain Modeling Made Functional*, Pragmatic Bookshelf, 2018. Also cited in [Axiom 17](axiom-17-result.md), [Axiom 18](axiom-18-result-combinators.md) and [Axiom 20](axiom-20-railway.md). Composes validation the same way in F#: each smart constructor returns a structured error, the call site combines them, and a final function builds the record.
 <https://pragprog.com/titles/swdddf/domain-modeling-made-functional/>
 
 [2] **Philip Wadler**, *How to Replace Failure by a List of Successes*, FPCA 1985, LNCS 201. An early paper on returning a *list* of outcomes instead of a single one. Its setting is a parser that returns every possible parse, but the technique (the result carries a list, the combinator merges) is the one this axiom applies to errors.
@@ -350,7 +350,7 @@ Two invalid fields produce two entries in one response. The user's mental model 
 [3] **Vavr**, `io.vavr.control.Validation`. Java's off-the-shelf version of this axiom: `Validation.combine(validateName(name), validateAge(age)).ap(Person::new)`, which, unlike chaining, "will continue processing the combining functions, accumulating all errors".
 <https://docs.vavr.io/#_validation>
 
-[4] **Vladimir Khorikov**, *CSharpFunctionalExtensions*. Also cited in [Axiom 16](axiom-16-result.md), [Axiom 17](axiom-17-result-combinators.md) and [Axiom 18](axiom-18-value-objects.md). Ships `Result.Combine`, which merges several results into one.
+[4] **Vladimir Khorikov**, *CSharpFunctionalExtensions*. Also cited in [Axiom 17](axiom-17-result.md), [Axiom 18](axiom-18-result-combinators.md) and [Axiom 19](axiom-19-value-objects.md). Ships `Result.Combine`, which merges several results into one.
 <https://github.com/vkhorikov/CSharpFunctionalExtensions>
 
 [5] **Spring Framework**, *Validation, Data Binding, and Type Conversion* (`BindingResult`), and **ASP.NET Core**, *Model validation* (`ModelStateDictionary`). Both web frameworks collect every field error before calling the controller, because one error per round trip is unacceptable for forms. This axiom moves the same idea into the domain, so one error shape flows from the value object to the response.
@@ -358,4 +358,4 @@ Two invalid fields produce two entries in one response. The user's mental model 
 
 ---
 
-← Previous: [Axiom 19 — Railway](axiom-19-railway.md) · Next: [Axiom 21 — Discriminated unions](axiom-21-discriminated-unions.md) →
+← Previous: [Axiom 20 — Railway](axiom-20-railway.md) · Next: [Axiom 22 — Discriminated unions](axiom-22-discriminated-unions.md) →

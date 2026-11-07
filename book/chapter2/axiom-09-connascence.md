@@ -1,4 +1,4 @@
-# Axiom 8 — Connascence
+# Axiom 9 — Connascence
 
 **Two units are connascent when a change to one forces a matching change to the other to keep the system correct. Connascence measures that dependency on three axes (strength, degree and locality) and orders its forms from weakest to strongest. The work is to weaken strong connascence, shrink its degree, and pull connascent units closer together.**
 
@@ -6,9 +6,9 @@
 - **Closer beats farther.** Two units that must change together should be near enough that whoever changes the first finds the second.
 - **Fewer beats more.** A convention shared by three units is worse than the same convention shared by two.
 
-[Axiom 7](axiom-07-cohesion.md) named the metric *inside* a unit: a cohesive function has one reason to change. This axiom names the matching metric *between* units: when a change to one forces a change in another, they are connascent. The question is no longer "does this hold together?" but "what is bound to what, and how strongly?".
+[Axiom 8](axiom-08-cohesion.md) named the metric *inside* a unit: a cohesive function has one reason to change. This axiom names the matching metric *between* units: when a change to one forces a change in another, they are connascent. The question is no longer "does this hold together?" but "what is bound to what, and how strongly?".
 
-Both axioms ask the same question, *what changes together?*, one from the inside and one from the outside. Cohesion asks what belongs in one unit; connascence asks what survives being split across two. [Axiom 7](axiom-07-cohesion.md) talked about a "shared blast radius" without naming its parts. This axiom supplies the taxonomy: every blast radius is a *kind* of connascence, and naming the kind tells you how to shrink it.
+Both axioms ask the same question, *what changes together?*, one from the inside and one from the outside. Cohesion asks what belongs in one unit; connascence asks what survives being split across two. [Axiom 8](axiom-08-cohesion.md) talked about a "shared blast radius" without naming its parts. This axiom supplies the taxonomy: every blast radius is a *kind* of connascence, and naming the kind tells you how to shrink it.
 
 This is the second evaluative axiom, the chapter's second lens. It builds nothing: no type or construct comes out of it. What it gives you is a vocabulary precise enough to argue about a dependency. And that vocabulary does most of its work *later*: much of the toolkit still to come is, through this lens, one move: *turn a strong connascence into a weak one*.
 
@@ -48,7 +48,9 @@ The line this book cares about most is not static versus dynamic, but **enforced
 - **CoN and CoT** are the only forms the compiler enforces. Violate them and the build breaks.
 - **From CoM onward**, the type system is blind (for CoP, only when the swapped values share a type). The agreement is kept by people, comments and memory, and a violation waits for a failing test or a customer.
 
-That is the same line [Axiom 6](axiom-06-honest-total-signatures.md) draws between honest and dishonest signatures, now running *between* units instead of inside one. There are three ways to improve a connascence:
+This is the line [Axiom 1](axiom-01-explicit-over-implicit.md) draws, measured: an explicit dependency is one the compiler can see, so making a dependency explicit is often what moves it from convention to the compiler.
+
+That is the same line [Axiom 7](axiom-07-honest-total-signatures.md) draws between honest and dishonest signatures, now running *between* units instead of inside one. There are three ways to improve a connascence:
 
 - **Weaken it:** move it across that line. Lifting a magic value into a type (CoM → CoT) is the classic step.
 - **Reduce its degree:** fewer units sharing the convention.
@@ -359,7 +361,7 @@ var oops = new Checkout(new Cart());
 
 `summary` and `checkout` are bound by *identity*: they must hold the same `Cart`, not two carts that merely compare equal. The compiler sees two `Cart` references and can't tell whether they point to one object or two. Hand `checkout` a separate-but-equal cart and it compiles, and the two drift apart at runtime with nothing to flag it. That invisibility is why Identity is the strongest form.
 
-It is also the one this book is built to *remove* rather than weaken. Immutable values ([Axiom 2](axiom-02-immutability.md)) have no shared mutable cell to point at, so passing a value leaves no identity for a second holder to depend on. Where real shared identity can't be avoided (a connection, a cache, a session), it lives at the edges of the program, held in one place and passed into the pure code as a value. The sharing then has one visible home instead of being spread across the call tree. Later axioms come back to that home.
+It is also the one this book is built to *remove* rather than weaken. Immutable values ([Axiom 3](axiom-03-immutability.md)) have no shared mutable cell to point at, so passing a value leaves no identity for a second holder to depend on. Where real shared identity can't be avoided (a connection, a cache, a session), it lives at the edges of the program, held in one place and passed into the pure code as a value. The sharing then has one visible home instead of being spread across the call tree. Later axioms come back to that home.
 
 ---
 
@@ -382,7 +384,7 @@ A second force is **over-correction**. Not every connascence is a problem. Most 
 ## Why
 
 **1. It turns "this feels coupled" into something you can act on.**
-"These two classes are too coupled" is a feeling. "These two classes share a Connascence of Meaning on the status codes, with degree six, spread across three packages" is a diagnosis with a treatment. The taxonomy turns a vague unease into a named kind with a known way to weaken it, the same way [Axiom 7](axiom-07-cohesion.md) turned "this function does too much" into "this function has two reasons to change". A lens you can name is a lens you can teach, review against and argue with. Weirich's talks made exactly this case: improve a system by weakening its connascence [3].
+"These two classes are too coupled" is a feeling. "These two classes share a Connascence of Meaning on the status codes, with degree six, spread across three packages" is a diagnosis with a treatment. The taxonomy turns a vague unease into a named kind with a known way to weaken it, the same way [Axiom 8](axiom-08-cohesion.md) turned "this function does too much" into "this function has two reasons to change". A lens you can name is a lens you can teach, review against and argue with. Weirich's talks made exactly this case: improve a system by weakening its connascence [3].
 
 **2. Weakening connascence moves failures from runtime to compile time.**
 Every move from strong to weak (a magic value lifted into a type, a wrong-order call made impossible to write) moves a failure from runtime to compile time: the compiler starts enforcing an agreement that people were enforcing from memory.
@@ -397,7 +399,7 @@ Read ahead, and this chapter keeps making one move under different names:
 Each tool is introduced for its own reasons and stands on its own. But through this lens they are one idea, *weaken the connascence*, applied to values, to the shape of data and to the order of calls.
 
 **4. Locality connects it to cohesion instead of competing with it.**
-The locality axis is the hinge between the two lenses: connascence at reading distance is just [cohesion](axiom-07-cohesion.md). Strong connascence inside one cohesive unit is cheap, because the unit is read as a whole: the agreement and both of its sides are in view at once. Strong connascence *across* units is expensive, because nothing shows both sides together. So "high cohesion" and "weak, local connascence" are not two goals to trade off. They are the same goal, *keep what changes together where it can be read together*, stated from the inside and from the outside.
+The locality axis is the hinge between the two lenses: connascence at reading distance is just [cohesion](axiom-08-cohesion.md). Strong connascence inside one cohesive unit is cheap, because the unit is read as a whole: the agreement and both of its sides are in view at once. Strong connascence *across* units is expensive, because nothing shows both sides together. So "high cohesion" and "weak, local connascence" are not two goals to trade off. They are the same goal, *keep what changes together where it can be read together*, stated from the inside and from the outside.
 
 **5. The lens scales past the module, but this axiom stops at the code.**
 Point connascence at services instead of functions and it still holds: two systems that must agree on a message format are connascent, and the same three moves apply. That is a real and useful reading, but it is *system topology*, which is out of scope for this book. This axiom covers only connascence in code: between signatures, records, call sites, the meanings of values, and the order of calls *within a module*. The cross-service distances mentioned under *locality* mark the far end of the scale; they are not an invitation to design systems with this lens.
@@ -415,7 +417,7 @@ Point connascence at services instead of functions and it still holds: two syste
 
 - **When the connascence is already weak and local.** Two positional arguments of different types, passed one line apart, form a Connascence of Position you should leave alone. The types make a swap a compile error, and the locality makes it visible anyway. Wrapping them in a new type only solves a problem you don't have. Spend the effort where strength *and* distance are both high.
 - **When the strong form can't be removed.** Some Connascence of Algorithm can't be weakened: both ends of a wire protocol really must agree on the framing, and no type in your code reaches across the network to enforce it on the other side. The move there is not to eliminate it but to localize and isolate it: put the shared algorithm in one place both sides depend on, so the agreement has one home instead of being reimplemented at each end. Calling it CoA tells you it can't be deleted, only contained, which is itself a useful answer.
-- **When chasing connascence would scatter one thought.** This mirrors [Axiom 7](axiom-07-cohesion.md)'s warning. Splitting a unit to break an internal connascence can scatter one thought across a swarm of indirection, trading a cheap local dependency for an expensive spread-out one. Internal connascence in a cohesive unit is paying its rent; don't evict it into three files to satisfy a metric.
+- **When chasing connascence would scatter one thought.** This mirrors [Axiom 8](axiom-08-cohesion.md)'s warning. Splitting a unit to break an internal connascence can scatter one thought across a swarm of indirection, trading a cheap local dependency for an expensive spread-out one. Internal connascence in a cohesive unit is paying its rent; don't evict it into three files to satisfy a metric.
 
 ---
 
@@ -433,4 +435,4 @@ Point connascence at services instead of functions and it still holds: two syste
 
 ---
 
-← Previous: [Axiom 7 — Cohesion](axiom-07-cohesion.md) · Next: [Axiom 9 — First-class functions](axiom-09-first-class-functions.md) →
+← Previous: [Axiom 8 — Cohesion](axiom-08-cohesion.md) · Next: [Axiom 10 — First-class functions](axiom-10-first-class-functions.md) →

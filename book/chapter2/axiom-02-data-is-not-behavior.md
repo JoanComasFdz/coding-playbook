@@ -1,4 +1,4 @@
-# Axiom 1 — Data is not Behavior
+# Axiom 2 — Data is not Behavior
 
 **Data is inert fact. Behavior is transformation. Keep them apart.**
 
@@ -195,7 +195,7 @@ Tell, Don't Ask is right *under its premise*: that objects hold mutable state. I
 
 The maxim closes both by welding the decision to the state.
 
-This book removes the premise instead. Once the data is an *immutable value*, there is nothing to hide: exposing a value can't be abused, because there is no setter to pair with the getter. And the rule still lives once, inside the function, not copied across callers.
+This book removes the premise instead. Once the data is an *immutable value*, there is nothing to hide: exposing a value can't be abused, because there is no setter to pair with the getter. Of the three jobs of encapsulation in [Axiom 1](axiom-01-explicit-over-implicit.md#encapsulation-read-precisely), only hiding state behind behavior goes; protecting invariants and hiding secrets stay. And the rule still lives once, inside the function, not copied across callers.
 
 Same benefits (one home for the rule, no reaching into objects), different mechanism (freeze the data instead of hiding it behind behavior). Keeping things together is not lost, only moved:
 
@@ -236,4 +236,4 @@ Same benefits (one home for the rule, no reaching into objects), different mecha
 
 ---
 
-← Previous: [Axiom 0 — Ubiquitous Language](axiom-00-ubiquitous-language.md) · Next: [Axiom 2 — Immutability](axiom-02-immutability.md) →
+← Previous: [Axiom 1 — Explicit over implicit](axiom-01-explicit-over-implicit.md) · Next: [Axiom 3 — Immutability](axiom-03-immutability.md) →

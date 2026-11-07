@@ -1,4 +1,4 @@
-# Axiom 12 — Impureim
+# Axiom 13 — Impureim
 
 **Effects at the edges, decisions in the middle: read the world, decide with one pure function, then write the world.**
 
@@ -6,11 +6,11 @@
 - The **core** is the pure part. It *decides*, and touches nothing outside its parameters and its return value.
 - The picture is a sandwich: impure, pure, impure. One sandwich per request, message or job.
 
-[Axiom 3](axiom-03-side-effects.md) named the effects, [Axiom 4](axiom-04-impure-functions.md) the functions that carry them, [Axiom 5](axiom-05-pure-functions.md) their opposite, and [Axiom 6](axiom-06-honest-total-signatures.md) the signature the core must have. This axiom puts those pieces into one shape. It is a concept, not a construct: it shows the target the rest of this chapter builds toward, so it stays short.
+[Axiom 4](axiom-04-side-effects.md) named the effects, [Axiom 5](axiom-05-impure-functions.md) the functions that carry them, [Axiom 6](axiom-06-pure-functions.md) their opposite, and [Axiom 7](axiom-07-honest-total-signatures.md) the signature the core must have. This axiom puts those pieces into one shape. It is a concept, not a construct: it shows the target the rest of this chapter builds toward, so it stays short.
 
 The name is Mark Seemann's: *impureim* is his contraction of impure/pure/impure [1]. Gary Bernhardt calls the same split *functional core, imperative shell* [2], and Eric Normand draws it as actions around calculations [3].
 
-Through [Axiom 8](axiom-08-connascence.md)'s lens, the sandwich improves the *locality* of a [Connascence of Execution](axiom-08-connascence.md#connascence-of-execution-coe). The gather → decide → act order, which would otherwise be scattered through a call tree, gets one visible home. A wrong order can still be written, but a reader sees the whole order in one place.
+Through [Axiom 9](axiom-09-connascence.md)'s lens, the sandwich improves the *locality* of a [Connascence of Execution](axiom-09-connascence.md#connascence-of-execution-coe). The gather → decide → act order, which would otherwise be scattered through a call tree, gets one visible home. A wrong order can still be written, but a reader sees the whole order in one place.
 
 ---
 
@@ -21,7 +21,7 @@ Through [Axiom 8](axiom-08-connascence.md)'s lens, the sandwich improves the *lo
 A unit of work that fits the shape runs three steps, in this order:
 
 - **Gather (impure).** Read what the world holds right now: the database row, the queued message, the HTTP request body, the current time, the configuration. Each read returns a value. Nothing is decided yet.
-- **Decide (pure).** Turn those values into a result: validate, apply the rules, work out what should change. No I/O, no clock, no logging, and no `throw` on bad input: every outcome is named in the return type ([Axiom 6](axiom-06-honest-total-signatures.md)).
+- **Decide (pure).** Turn those values into a result: validate, apply the rules, work out what should change. No I/O, no clock, no logging, and no `throw` on bad input: every outcome is named in the return type ([Axiom 7](axiom-07-honest-total-signatures.md)).
 - **Act (impure).** Carry out the decision: save the row, publish the message, write the response, log. Nothing is left to decide.
 
 Either end of the shell can be empty. A query reads, decides and returns, with nothing to write. A scheduled cleanup may have nothing to read. The rule is "effects at the edges, decisions in the middle"; the full sandwich is the common case, not the only one.
@@ -126,7 +126,7 @@ Impureim removes none of the effects. The program still reads the cart, prices i
 With no hidden inputs and no hidden outputs, the signature says everything the function does. Every richer tool this book builds from here on (types that name every outcome, values that can't be invalid) depends on that, so all of them go into the core. None of them can be applied to a function that mixes effects with logic.
 
 **2. The core is tested with values, and the shell has nothing left to decide.**
-The core gets the plain tests of [Axiom 5](axiom-05-pure-functions.md#why) (point 3): inputs in, output checked. The shell only moves values between the world and the core, so it is covered by tests of the whole service against real dependencies, not by stubbing each call. Case coverage and effect simulation end up in different tests, and each can be done well.
+The core gets the plain tests of [Axiom 6](axiom-06-pure-functions.md#why) (point 3): inputs in, output checked. The shell only moves values between the world and the core, so it is covered by tests of the whole service against real dependencies, not by stubbing each call. Case coverage and effect simulation end up in different tests, and each can be done well.
 
 **3. Each question has one place to look.**
 "Where does this time come from?" The gather. "What happens if this save fails?" The act. "Does this decision handle an empty cart?" The core. In an interleaved body, every question means scanning the whole body.
@@ -160,11 +160,11 @@ Two cases where the shape would be ceremony (see the [decisions-vs-ceremony test
 [2] **Gary Bernhardt**, *Functional Core, Imperative Shell*, Destroy All Software screencast, 12 July 2012. The same split under the name most people know: "This functional core is surrounded by a shell of imperative code."
 <https://www.destroyallsoftware.com/screencasts/catalog/functional-core-imperative-shell>
 
-[3] **Eric Normand**, *Grokking Simplicity*, Manning Publications, 2021. Also cited in [Axiom 4](axiom-04-impure-functions.md) and [Axiom 5](axiom-05-pure-functions.md). Its recurring picture of actions at the edges and calculations in the middle, with data flowing between them, is the same shape.
+[3] **Eric Normand**, *Grokking Simplicity*, Manning Publications, 2021. Also cited in [Axiom 5](axiom-05-impure-functions.md) and [Axiom 6](axiom-06-pure-functions.md). Its recurring picture of actions at the edges and calculations in the middle, with data flowing between them, is the same shape.
 <https://www.manning.com/books/grokking-simplicity>
 
 [4] **Bertrand Meyer**, *Object-Oriented Software Construction* (2nd ed.), Prentice Hall, 1997. The source of **command–query separation**: a method either returns a value or changes observable state, never both.
 
 ---
 
-← Previous: [Axiom 11 — Pattern matching](axiom-11-pattern-matching.md) · Next: [Axiom 13 — Maybe](axiom-13-maybe.md) →
+← Previous: [Axiom 12 — Pattern matching](axiom-12-pattern-matching.md) · Next: [Axiom 14 — Maybe](axiom-14-maybe.md) →

@@ -1,13 +1,13 @@
-# Axiom 15 — Unit
+# Axiom 16 — Unit
 
 **When a function has nothing meaningful to return, return `Unit`: a type with exactly one value.**
 
 - "Nothing to say" is still a value. The function returns *the* `Unit` value, the way another function returns its `int`.
 - Unlike `void`, `Unit` is a real type, so it fits anywhere a type fits: a variable, a generic argument, a lambda's return type, one side of an `Either`.
 
-[Axiom 6](axiom-06-honest-total-signatures.md) put every outcome in the return type, and [Axiom 14](axiom-14-either.md) gave two-outcome results a shape. This axiom covers the smallest case: one outcome that carries no information. It still deserves a type, and `Unit` (the [unit type](https://en.wikipedia.org/wiki/Unit_type), which ML-family languages have always had [1]) is the smallest one there is.
+[Axiom 7](axiom-07-honest-total-signatures.md) put every outcome in the return type, and [Axiom 15](axiom-15-either.md) gave two-outcome results a shape. This axiom covers the smallest case: one outcome that carries no information. It still deserves a type, and `Unit` (the [unit type](https://en.wikipedia.org/wiki/Unit_type), which ML-family languages have always had [1]) is the smallest one there is.
 
-Through [Axiom 8](axiom-08-connascence.md)'s lens, `Unit` removes a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com). A dummy return value (a `bool` that is always `true`, a `0`, a `null`) needs every caller to know, by convention, that it means "done, ignore me". `Unit` has one value and carries no information, so there is nothing to agree on and nothing to misread.
+Through [Axiom 9](axiom-09-connascence.md)'s lens, `Unit` removes a [Connascence of Meaning](axiom-09-connascence.md#connascence-of-meaning-com). A dummy return value (a `bool` that is always `true`, a `0`, a `null`) needs every caller to know, by convention, that it means "done, ignore me". `Unit` has one value and carries no information, so there is nothing to agree on and nothing to misread.
 
 ---
 
@@ -74,15 +74,15 @@ Function<String, Unit> step = this::greet;   // ✅
 Mainstream code has three ways to say "this function has nothing to return", and each one breaks something:
 
 - **`void`.** It isn't a type, so it can't fill a generic slot. That is why the standard libraries come in pairs: `Action` and `Func`, `Task` and `Task<T>` in C#; `Consumer` and `Function`, `Runnable` and `Callable` in Java. Every piece of code that works on functions generically has to handle the `void` case separately, or not at all.
-- **A dummy return value.** A `bool` that is always `true`, an `int` that is always `0`. The signature claims there is an answer when there isn't, and the next caller can't tell whether the value means anything (see the [Axiom 8](axiom-08-connascence.md) note above).
-- **`null` as "done".** Java's own `Void` is "an uninstantiable placeholder class" [3], so a `Function<T, Void>` can only return `null`. That gives `null` yet another meaning on top of the ones [Axiom 13](axiom-13-maybe.md#problem--forces) already lists.
+- **A dummy return value.** A `bool` that is always `true`, an `int` that is always `0`. The signature claims there is an answer when there isn't, and the next caller can't tell whether the value means anything (see the [Axiom 9](axiom-09-connascence.md) note above).
+- **`null` as "done".** Java's own `Void` is "an uninstantiable placeholder class" [3], so a `Function<T, Void>` can only return `null`. That gives `null` yet another meaning on top of the ones [Axiom 14](axiom-14-maybe.md#problem--forces) already lists.
 
 ---
 
 ## Why
 
 **1. Every function has the same shape.**
-With `Unit`, every function takes inputs and returns a value. Code that works on functions ([Axiom 10](axiom-10-higher-order-functions.md)) needs no separate version for the no-result case, and a pipeline of `T -> U` steps works whether the last `U` carries information or is `Unit`.
+With `Unit`, every function takes inputs and returns a value. Code that works on functions ([Axiom 11](axiom-11-higher-order-functions.md)) needs no separate version for the no-result case, and a pipeline of `T -> U` steps works whether the last `U` carries information or is `Unit`.
 
 **2. It fills an empty side.**
 A two-outcome type needs a type on each side. An operation that can fail but has nothing to return when it succeeds is an `Either<string, Unit>`: an error message, or "done". Without `Unit` there is nothing to put on the success side, short of `void` (not allowed) or `null` (dishonest).
@@ -98,10 +98,10 @@ A two-outcome type needs a type on each side. An operation that can fail but has
 
 ## When NOT to
 
-- **When the function can fail.** A plain `Unit` return type says the function always succeeds. If it can fail, there are two outcomes, and both belong in the return type ([Axiom 6](axiom-06-honest-total-signatures.md)). Put `Unit` on the success side of a two-outcome type instead (see *Why*, point 2). Returning a plain `Unit` and throwing on failure is as dishonest as `void` and throwing.
+- **When the function can fail.** A plain `Unit` return type says the function always succeeds. If it can fail, there are two outcomes, and both belong in the return type ([Axiom 7](axiom-07-honest-total-signatures.md)). Put `Unit` on the success side of a two-outcome type instead (see *Why*, point 2). Returning a plain `Unit` and throwing on failure is as dishonest as `void` and throwing.
 - **At a framework's `void` boundary.** A `void OnButtonClicked()` handler that the framework calls isn't yours to change, and the framework would ignore the return value anyway. Use `void` there, and switch to `Unit` one layer in if the rest of the code wants it.
 - **For an async operation with no result.** In C#, `Task` already is "an async `Unit`". `Task<Unit>` is noise unless you are writing generic code that can't special-case `Task`. The same goes for `CompletableFuture<Void>` in Java.
-- **When the function does have an answer.** Don't reach for `Unit` to simplify a function that has something to report. Give it its honest return type ([Axiom 6](axiom-06-honest-total-signatures.md)).
+- **When the function does have an answer.** Don't reach for `Unit` to simplify a function that has something to report. Give it its honest return type ([Axiom 7](axiom-07-honest-total-signatures.md)).
 
 ---
 
@@ -118,4 +118,4 @@ A two-outcome type needs a type on each side. An operation that can fail but has
 
 ---
 
-← Previous: [Axiom 14 — Either](axiom-14-either.md) · Next: [Axiom 16 — Result](axiom-16-result.md) →
+← Previous: [Axiom 15 — Either](axiom-15-either.md) · Next: [Axiom 17 — Result](axiom-17-result.md) →

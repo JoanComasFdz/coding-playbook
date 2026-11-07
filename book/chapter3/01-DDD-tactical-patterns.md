@@ -10,15 +10,15 @@ Each pattern below is one of two things. Some are already a Chapter 2 axiom with
 
 ## Value Object
 
-This is exactly [Axiom 18](../chapter2/axiom-18-value-objects.md). `Money`, `EmailAddress`, and `Quantity` are value objects. There is nothing to add here.
+This is exactly [Axiom 19](../chapter2/axiom-19-value-objects.md). `Money`, `EmailAddress`, and `Quantity` are value objects. There is nothing to add here.
 
 ## Entity
 
 An entity is a thing with identity that changes over time. A `Customer` stays the same customer even after its email changes. You build it from three pieces you already have:
 
-- An immutable record for its data ([Axiom 2](../chapter2/axiom-02-immutability.md)).
-- A typed ID for its identity, with equality by key, not by contents ([Axiom 18, Identity and typed IDs](../chapter2/axiom-18-value-objects.md#identity-and-typed-ids)).
-- A pure transition function for its lifecycle ([Axiom 24](../chapter2/axiom-24-state-machines.md)).
+- An immutable record for its data ([Axiom 3](../chapter2/axiom-03-immutability.md)).
+- A typed ID for its identity, with equality by key, not by contents ([Axiom 19, Identity and typed IDs](../chapter2/axiom-19-value-objects.md#identity-and-typed-ids)).
+- A pure transition function for its lifecycle ([Axiom 25](../chapter2/axiom-25-state-machines.md)).
 
 The only new idea is how they fit together. An entity does not change itself. To "change" it, a pure function takes the old value and returns a new value with the same ID. The ID is fixed. Everything else can move. Two values with the same ID are the same entity, seen at two moments.
 
@@ -64,7 +64,7 @@ In the immutable world an aggregate is two things:
 1. **One immutable value:** a root record that holds its children. The `Order` record holds its `OrderLine` records.
 2. **A set of pure functions** that take the whole aggregate value and return a new one, or a failure. These functions are the only home for the group's rules.
 
-There are no methods on the data, so the aggregate does not guard itself the way an OOP object does. Every change goes through one of these functions, and the function is what checks the rules. If a change would break a rule, the function returns a failure instead of a new value. So any `Order` value that exists is already valid. This is [Axiom 22](../chapter2/axiom-22-illegal-states.md) and the smart constructor from [Axiom 18](../chapter2/axiom-18-value-objects.md), now at the scale of the whole group.
+There are no methods on the data, so the aggregate does not guard itself the way an OOP object does. Every change goes through one of these functions, and the function is what checks the rules. If a change would break a rule, the function returns a failure instead of a new value. So any `Order` value that exists is already valid. This is [Axiom 23](../chapter2/axiom-23-illegal-states.md) and the smart constructor from [Axiom 19](../chapter2/axiom-19-value-objects.md), now at the scale of the whole group.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -110,7 +110,7 @@ public static Result<Order, String> addLine(Order order, OrderLine line) {
 </tr>
 </table>
 
-For a richer lifecycle, the function returns events instead of the new value, and a second function folds those events back into the next state. That is the Decider and state machine from [Axiom 23](../chapter2/axiom-23-pure-functions-returning-actions.md) and [Axiom 24](../chapter2/axiom-24-state-machines.md).
+For a richer lifecycle, the function returns events instead of the new value, and a second function folds those events back into the next state. That is the Decider and state machine from [Axiom 24](../chapter2/axiom-24-pure-functions-returning-actions.md) and [Axiom 25](../chapter2/axiom-25-state-machines.md).
 
 The boundary rules complete the picture. They are the part Chapter 2 does not give you:
 
@@ -123,16 +123,16 @@ The boundary rules complete the picture. They are the part Chapter 2 does not gi
 
 A domain event is a fact that already happened, named in the past tense: `OrderPlaced`, `SubscriptionCancelled`. It is an immutable record, and a set of events is a discriminated union. A pure transition function returns the events it produced.
 
-This is the Event DU from [Axiom 24](../chapter2/axiom-24-state-machines.md). The only thing DDD adds is a naming habit: name events as past-tense facts, in the domain's own words ([Axiom 0](../chapter2/axiom-00-ubiquitous-language.md)).
+This is the Event DU from [Axiom 25](../chapter2/axiom-25-state-machines.md). The only thing DDD adds is a naming habit: name events as past-tense facts, in the domain's own words ([Axiom 0](../chapter2/axiom-00-ubiquitous-language.md)).
 
 ## Domain Service
 
 Some behaviour does not belong to any single entity. In OOP this becomes a "service" class, because behaviour has to live on an object and this behaviour has no object to live on.
 
-In our world that problem never appears: no behaviour lives on the data in the first place ([Axiom 1](../chapter2/axiom-01-data-is-not-behavior.md)). So the pattern splits in two, and the old advice ("reach for a service when an operation spans more than one entity") does not survive the move.
+In our world that problem never appears: no behaviour lives on the data in the first place ([Axiom 2](../chapter2/axiom-02-data-is-not-behavior.md)). So the pattern splits in two, and the old advice ("reach for a service when an operation spans more than one entity") does not survive the move.
 
-- **A pure decision over several values is just a function.** `Transfer(from, to, amount)` takes two accounts and returns the two new accounts, or a failure. It needs no label. It is an ordinary pure function ([Axiom 5](../chapter2/axiom-05-pure-functions.md)) that returns a value or an action ([Axiom 23](../chapter2/axiom-23-pure-functions-returning-actions.md)). Spanning entities adds nothing: a function can take as many inputs as it needs.
-- **Loading and saving those entities is orchestration, not domain logic.** Load the accounts, call the pure function, save the result. That is the Impureim shell ([Axiom 12](../chapter2/axiom-12-impureim.md)): gather, decide, act. The decision inside it is still the pure function above.
+- **A pure decision over several values is just a function.** `Transfer(from, to, amount)` takes two accounts and returns the two new accounts, or a failure. It needs no label. It is an ordinary pure function ([Axiom 6](../chapter2/axiom-06-pure-functions.md)) that returns a value or an action ([Axiom 24](../chapter2/axiom-24-pure-functions-returning-actions.md)). Spanning entities adds nothing: a function can take as many inputs as it needs.
+- **Loading and saving those entities is orchestration, not domain logic.** Load the accounts, call the pure function, save the result. That is the Impureim shell ([Axiom 13](../chapter2/axiom-13-impureim.md)): gather, decide, act. The decision inside it is still the pure function above.
 
 So you rarely write a thing called a "domain service." You write a pure function for the decision and let the shell do the I/O around it. There is no special construct to show. One caveat: if the entities are separate aggregates, saving them together is the consistency question from the Aggregate section. Use one transaction only if they truly must agree at the same instant; otherwise it becomes a saga or process manager, which stays out of scope.
 
@@ -142,7 +142,7 @@ So you rarely write a thing called a "domain service." You write a pure function
 
 A repository is the boundary where you load and save aggregates. The domain knows nothing about storage. This is called persistence ignorance, and it comes for free because the domain is pure data and pure functions.
 
-In the immutable world a repository is two functions at the edge: one loads an aggregate by ID, one saves it. Both touch storage, so both can fail, and that failure belongs in the return type as a value, not behind a bare `Task` that can only throw. So each returns a `Result` ([Axiom 16](../chapter2/axiom-16-result.md)). Load has a second outcome that is not a failure: the row may simply not exist. That is absence, not an error, so it is a `Maybe` ([Axiom 13](../chapter2/axiom-13-maybe.md)) inside the `Result`, which keeps the three cases separate: storage failed, no such order, here is the order. Save has nothing to return on success, so it returns `Unit` ([Axiom 15](../chapter2/axiom-15-unit.md)).
+In the immutable world a repository is two functions at the edge: one loads an aggregate by ID, one saves it. Both touch storage, so both can fail, and that failure belongs in the return type as a value, not behind a bare `Task` that can only throw. So each returns a `Result` ([Axiom 17](../chapter2/axiom-17-result.md)). Load has a second outcome that is not a failure: the row may simply not exist. That is absence, not an error, so it is a `Maybe` ([Axiom 14](../chapter2/axiom-14-maybe.md)) inside the `Result`, which keeps the three cases separate: storage failed, no such order, here is the order. Save has nothing to return on success, so it returns `Unit` ([Axiom 16](../chapter2/axiom-16-unit.md)).
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -166,7 +166,7 @@ public delegate Task<Result<Unit, RepoError>>   SaveOrder(Order order);
 </tr>
 </table>
 
-These functions live in the impure shell ([Axiom 12](../chapter2/axiom-12-impureim.md)). The pure core never calls them. It receives the loaded value and returns the new value, or actions for the shell to save.
+These functions live in the impure shell ([Axiom 13](../chapter2/axiom-13-impureim.md)). The pure core never calls them. It receives the loaded value and returns the new value, or actions for the shell to save.
 
 `RepoError` is a placeholder. Use a plain `string` when the caller only logs it, and a typed error when the caller must branch on the cause (a concurrency conflict, a transient timeout).
 
@@ -174,17 +174,17 @@ How load and save actually work, reading rows straight into immutable records in
 
 ## Factory
 
-A factory hides creation that is complex or can fail. When it can fail, it returns a `Result`. In the immutable world this is the same smart constructor as [Axiom 18](../chapter2/axiom-18-value-objects.md). There is rarely a separate factory, because every type already owns its only way in.
+A factory hides creation that is complex or can fail. When it can fail, it returns a `Result`. In the immutable world this is the same smart constructor as [Axiom 19](../chapter2/axiom-19-value-objects.md). There is rarely a separate factory, because every type already owns its only way in.
 
 ## Make illegal states unrepresentable
 
 OOP protects its rules with encapsulation: hide the state, guard it with methods. The immutable world replaces that with two ideas. This is the first.
 
-Model the type so a bad state cannot be built at all. A draft order and a placed order are different types, not one type with nullable fields and a status flag. The check moves from runtime into the shape of the type. This is [Axiom 22](../chapter2/axiom-22-illegal-states.md).
+Model the type so a bad state cannot be built at all. A draft order and a placed order are different types, not one type with nullable fields and a status flag. The check moves from runtime into the shape of the type. This is [Axiom 23](../chapter2/axiom-23-illegal-states.md).
 
 ## Railway-oriented programming
 
-This is the second idea that replaces encapsulation. A workflow is a chain of steps, each of which can succeed or fail. Chain them so the first failure stops the rest and lands on the error track. This is `Result` plus its combinators ([Axiom 16](../chapter2/axiom-16-result.md), [Axiom 17](../chapter2/axiom-17-result-combinators.md), [Axiom 19](../chapter2/axiom-19-railway.md)). When you want to collect every error instead of stopping at the first, use accumulating validation ([Axiom 20](../chapter2/axiom-20-validation.md)).
+This is the second idea that replaces encapsulation. A workflow is a chain of steps, each of which can succeed or fail. Chain them so the first failure stops the rest and lands on the error track. This is `Result` plus its combinators ([Axiom 17](../chapter2/axiom-17-result.md), [Axiom 18](../chapter2/axiom-18-result-combinators.md), [Axiom 20](../chapter2/axiom-20-railway.md)). When you want to collect every error instead of stopping at the first, use accumulating validation ([Axiom 21](../chapter2/axiom-21-validation.md)).
 
 ## What stays out of scope
 

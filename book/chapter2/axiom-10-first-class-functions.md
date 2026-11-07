@@ -1,12 +1,12 @@
-# Axiom 9 — First-class functions
+# Axiom 10 — First-class functions
 
 **A function is a value: it can be assigned to a variable, stored in a collection, passed as an argument and returned as a result.**
 
 - A function value is the same kind of thing as a number or a record: created somewhere, named, moved around, called when needed.
 
-Axioms [5](axiom-05-pure-functions.md) to [8](axiom-08-connascence.md) set the criteria for a well-formed function: pure, honest, total, cohesive and weakly coupled. This axiom names the property that lets the program itself combine such functions, instead of only the programmer, by hand: a function is not only something a program *does*. It is a *value* the program can hold, store, move and pass.
+Axioms [6](axiom-06-pure-functions.md) to [9](axiom-09-connascence.md) set the criteria for a well-formed function: pure, honest, total, cohesive and weakly coupled. This axiom names the property that lets the program itself combine such functions, instead of only the programmer, by hand: a function is not only something a program *does*. It is a *value* the program can hold, store, move and pass.
 
-Through [Axiom 8](axiom-08-connascence.md)'s lens, this axiom weakens no connascence on its own. It is the *carrier* that later weakenings ride on. Once a function is a value, a dispatch carried by a `switch` on strings (a [Connascence of Meaning](axiom-08-connascence.md#connascence-of-meaning-com)) can become a lookup keyed by a type, such as an enum, that the compiler checks. First-class functions don't make that move; they make it *possible*.
+Through [Axiom 9](axiom-09-connascence.md)'s lens, this axiom weakens no connascence on its own. It is the *carrier* that later weakenings ride on. Once a function is a value, a dispatch carried by a `switch` on strings (a [Connascence of Meaning](axiom-09-connascence.md#connascence-of-meaning-com)) can become a lookup keyed by a type, such as an enum, that the compiler checks. First-class functions don't make that move; they make it *possible*.
 
 ---
 
@@ -136,7 +136,7 @@ Once behavior is a value, it can live wherever any other value can: in a `Map<Ke
 **3. Closures carry data along with the function.**
 As `MultiplyBy` shows in the *Example*, a closure brings its data and its operation to the call site together, as one value. The function doesn't need to look anywhere outside itself for the data it depends on.
 
-The captured values have to be values in the sense of [Axiom 5](axiom-05-pure-functions.md): immutable, created once, and not shared with anything mutable. Otherwise the function value silently becomes impure. A closure is a way to carry data *into* a function value; it isn't a license for the function to reach *out*.
+The captured values have to be values in the sense of [Axiom 6](axiom-06-pure-functions.md): immutable, created once, and not shared with anything mutable. Otherwise the function value silently becomes impure. A closure is a way to carry data *into* a function value; it isn't a license for the function to reach *out*.
 
 **4. It is the prerequisite for composition.**
 Until a function can be passed as a value, combining two functions means calling one from the body of the other: a hard-coded chain. Once functions are values, the *combining itself* can be a function: one that takes two functions and returns a function that applies them in sequence. Composition becomes something the program can express, not just something the programmer writes out by hand.
@@ -166,4 +166,4 @@ Two cases where reaching for a function value is the wrong reflex:
 
 ---
 
-← Previous: [Axiom 8 — Connascence](axiom-08-connascence.md) · Next: [Axiom 10 — Higher-order functions](axiom-10-higher-order-functions.md) →
+← Previous: [Axiom 9 — Connascence](axiom-09-connascence.md) · Next: [Axiom 11 — Higher-order functions](axiom-11-higher-order-functions.md) →
