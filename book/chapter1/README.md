@@ -366,7 +366,7 @@ Every gap is a place where a wrong program compiles.
 
 This book is about closing those gaps through deliberate choices about what the code *is*. When teams talk about code quality, the conversation often turns to static analysis tools such as SonarQube. They are useful: they catch known patterns in code that already exists. But they inspect code after it is written. The choices in this book make whole classes of mistake impossible to write, so that a codebase that follows them everywhere is clean by design, not by inspection.
 
-That is the yardstick for every axiom in [Chapter 2](../chapter2/README.md): *does it move part of the specification into the compiler?*
+Every axiom in [Chapter 2](../chapter2/README.md) is chosen with one question: *does it move part of the specification into the compiler?*
 
 - A missing value becomes a type, not a `null` ([Axiom 13](../chapter2/axiom-13-maybe.md)).
 - A failure becomes part of the signature ([Axiom 6](../chapter2/axiom-06-honest-total-signatures.md), [Axiom 16](../chapter2/axiom-16-result.md)).
