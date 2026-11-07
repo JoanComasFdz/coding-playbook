@@ -311,7 +311,7 @@ Often taught as "make everything private". Read precisely, it bundles three jobs
 - [Axiom 19 — Value objects](chapter2/axiom-19-value-objects.md) — invariants, kept: protected where the value is built, not by hiding fields.
 - [Axiom 27 — Stateful Shell](chapter2/axiom-27-stateful-shell.md) — secrets, kept: the shell holds the socket; decisions stay visible.
 - [Axiom 2 — Data is not Behavior](chapter2/axiom-02-data-is-not-behavior.md) — state hidden behind behavior, dropped: an immutable value has nothing to hide.
-- Chapter 3's *Information hiding* Play — secrets at module grain (see [Information Hiding (Parnas)](#information-hiding-parnas)).
+- [*Information hiding*](chapter3/04-information-hiding.md), the Chapter 3 Play — secrets at module grain.
 
 **Source:** Mark Seemann, *Poka-yoke Design* (2011) and *Code That Fits in Your Head* (2021); D.L. Parnas (1972).
 
@@ -591,11 +591,15 @@ Echoes the [SOLID critique](#solid-critique)'s note that the **O**/**L** letters
 
 ## Information Hiding (Parnas)
 
-🔍 **Open** — its code-shaping end is a planned **Chapter 3 Play**, paired with [Deep vs. shallow modules](#deep-vs-shallow-modules-ousterhout) (scoped in the [Chapter 3 README](chapter3/README.md), not yet drafted).
+🔍 **Open** — its code-shaping end is a **Chapter 3 Play**, [*Information hiding*](chapter3/04-information-hiding.md) (drafted; the database question is still open), paired with [Deep vs. shallow modules](#deep-vs-shallow-modules-ousterhout).
 
 A module hides a *secret* — a design decision likely to change. The root of encapsulation and of Ousterhout's deep modules; the same idea read from the secret's side rather than the interface's.
 
-The *strategic* half — decomposition at architectural altitude — stays out of scope. Two in-scope echoes remain: the impure shell hides the stateful *secret* ([Axiom 27 — Stateful Shell](chapter2/axiom-27-stateful-shell.md)), and at module grain "hide the volatile decision behind a small interface" is the Chapter 3 deep-module Play.
+The *strategic* half — decomposition at architectural altitude — stays out of scope. In scope:
+
+- [Axiom 1 — Explicit over implicit](chapter2/axiom-01-explicit-over-implicit.md#encapsulation-read-precisely) — secrets are the one thing worth hiding; intent never is.
+- [Axiom 27 — Stateful Shell](chapter2/axiom-27-stateful-shell.md) — the shell holds the stateful secret.
+- [*Information hiding*](chapter3/04-information-hiding.md) — the Play: name the secret, give it a small surface in domain words, keep the core explicit.
 
 **Source:** D.L. Parnas, "On the Criteria To Be Used in Decomposing Systems into Modules" (CACM, 1972).
 
