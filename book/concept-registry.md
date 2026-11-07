@@ -260,7 +260,7 @@ Crash immediately on a programmer error (a bug); return a value for an *expected
 
 ## Arrow Anti-Pattern / Pyramid of Doom — [🔁 FOLDED]
 
-Deeply nested `if`/`try` blocks marching rightward — each success opens another indent. The *nested* twin of [Return early](#return-early-guard-clauses--folded); once every step returns `Result`, both give way to composition.
+Deeply nested `if`/`try` blocks marching rightward — each success opens another indent. The *nested* twin of [Return early](#return-early-guard-clauses---folded); once every step returns `Result`, both give way to composition.
 
 - [Axiom 20 — Railway](chapter2/axiom-20-railway.md) — the staircase of nested success-checks becomes one straight track.
 - [Axiom 18 — Result combinators](chapter2/axiom-18-result-combinators.md) — the nested unwrap → check → rewrap collapses into `map`/`bind`.
@@ -272,7 +272,7 @@ Deeply nested `if`/`try` blocks marching rightward — each success opens anothe
 
 ## Return early (guard clauses) — [🔁 FOLDED]
 
-Handle the exceptional case first and bail, leaving the happy path un-indented. The *flattened* twin of [Arrow / Pyramid of Doom](#arrow-anti-pattern--pyramid-of-doom--folded).
+Handle the exceptional case first and bail, leaving the happy path un-indented. The *flattened* twin of [Arrow / Pyramid of Doom](#arrow-anti-pattern--pyramid-of-doom---folded).
 
 - [Axiom 18 — Result combinators](chapter2/axiom-18-result-combinators.md) — the **named foil**: checking by hand and returning early on a failure is the right shape for a single step whose failure needs special handling, and noise once several run back-to-back, which is exactly when the combinators name the dance once.
 
@@ -282,7 +282,7 @@ Handle the exceptional case first and bail, leaving the happy path un-indented. 
 
 ## Swallowing Errors — [🔁 FOLDED]
 
-Discarding a failure instead of handling it — an empty `catch {}`, an ignored `Result`, `?.`/`??` flattening several "missing" cases into one. The **inverse** of [*Define errors out of existence*](#define-errors-out-of-existence-ousterhout--folded): that move makes the bad case *impossible*; swallowing makes a real one *invisible*.
+Discarding a failure instead of handling it — an empty `catch {}`, an ignored `Result`, `?.`/`??` flattening several "missing" cases into one. The **inverse** of [*Define errors out of existence*](#define-errors-out-of-existence-ousterhout---folded): that move makes the bad case *impossible*; swallowing makes a real one *invisible*.
 
 - [Axiom 7 — Honest, total signatures](chapter2/axiom-07-honest-total-signatures.md) — swallowing yields a *dishonest* signature claiming a success it never had; its *When NOT to* already warns that absorbing a caller-bug input masks the defect.
 - [Axiom 14 — Maybe](chapter2/axiom-14-maybe.md) — the named `user?.Manager?.Email ?? ""` case (*Trade-offs*): three different "missing" cases quietly collapsed into one.
@@ -311,7 +311,7 @@ Often taught as "make everything private". Read precisely, it bundles three jobs
 - [Axiom 19 — Value objects](chapter2/axiom-19-value-objects.md) — invariants, kept: protected where the value is built, not by hiding fields.
 - [Axiom 27 — Stateful Shell](chapter2/axiom-27-stateful-shell.md) — secrets, kept: the shell holds the socket; decisions stay visible.
 - [Axiom 2 — Data is not Behavior](chapter2/axiom-02-data-is-not-behavior.md) — state hidden behind behavior, dropped: an immutable value has nothing to hide.
-- Chapter 3's *Information hiding* Play — secrets at module grain (see [Information Hiding (Parnas)](#information-hiding-parnas)).
+- [*Information hiding*](chapter3/04-information-hiding.md), the Chapter 3 Play — secrets at module grain.
 
 **Source:** Mark Seemann, *Poka-yoke Design* (2011) and *Code That Fits in Your Head* (2021); D.L. Parnas (1972).
 
@@ -591,11 +591,15 @@ Echoes the [SOLID critique](#solid-critique)'s note that the **O**/**L** letters
 
 ## Information Hiding (Parnas)
 
-🔍 **Open** — its code-shaping end is a planned **Chapter 3 Play**, paired with [Deep vs. shallow modules](#deep-vs-shallow-modules-ousterhout) (scoped in the [Chapter 3 README](chapter3/README.md), not yet drafted).
+🔍 **Open** — its code-shaping end is a **Chapter 3 Play**, [*Information hiding*](chapter3/04-information-hiding.md) (drafted; the database is not treated as a secret), paired with [Deep vs. shallow modules](#deep-vs-shallow-modules-ousterhout).
 
 A module hides a *secret* — a design decision likely to change. The root of encapsulation and of Ousterhout's deep modules; the same idea read from the secret's side rather than the interface's.
 
-The *strategic* half — decomposition at architectural altitude — stays out of scope. Two in-scope echoes remain: the impure shell hides the stateful *secret* ([Axiom 27 — Stateful Shell](chapter2/axiom-27-stateful-shell.md)), and at module grain "hide the volatile decision behind a small interface" is the Chapter 3 deep-module Play.
+The *strategic* half — decomposition at architectural altitude — stays out of scope. In scope:
+
+- [Axiom 1 — Explicit over implicit](chapter2/axiom-01-explicit-over-implicit.md#encapsulation-read-precisely) — secrets are the one thing worth hiding; intent never is.
+- [Axiom 27 — Stateful Shell](chapter2/axiom-27-stateful-shell.md) — the shell holds the stateful secret.
+- [*Information hiding*](chapter3/04-information-hiding.md) — the Play: name the secret, give it a small surface in domain words, keep the core explicit.
 
 **Source:** D.L. Parnas, "On the Criteria To Be Used in Decomposing Systems into Modules" (CACM, 1972).
 
