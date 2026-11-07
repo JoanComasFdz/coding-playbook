@@ -333,7 +333,7 @@ Don't Repeat Yourself governs *knowledge*, not code text: one authoritative home
 
 - [Axiom 8 — Cohesion](chapter2/axiom-08-cohesion.md) — reason-to-change *is* DRY made operational; it names Hunt & Thomas's original knowledge definition (ref [5] there) and corrects the dedupe-on-sight misreading.
 - [Axiom 8 — What DRY is for](chapter2/axiom-08-cohesion.md#what-dry-is-for) — share pure business rules (validation, transformations, decisions); let impure orchestration repeat.
-- [Testing the core and the whole](chapter3/01-testing-the-core-and-the-whole.md), in [Chapter 3](chapter3/README.md) — the same split applied to abstraction and testing.
+- [Chapter 3 — Testing](chapter3/README.md#what-i-do-today) — the same split applied to sharing, abstraction and testing.
 
 **Source:** Andrew Hunt & David Thomas, *The Pragmatic Programmer* (1999).
 
