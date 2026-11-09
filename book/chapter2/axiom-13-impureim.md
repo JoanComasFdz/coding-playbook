@@ -8,7 +8,9 @@
 
 [Axiom 4](axiom-04-side-effects.md) named the effects, [Axiom 5](axiom-05-impure-functions.md) the functions that carry them, [Axiom 6](axiom-06-pure-functions.md) their opposite, and [Axiom 7](axiom-07-honest-total-signatures.md) the signature the core must have. This axiom puts those pieces into one shape. It is a concept, not a construct: it shows the target the rest of this chapter builds toward, so it stays short.
 
-The name is Mark Seemann's: *impureim* is his contraction of impure/pure/impure [1]. Gary Bernhardt calls the same split *functional core, imperative shell* [2], and Eric Normand draws it as actions around calculations [3].
+The name is Mark Seemann's: *impureim* is his contraction of impure/pure/impure [1].
+
+> **A note on the name.** Gary Bernhardt calls the same split *functional core, imperative shell* [2], and that is the name most people know: talks, blog posts and sites like functional-architecture.org use it. This book says *impure* shell instead, on purpose. [*Imperative*](https://en.wikipedia.org/wiki/Imperative_programming) is a style: statements that change state step by step. *Impure* is a property: the code has effects. The two often go together, but not always. A Haskell shell is written functionally and is still impure, and a loop that sums a list into a local variable is imperative and still pure. What matters for the split is the effects, not the style, so this book names the effects and leaves the shell's style to you. Seemann's *impureim* makes the same choice. Eric Normand draws the split as actions around calculations [3], and [Ports and Adapters](https://en.wikipedia.org/wiki/Hexagonal_architecture_(software)) is the same idea seen from the boundary: in Haskell, the type system forces IO to the edges and keeps the core pure [5].
 
 Through [Axiom 9](axiom-09-connascence.md)'s lens, the sandwich improves the *locality* of a [Connascence of Execution](axiom-09-connascence.md#connascence-of-execution-coe). The gather → decide → act order, which would otherwise be scattered through a call tree, gets one visible home. A wrong order can still be written, but a reader sees the whole order in one place.
 
@@ -166,6 +168,9 @@ Two cases where the shape would be ceremony (see the [decisions-vs-ceremony test
 <https://www.manning.com/books/grokking-simplicity>
 
 [4] **Bertrand Meyer**, *Object-Oriented Software Construction* (2nd ed.), Prentice Hall, 1997. The source of **command–query separation**: a method either returns a value or changes observable state, never both.
+
+[5] **Mark Seemann**, *Functional architecture is Ports and Adapters*, ploeh blog, 18 March 2016. In Haskell the split is enforced by the type system: impure IO code at the edges, pure functions at the core, which is Ports and Adapters falling out of the language.
+<https://blog.ploeh.dk/2016/03/18/functional-architecture-is-ports-and-adapters/>
 
 ---
 
