@@ -121,6 +121,16 @@ The goal behind the axioms: a codebase whose compiler is a sound, fast, informat
 
 ---
 
+## Functional core, imperative shell — [🔁 FOLDED]
+
+Gary Bernhardt's name for the same split. This book says *impure* shell: the split is about effects, not style, and a shell may be written imperatively or functionally.
+
+- [Axiom 13 — Impureim](chapter2/axiom-13-impureim.md) — the home, with *A note on the name*: imperative is a style, impure is a property.
+
+**Source:** Gary Bernhardt, *Functional Core, Imperative Shell* (Destroy All Software, 2012); Mark Seemann, *Functional architecture is Ports and Adapters* (2016).
+
+---
+
 ## Value Objects — [✅ AXIOMATIZED]
 
 - [Axiom 19 — Value objects](chapter2/axiom-19-value-objects.md)
