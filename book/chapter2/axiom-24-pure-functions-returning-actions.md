@@ -190,7 +190,7 @@ Options 1 to 3 tangle deciding with doing: literally in 1, through a string in 2
 ## Why
 
 **1. Each half is tested the way it should be.**
-`DecideAdd` is tested with a table: given this cart and quantity, expect this action. No database, no mocks. The shell has no decisions left, so it is covered by tests of the whole service against real dependencies. The action DU is what lets the two be tested differently.
+`DecideAdd` is tested with a table: given this cart and quantity, expect this action. No database, no mocks. The shell has no decisions left, so it is covered by component tests against real dependencies ([Chapter 3](../chapter3/README.md)). The action DU is what lets the two be tested differently.
 
 **2. Rules and plumbing change in different places.**
 A new rule ("reject if the customer is suspended") adds an `if` to `DecideAdd` and maybe a `Rejected` reason; the shell's branches still fit. A new database changes the shell's insert and update and nothing else; `DecideAdd` doesn't know storage exists. Two reasons to change, two places to edit, as [Axiom 8](axiom-08-cohesion.md) asks.

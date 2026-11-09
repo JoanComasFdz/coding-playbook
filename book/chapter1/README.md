@@ -367,7 +367,7 @@ A bug can be found at many points, from far to near:
 |---|---|
 | Performance test | A production-like environment, data, and a long run. |
 | Product test | The whole product bootstrapped. |
-| Service test | The service, its own dependencies, simulators for third parties. Still compile, bootstrap, run. |
+| Component test | The component (a service or a library), its own dependencies, simulators for third parties. Still compile, bootstrap, run. |
 | Function test | Milliseconds, but a separate step: someone has to decide to run it. |
 | Compiler | Nothing. It answers while I type, and points at the line. |
 

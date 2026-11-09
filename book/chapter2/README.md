@@ -207,6 +207,10 @@ After the axioms, a codebase has two kinds of code, and classes mean something d
 
 Object-oriented programming doesn't disappear. It moves: out of the core, where a class is only a named group of functions, into the shell, where classes stay classes, with dependency injection and state.
 
+### Components
+
+A unit you build, version and test on its own, with a core and a shell like the ones above, is what this book calls a **component**: a deployable unit (an API, a worker) or a library. Where only a deployable fits, this book says *service*. Don't confuse it with a *module*, which is the much smaller static class of pure functions from [Axiom 2](axiom-02-data-is-not-behavior.md).
+
 ---
 
 ← Previous: [Chapter 1](../chapter1/README.md) · Start: [Axiom 0 — Ubiquitous Language](axiom-00-ubiquitous-language.md) →
