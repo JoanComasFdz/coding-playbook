@@ -11,7 +11,7 @@
 | Test | What it tests | What it runs against | Commonly called |
 |---|---|---|---|
 | **Function** | One pure function: values in, value out. | Nothing but the function. | Unit test |
-| **Component** | One [component](../chapter2/README.md#two-words-module-and-component), a deployable unit or a library, as a black box: only through its own API. | Its own real dependencies (a real database, a real message broker, in containers), and simulators for systems owned by others. | Integration, acceptance or component test |
+| **Component** | One [component](../chapter2/README.md#components), a deployable unit or a library, as a black box: only through its own API. | Its own real dependencies (a real database, a real message broker, in containers), and simulators for systems owned by others. | Integration, acceptance or component test |
 | **Product** | The whole product, as its users see it. | Every deployable component of the product, deployed together. | End-to-end test |
 | **Solution** | Several products working together. | The products involved, deployed together. | System or end-to-end test |
 

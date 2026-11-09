@@ -6,13 +6,6 @@ Read them in order. Each axiom rests only on the ones before it. The *Leads to* 
 
 Code examples are for teaching. They are not complete, production-ready implementations.
 
-## Two words: module and component
-
-Two words in this book are easy to mix up:
-
-- A **module** is a static class of pure functions: a named group of functions, with no state and no identity ([Axiom 2](axiom-02-data-is-not-behavior.md)).
-- A **component** is a unit you build, version and test on its own: a deployable unit (an API, a worker) or a library. Every component has a pure core and an impure shell. Where only a deployable fits, this book says *service*.
-
 ## The axioms
 
 ### 0. [Ubiquitous Language](axiom-00-ubiquitous-language.md)
@@ -213,6 +206,10 @@ After the axioms, a codebase has two kinds of code, and classes mean something d
 | **State** | None | Where needed: caches and connections ([27](axiom-27-stateful-shell.md)), a session's working memory ([26](axiom-26-session-context.md)) |
 
 Object-oriented programming doesn't disappear. It moves: out of the core, where a class is only a named group of functions, into the shell, where classes stay classes, with dependency injection and state.
+
+### Components
+
+A unit you build, version and test on its own, with a core and a shell like the ones above, is what this book calls a **component**: a deployable unit (an API, a worker) or a library. Where only a deployable fits, this book says *service*. Don't confuse it with a *module*, which is the much smaller static class of pure functions from [Axiom 2](axiom-02-data-is-not-behavior.md).
 
 ---
 
