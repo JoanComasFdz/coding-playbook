@@ -128,7 +128,7 @@ Impureim removes none of the effects. The program still reads the cart, prices i
 With no hidden inputs and no hidden outputs, the signature says everything the function does. Every richer tool this book builds from here on (types that name every outcome, values that can't be invalid) depends on that, so all of them go into the core. None of them can be applied to a function that mixes effects with logic.
 
 **2. The core is tested with values, and the shell has nothing left to decide.**
-The core gets the plain tests of [Axiom 6](axiom-06-pure-functions.md#why) (point 3): inputs in, output checked. The shell only moves values between the world and the core, so it is covered by service tests against real dependencies ([Chapter 3](../chapter3/README.md)), not by stubbing each call. Case coverage and effect simulation end up in different tests, and each can be done well.
+The core gets the plain tests of [Axiom 6](axiom-06-pure-functions.md#why) (point 3): inputs in, output checked. The shell only moves values between the world and the core, so it is covered by component tests against real dependencies ([Chapter 3](../chapter3/README.md)), not by stubbing each call. Case coverage and effect simulation end up in different tests, and each can be done well.
 
 **3. Each question has one place to look.**
 "Where does this time come from?" The gather. "What happens if this save fails?" The act. "Does this decision handle an empty cart?" The core. In an interleaved body, every question means scanning the whole body.

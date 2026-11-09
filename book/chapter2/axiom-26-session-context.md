@@ -195,7 +195,7 @@ The pure core stays pure. Mutation is allowed in exactly one place: the shell's 
 `ImportRows(rows, context)` tells the reader it uses the context; `ValidateRow(row)` tells them it doesn't. With ambient state, neither signature would say. The compiler can only help with a dependency that is a parameter.
 
 **3. A session is isolated.**
-Each run gets its own context, created when the run starts and dropped when it ends. Two runs, or two service tests, can go in parallel with no thread-local cleanup between them and no state leaking from one to the other ([Chapter 3](../chapter3/README.md#why), point 5).
+Each run gets its own context, created when the run starts and dropped when it ends. Two runs, or two component tests, can go in parallel with no thread-local cleanup between them and no state leaking from one to the other ([Chapter 3](../chapter3/README.md#why), point 5).
 
 ---
 
