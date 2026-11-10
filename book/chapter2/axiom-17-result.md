@@ -139,6 +139,62 @@ String message = result.match(
 
 Same caller, same result. Which form to use is the choice in [switch or Match?](axiom-12-pattern-matching.md#switch-or-match).
 
+### With `Handle`
+
+`Match` returns a value, so both branches must produce one. That is right when the result flows on: it is returned, chained or combined, and when there is nothing to say, the value is `Unit` ([Axiom 16](axiom-16-unit.md)). But often a branch is where the work ends: write the row, record the error. Nothing flows on, and a `return Unit.Value;` in each branch would say nothing. For that case, `Result` gets a second method that takes one action per case and returns nothing:
+
+<table>
+<tr><th>C#</th><th>Java</th></tr>
+<tr>
+<td>
+
+```csharp
+public abstract record Result<T, E>
+{
+    // Match as above, plus:
+    public void Handle(
+        Action<T> success, Action<E> failure)
+    {
+        switch (this)
+        {
+            case Success<T, E> s: success(s.Value); break;
+            case Failure<T, E> f: failure(f.Error); break;
+            default: throw new UnreachableException();
+        }
+    }
+}
+
+result.Handle(
+    success: age   => Console.WriteLine($"Age {age}"),
+    failure: error => Console.WriteLine($"Invalid age: {error}"));
+```
+
+</td>
+<td>
+
+```java
+public sealed interface Result<T, E> permits Success, Failure {
+    // match as above, plus:
+    default void handle(
+            Consumer<T> success, Consumer<E> failure) {
+        switch (this) {
+            case Success<T, E> s -> success.accept(s.value());
+            case Failure<T, E> f -> failure.accept(f.error());
+        }
+    }
+}
+
+result.handle(
+    age   -> System.out.println("Age " + age),
+    error -> System.out.println("Invalid age: " + error));
+```
+
+</td>
+</tr>
+</table>
+
+The rule: **`Match` when the result flows on, `Handle` when the branch ends the work.** It is a separate name on purpose, not a `Match` overload: a lambda like `c => list.Add(c)` fits both a function and an action, so C# would pick the function version and Java would refuse to choose.
+
 ---
 
 ## The first synthesis
@@ -242,7 +298,7 @@ Read it from top to bottom, and the earlier axioms are all visible:
 - **The Impureim sandwich** ([Axiom 13](axiom-13-impureim.md)): gather, decide, act.
 - **Absence as a value** ([Axiom 14](axiom-14-maybe.md)): the missing user reaches the core as a value it has to handle: `User?` in C#, `Optional<User>` in Java (see *Why `Optional` as a parameter* below).
 - **Either with names** ([Axiom 15](axiom-15-either.md)): `Success` and `Failure` say what `Right` and `Left` only imply.
-- **Unit** ([Axiom 16](axiom-16-unit.md)): `Match` needs both branches to return the same type. Starting a session and writing an audit entry have nothing to return, so both return `Unit`.
+- **Unit** ([Axiom 16](axiom-16-unit.md)): `Match` needs both branches to return the same type. Starting a session and writing an audit entry have nothing to return, so both return `Unit`. The login's result goes back to its caller, so this is `Match`, not `Handle`.
 
 Every failure is a value, every decision is a function, and every effect sits at a named edge. To know why a login failed, you read `Decide`.
 
