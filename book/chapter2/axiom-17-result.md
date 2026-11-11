@@ -300,7 +300,6 @@ Read it from top to bottom, and the earlier axioms are all visible:
 - **The Impureim sandwich** ([Axiom 13](axiom-13-impureim.md)): gather, decide, act.
 - **Absence as a value** ([Axiom 14](axiom-14-maybe.md)): the missing user reaches the core as a value it has to handle: `User?` in C#, `Optional<User>` in Java (see *Why `Optional` as a parameter* below).
 - **Either with names** ([Axiom 15](axiom-15-either.md)): `Success` and `Failure` say what `Right` and `Left` only imply.
-- **Unit, and when not to use it** ([Axiom 16](axiom-16-unit.md)): starting a session and writing an audit entry have nothing to return, and nothing flows on after them: the act step ends the work. So the shell uses `Handle` and `Login` returns `void`, instead of passing a `Unit` that no caller reads. `Unit` is for when the result keeps flowing (see *With `Handle`*).
 
 Every failure is a value, every decision is a function, and every effect sits at a named edge. To know why a login failed, you read `Decide`.
 
