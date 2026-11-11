@@ -8,7 +8,7 @@ These are **requirements, not suggestions**. Copy this file into a repository to
 ## Naming
 
 - **One name per domain concept.** Take it from the domain and use it unchanged in types, functions, tests and conversation. No synonyms, no homonyms. ([Axiom 0][A0])
-- **Data is named with nouns, behavior with verbs.** Types, records and fields are nouns (`Cart`); every function name contains a verb (`CalculateTotal`, never `Total`). Exceptions: members a language or framework names for you (`ToString()`, `hashCode()`), and DSLs, which follow the language they imitate (`From`, `Where`, `Given`). ([Axiom 2][A2])
+- **Data is named with nouns, behavior with verbs.** Types, records and fields are nouns (`Cart`); every function name contains a verb (`CalculateTotal`, never `Total`). Predicates starting with `Is`/`Has`/`Can` (`IsValid`) and conversions named `ToX`/`FromX` (`ToTonnes`) count as verbs. Exceptions: members a language or framework names for you (`ToString()`, `hashCode()`), and DSLs, which follow the language they imitate (`From`, `Where`, `Given`). ([Axiom 2][A2])
 
 ## Data
 
@@ -54,7 +54,7 @@ These are **requirements, not suggestions**. Copy this file into a repository to
 - **Every unit of work is gather, decide, act.** Impure reads, one pure call, impure writes. ([Axiom 13][A13])
 - **Never mix a pure and an impure call in one statement.** The pure call goes on its own line, into a named value. ([Axiom 12][A12c])
 - **A decision about what should happen returns an action union;** the shell executes it. ([Axiom 24][A24])
-- **A lifecycle is a pure `Transition(state, command)`** returning the event; a repeated command returns `NoChange`, not an error. ([Axiom 25][A25])
+- **A lifecycle with more than two states is a pure `Transition(state, command)`** returning the event; a repeated command returns `NoChange`, not an error. A linear flow is a railway, not a state machine. ([Axiom 25][A25])
 - **The shell is ordinary object-oriented code.** Classes, constructor injection, and state where state is needed. ([Axiom 13][A13])
 - **A session's working memory is a context object passed explicitly.** Owned by the shell, never seen by the core, never static, ambient or thread-local. ([Axiom 26][A26])
 - **A long-running process is a loop around a pure `Transition`:** read the state, carry out its effect, wait for the event, transition, repeat. ([Axiom 27][A27])

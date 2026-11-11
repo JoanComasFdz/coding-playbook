@@ -252,6 +252,7 @@ Because `Activated` can only hold an `Active`, the transition table is in the ty
 
 ## When NOT to
 
+- **A linear flow.** Steps that always run in the same order, each one either continuing or failing, are a railway ([Axiom 20](axiom-20-railway.md)), not a machine. A state machine earns its place with more than two states and transitions that depend on what came before.
 - **CRUD with no rules.** A `Country` with a `Code` and a `Name` has no conditions and no transitions: read and write the row. A state machine is for things whose *legal next step depends on what came before*. If it depends only on the input, it is a plain function ([Axiom 6](axiom-06-pure-functions.md)) or a one-shot action ([Axiom 24](axiom-24-pure-functions-returning-actions.md)).
 - **One-rule scripts.** The same threshold as [Axiom 24](axiom-24-pure-functions-returning-actions.md#when-not-to): a job that loads one row, applies one rule and writes one row may not earn the vocabulary.
 - **Workflows across several machines.** One `Transition` can't enforce "the customer must have a valid payment method", because the customer is a different machine. Coordinating several machines (sagas, process managers) is system topology, out of scope for this book. Each machine stays pure and local; the shell reads one and feeds the next.

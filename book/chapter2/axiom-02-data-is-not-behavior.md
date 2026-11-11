@@ -29,6 +29,8 @@ Not every convention draws the line here. Swift's guidelines name a function by 
 - **A name fixed by the language or a framework.** When you override or implement a member, it keeps the name you were given: Java's `hashCode()` and `iterator()`, C#'s `ToString()`.
 - **A [domain-specific language](https://en.wikipedia.org/wiki/Domain-specific_language) (DSL), including one you build.** When your own code is a SQL builder, a test helper or another small language, it should follow the style of the language it imitates: SQL's keywords (`From`, `Where`), a test's `Given`, `When`, `Then`. Turning them into verbs would make the code harder to read for anyone who knows that language. That is a valid use case, not a lapse.
 
+Two idioms also count as verbs: predicates that start with `Is`, `Has` or `Can` (`IsValid`, `HasRole`), and conversions named `ToX` or `FromX` (`ToTonnes`, `FromString`). They read as actions where they are used: `if (order.IsPaid)`, `lots.ToTonnes()`.
+
 Everywhere else, the rule holds.
 
 This axiom departs from the common OO default of **fusing** the two: an object that owns mutable state *and* the methods that quietly change it.
