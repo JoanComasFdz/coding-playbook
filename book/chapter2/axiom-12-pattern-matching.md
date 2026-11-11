@@ -345,7 +345,7 @@ The consumer that needs to branch on a shape holds the branching logic; the data
 
 ## When NOT to
 
-- **The set of cases is open by design.** Plugin hosts, extension points, codebases where new subtypes are expected to appear outside the module. Pattern matching's guarantee depends on the compiler seeing every case. For an open set, an interface is the right shape: the host defines the contract, each plugin implements it, and the host calls it without knowing which implementations exist.
+- **The set of cases is open by design.** Plugin hosts, extension points, codebases where new subtypes are expected to appear outside the module. Pattern matching's guarantee depends on the compiler seeing every case, so it can't help here. This is one side of the [expression problem](https://en.wikipedia.org/wiki/Expression_problem): a closed set of cases makes new operations easy and new cases hard; an open set, the other way round.
 
 ---
 
