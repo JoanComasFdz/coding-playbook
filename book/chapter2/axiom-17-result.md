@@ -141,7 +141,7 @@ Same caller, same result. Which form to use is the choice in [switch or Match?](
 
 ### With `Handle`
 
-`Match` returns a value, so both branches must produce one. That is right when the result flows on: it is returned, chained or combined, and when there is nothing to say, the value is `Unit` ([Axiom 16](axiom-16-unit.md)). But often a branch is where the work ends: write the row, record the error. Nothing flows on, and a `return Unit.Value;` in each branch would say nothing. For that case, `Result` gets a second method that takes one action per case and returns nothing:
+When a branch is where the work ends (write the row, record the error), `Result` also offers the `Handle` form from [Axiom 12](axiom-12-pattern-matching.md#when-the-branches-only-act-handle): one action per case, no return value. Use `Match` when the result flows on, with `Unit` when there is nothing to say ([Axiom 16](axiom-16-unit.md#when-not-to)), and `Handle` when nothing flows on.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -192,10 +192,6 @@ result.handle(
 </td>
 </tr>
 </table>
-
-The rule: **`Match` when the result flows on, `Handle` when the branch ends the work.** It is a separate name on purpose, not a `Match` overload: a lambda like `c => list.Add(c)` fits both a function and an action, so C# would pick the function version and Java would refuse to choose.
-
-The pair is not new. C# libraries such as OneOf [7] and ErrorOr [8] offer `Match` for values and `Switch` for actions, and Java's `Optional` has `ifPresentOrElse` for the same job [5]. This book names the void form `Handle`, because `switch` is a reserved word in Java and one name should work in both languages.
 
 ---
 
@@ -384,17 +380,11 @@ Where the line between rungs 2 and 3 falls depends on the context. "The database
 
 [4] **James Shore**, *Fail Fast*, IEEE Software 21(5), 2004. Stop immediately on a programmer error or a broken invariant, so the defect shows up where it starts instead of several frames later disguised as a normal value.
 
-[5] **`java.util.Optional` API note**, Java SE 21 documentation. Also cited in [Axiom 14](axiom-14-maybe.md). Brian Goetz puts it more strongly, as quoted by Nicolai Parlog: "You should almost never use it as a field of something or a method parameter." The same page documents `ifPresentOrElse` (since Java 9), which "performs the given action with the value, otherwise performs the given empty-based action": the void form beside `map` and `orElse`.
+[5] **`java.util.Optional` API note**, Java SE 21 documentation. Also cited in [Axiom 14](axiom-14-maybe.md). Brian Goetz puts it more strongly, as quoted by Nicolai Parlog: "You should almost never use it as a field of something or a method parameter."
 <https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html> · <https://nipafx.dev/stephen-colebourne-java-optional-strict-approach/>
 
 [6] **Nicolai Parlog**, *Java 8 SE Optional, a strict approach* and *Where to use Optional* (Inside Java Newscast #19). Parlog, a Java developer advocate at Oracle, is "decidedly in the Optional-everywhere camp", accepts `Optional` parameters, and rejects a `null` `Optional` with `requireNonNull`. He also lists the camps that disagree, and calls "return values only" a sound default for teams that need one shared rule.
 <https://nipafx.dev/stephen-colebourne-java-optional-strict-approach/> · <https://nipafx.dev/inside-java-newscast-19/>
-
-[7] **OneOf** (C#). "You use the `TOut Match(Func<T0, TOut> f0, ... Func<Tn,TOut> fn)` method to get a value out", and "There is also a .Switch method, for when you aren't returning a value."
-<https://github.com/mcintyre321/OneOf>
-
-[8] **ErrorOr** (C#), a Result-style library. "The `Match` method receives two functions, `onValue` and `onError`", and "The `Switch` method receives two actions, `onValue` and `onError`."
-<https://github.com/amantinband/error-or>
 
 ---
 

@@ -224,6 +224,74 @@ public static double calculateArea(Shape shape) {
 
 Both read at about the same length. The difference is *where the case name lives*: in the `switch`, the consumer spells the type on every branch (`Circle c =>`); in the `Match` call, the case is a parameter name (`circle: c =>`) and the lambda's parameter type is inferred.
 
+### When the branches only act: `Handle`
+
+`Match` returns a value, so every branch must produce one. Sometimes no branch has anything to produce: each one only *does* something, like drawing the shape on a canvas. For that, the type gets a second method that takes one action per case and returns nothing:
+
+<table>
+<tr><th>C#</th><th>Java</th></tr>
+<tr>
+<td>
+
+```csharp
+public abstract record Shape
+{
+    // Match as above, plus:
+    public void Handle(
+        Action<Circle>    circle,
+        Action<Rectangle> rectangle,
+        Action<Square>    square)
+    {
+        switch (this)
+        {
+            case Circle c:    circle(c);    break;
+            case Rectangle r: rectangle(r); break;
+            case Square q:    square(q);    break;
+            default: throw new UnreachableException();
+        }
+    }
+}
+
+shape.Handle(
+    circle:    c => canvas.DrawCircle(c),
+    rectangle: r => canvas.DrawRectangle(r),
+    square:    s => canvas.DrawSquare(s));
+```
+
+</td>
+<td>
+
+```java
+sealed interface Shape permits Circle, Rectangle, Square {
+    // match as above, plus:
+    default void handle(
+            Consumer<Circle>    circle,
+            Consumer<Rectangle> rectangle,
+            Consumer<Square>    square) {
+        switch (this) {
+            case Circle c    -> circle.accept(c);
+            case Rectangle r -> rectangle.accept(r);
+            case Square q    -> square.accept(q);
+        }
+    }
+}
+
+shape.handle(
+    c -> canvas.drawCircle(c),
+    r -> canvas.drawRectangle(r),
+    s -> canvas.drawSquare(s));
+```
+
+</td>
+</tr>
+</table>
+
+The rule: **`Match` when every branch produces a value, `Handle` when every branch only acts.** The C# statement noise (`break`, `default`) lives once, inside the method, instead of at every call site.
+
+It is a separate name on purpose, not a `Match` overload: a lambda like `c => list.Add(c)` fits both a function and an action, so C# would pick the function version and Java would refuse to choose.
+
+The pair is not new. C# libraries such as OneOf [5] and ErrorOr [6] offer `Match` for values and `Switch` for actions, and Java's `Optional` has `ifPresentOrElse` for the same job [7]. This book names the void form `Handle`, because `switch` is a reserved word in Java and one name should work in both languages.
+
 ### `switch` or `Match`?
 
 - **`switch` puts the case list at the call site.** Every consumer writes its own branches and can use guards, nested patterns, or a default for cases it doesn't care about. The cost: every branch spells out the case type. That's short with `Circle`, but tiresome when the type is generic and every branch repeats a long compound type.
@@ -340,6 +408,15 @@ A property access (`x.Status`) is fine to inline; the rule is about real *calls*
 [3] **OpenJDK**, *JEP 441: Pattern Matching for switch*, final in Java 21 (2023). The reference for Java's pattern-matching syntax, exhaustiveness rules and interaction with sealed types. <https://openjdk.org/jeps/441>
 
 [4] **Scott Wlaschin**, *Introduction to recursive types*, fsharpforfunandprofit.com, 2015, the first post of his series on catamorphisms and folds. Its first rule for writing a catamorphism: "Create a function parameter to handle each case in the structure." <https://fsharpforfunandprofit.com/posts/recursive-types-and-folds/>
+
+[5] **OneOf** (C#). "You use the `TOut Match(Func<T0, TOut> f0, ... Func<Tn,TOut> fn)` method to get a value out", and "There is also a .Switch method, for when you aren't returning a value."
+<https://github.com/mcintyre321/OneOf>
+
+[6] **ErrorOr** (C#), a Result-style library. "The `Match` method receives two functions, `onValue` and `onError`", and "The `Switch` method receives two actions, `onValue` and `onError`."
+<https://github.com/amantinband/error-or>
+
+[7] **`java.util.Optional`**, Java SE 21 documentation. `ifPresentOrElse` (since Java 9) "performs the given action with the value, otherwise performs the given empty-based action": the void form beside `map` and `orElse`.
+<https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html>
 
 ---
 
