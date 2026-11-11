@@ -2,7 +2,7 @@
 
 The axioms of [Coding Playbook, Chapter 2](https://github.com/JoanComasFdz/coding-playbook/blob/main/book/chapter2/README.md), condensed into rules. Each rule assumes you know the concept; the link after it is the why. Examples are C# and Java.
 
-Copy this file into a repository to adopt the axioms as its baseline. Keep it as is, and add project-specific rules in a separate file.
+These are **requirements, not suggestions**. Copy this file into a repository to adopt the axioms as its baseline. Keep it as is, and add project-specific rules in a separate file.
 
 
 ## Naming
@@ -16,7 +16,7 @@ Copy this file into a repository to adopt the axioms as its baseline. Keep it as
 - **All data is immutable.** Records with no setters, immutable collections, all the way down. A change is a new value (`with`). ([Axiom 3][A3])
 - **Wrap a primitive that has rules in a value object.** A non-public constructor and a `Parse` factory that returns a `Result`; once built, the value is valid. ([Axiom 19][A19])
 - **Parse at the boundary, never validate inside.** Raw input becomes value objects where it enters; the core only sees valid values. ([Axiom 19][A19])
-- **Three or more outcomes with different data are a discriminated union.** A sealed parent, one record per case, each with only its own fields. Data-less constants stay an `enum`. ([Axiom 22][A22])
+- **Three or more outcomes with different data are a discriminated union.** A sealed parent, one record per case, each with only its own fields; never an interface plus a class per case. Data-less constants stay an `enum`. ([Axiom 22][A22])
 - **Make illegal states unrepresentable.** No status enum plus nullable fields; each case carries exactly what it needs. ([Axiom 23][A23])
 
 ## Functions
@@ -43,6 +43,8 @@ Copy this file into a repository to adopt the axioms as its baseline. Keep it as
 - **Absence is in the type.** `T?` with nullable reference types on (C#), `Optional<T>` (Java). ([Axiom 14][A14])
 - **Success or failure is a `Result<T, E>`.** Use `Unit` as `T` when there is nothing to return but the result flows on. ([Axiom 16][A16], [Axiom 17][A17])
 - **Eliminate the error, then return it, then fail fast.** Design it away if you can; return it as a value if it is an expected outcome; throw only for bugs and broken invariants. ([Axiom 17][A17l])
+- **Turn a foreseeable exception into a `Result` where it is thrown.** A missing file, a malformed number: catch it once, at the boundary, and return a failure. Let unrecoverable ones (out of memory) bubble up. ([Axiom 17][A17])
+- **The error type is a `string` until a caller branches on it.** Add a named error case only when some code takes a different path because of it. ([Axiom 19][A19])
 - **Compose `Result`s with `Map`, `Bind` and `MapError`,** never with nested `if` checks. ([Axiom 18][A18])
 - **Chain steps that can fail into a railway.** The first failure short-circuits the rest. ([Axiom 20][A20])
 - **Accumulate independent validation errors** with `Combine`, instead of stopping at the first. ([Axiom 21][A21])
