@@ -660,3 +660,22 @@ Note (from research): CQRS is system topology = **out of scope** (it's a *consum
 Memoising results behind a stateful store. Too niche to be an axiom.
 
 If ever revisited: explore the FP take plus the correctness of the decorator pattern, especially in OOP.
+
+---
+
+## Structured concurrency and scopes — [❌ DISCARDED]
+
+**What:** concurrent work belongs to the scope that starts it. The scope ends only when every child has finished, one failure cancels the siblings, and cancellation reaches every child.
+
+**Verdict:** too niche to be an axiom. Business code rarely fans out, and the parts that matter already live in the axioms below.
+
+- [Axiom 4 — Side effects](chapter2/axiom-04-side-effects.md) — starting a thread or a task is a side effect ("Starting threads and tasks" row), so it belongs in the shell.
+- [Axiom 13 — Impureim](chapter2/axiom-13-impureim.md) — a fan-out is part of the gather step. The core receives the gathered values and never sees the tasks.
+- [Axiom 27 — Stateful shell](chapter2/axiom-27-stateful-shell.md) — the long-running case: one loop owns its work and stops on a cancellation signal that its long-running effects also receive.
+- [Axiom 26 — Session context](chapter2/axiom-26-session-context.md) — ambient scoped context (`AsyncLocal`, `ThreadLocal`, and Java's `ScopedValue` by the same rule) is not how context reaches shell functions: it is passed as a parameter.
+- [Axiom 3 — Immutability](chapter2/axiom-03-immutability.md#why) — "concurrency without coordination": immutable values cross threads without locks.
+- Low-level concurrency (locks, atomics, lock-free structures, pool sizing, JVM tuning) is outside the book's scope ([README](../README.md)).
+
+**Revisit if** fan-out in the shell becomes common enough to need a rule. Java has the construct (`StructuredTaskScope`, final in JDK 28 through JEP 543). C# has only the parts: `Task.WhenAll` with a linked `CancellationTokenSource`, or `Parallel.ForEachAsync` when every item is the same kind of work.
+
+**Source:** Martin Sústrik, *Structured Concurrency* (2016); Nathaniel J. Smith, *Notes on structured concurrency, or: Go statement considered harmful* (2018); JEP 543, *Structured Concurrency*; Brian Goetz et al., *Java Concurrency in Practice* (2006).
