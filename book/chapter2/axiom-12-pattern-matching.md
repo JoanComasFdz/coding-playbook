@@ -308,7 +308,7 @@ For most line-of-business code the performance costs don't matter. Start with `s
 
 Every program that decides what to do based on which kind of thing it holds is doing case analysis. The only question is which syntax expresses the decision. Several options sit on the same trade-off curve, each right in its own setting:
 
-- **A virtual method on the type.** Each shape owns its definition and dispatch is implicit. Right when the set of cases is open (see *When NOT to*).
+- **A method on an interface.** Each case implements the interface and dispatch is implicit. Right when the set of cases is open (see *When NOT to*).
 - **The [Visitor pattern](https://en.wikipedia.org/wiki/Visitor_pattern)** [2]. A type-safe way to do case analysis in an OO language without pattern matching: one visitor per operation, one method per shape, double dispatch through `accept`. The compiler checks the cases. Where pattern matching exists, the same idea fits in one expression instead of a class hierarchy.
 - **`instanceof` / `is` chains with manual casts.** Light and immediate, with no extra types. But the type test and the cast are separate statements, and nothing checks completeness. Fine for a throwaway decision; awkward as soon as a shape is added.
 - **A `switch` on a tag string or enum, with a cast inside each branch.** Common in event-handling code where the tag is the dispatch key. The narrowing has to be written by hand, because the language can't carry it into the branch.
@@ -345,7 +345,7 @@ The consumer that needs to branch on a shape holds the branching logic; the data
 
 ## When NOT to
 
-- **The set of cases is open by design.** Plugin hosts, extension points, codebases where new subtypes are expected to appear outside the module. Pattern matching's guarantee depends on the compiler seeing every case. For an open set, a virtual method is the right shape.
+- **The set of cases is open by design.** Plugin hosts, extension points, codebases where new subtypes are expected to appear outside the module. Pattern matching's guarantee depends on the compiler seeing every case. For an open set, an interface is the right shape: the host defines the contract, each plugin implements it, and the host calls it without knowing which implementations exist.
 
 ---
 
