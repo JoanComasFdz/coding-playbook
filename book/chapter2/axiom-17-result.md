@@ -201,7 +201,7 @@ The pair is not new. C# libraries such as OneOf [7] and ErrorOr [8] offer `Match
 
 ## The first synthesis
 
-Result is the first point where most of the axioms so far fit into one piece of code. Here is a login, end to end, using the `Result` type above (with `Match`):
+Result is the first point where most of the axioms so far fit into one piece of code. Here is a login, end to end, using the `Result` type above (with `Handle`):
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -230,14 +230,14 @@ Result<User, string> Decide(
     };
 
 // ── Impure shell: effects at the edges ──
-Unit Login(Credentials credentials)
+void Login(Credentials credentials)
 {
     var found = users.Find(credentials.Username); // gather
     var now   = clock.GetUtcNow();                // gather
 
     var decision = Decide(found, credentials.Password, now);
 
-    return decision.Match(                        // act
+    decision.Handle(                              // act
         success: user  => sessions.Start(user),
         failure: error => audit.LoginFailed(
                               credentials.Username, error));
@@ -270,14 +270,14 @@ Result<User, String> decide(
 }
 
 // ── Impure shell: effects at the edges ──
-Unit login(Credentials credentials) {
+void login(Credentials credentials) {
     Optional<User> found =
         users.find(credentials.username());       // gather
     Instant now = clock.instant();                // gather
 
     var decision = decide(found, credentials.password(), now);
 
-    return decision.match(                        // act
+    decision.handle(                              // act
         user  -> sessions.start(user),
         error -> audit.loginFailed(
                      credentials.username(), error));
@@ -295,12 +295,12 @@ Read it from top to bottom, and the earlier axioms are all visible:
 - **A pure decision** ([Axiom 6](axiom-06-pure-functions.md)): the clock comes in as a value, so `Decide` is tested with plain values. Starting the session (which issues a random token) stays in the shell.
 - **An honest, total signature** ([Axiom 7](axiom-07-honest-total-signatures.md)): every outcome of `Decide` is in its return type.
 - **One reason to change** ([Axiom 8](axiom-08-cohesion.md)): `Decide` changes when the login rules change; `Login` changes when the plumbing does.
-- **Functions as arguments** ([Axiom 10](axiom-10-first-class-functions.md), [Axiom 11](axiom-11-higher-order-functions.md)): `Match` takes one function per outcome.
-- **Pattern matching** ([Axiom 12](axiom-12-pattern-matching.md)): the C# core uses a `switch` on the lookup, and the shell uses `Match` on the decision (see [switch or Match?](axiom-12-pattern-matching.md#switch-or-match)).
+- **Functions as arguments** ([Axiom 10](axiom-10-first-class-functions.md), [Axiom 11](axiom-11-higher-order-functions.md)): `Handle` takes one action per outcome.
+- **Pattern matching** ([Axiom 12](axiom-12-pattern-matching.md)): the C# core uses a `switch` on the lookup, and the shell uses `Handle` on the decision (see [switch or Match?](axiom-12-pattern-matching.md#switch-or-match)).
 - **The Impureim sandwich** ([Axiom 13](axiom-13-impureim.md)): gather, decide, act.
 - **Absence as a value** ([Axiom 14](axiom-14-maybe.md)): the missing user reaches the core as a value it has to handle: `User?` in C#, `Optional<User>` in Java (see *Why `Optional` as a parameter* below).
 - **Either with names** ([Axiom 15](axiom-15-either.md)): `Success` and `Failure` say what `Right` and `Left` only imply.
-- **Unit** ([Axiom 16](axiom-16-unit.md)): `Match` needs both branches to return the same type. Starting a session and writing an audit entry have nothing to return, so both return `Unit`. The login's result goes back to its caller, so this is `Match`, not `Handle`.
+- **Unit, and when not to use it** ([Axiom 16](axiom-16-unit.md)): starting a session and writing an audit entry have nothing to return, and nothing flows on after them: the act step ends the work. So the shell uses `Handle` and `Login` returns `void`, instead of passing a `Unit` that no caller reads. `Unit` is for when the result keeps flowing (see *With `Handle`*).
 
 Every failure is a value, every decision is a function, and every effect sits at a named edge. To know why a login failed, you read `Decide`.
 
