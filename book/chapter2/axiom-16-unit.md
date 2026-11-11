@@ -101,6 +101,7 @@ A two-outcome type needs a type on each side. An operation that can fail but has
 - **When the function can fail.** A plain `Unit` return type says the function always succeeds. If it can fail, there are two outcomes, and both belong in the return type ([Axiom 7](axiom-07-honest-total-signatures.md)). Put `Unit` on the success side of a two-outcome type instead (see *Why*, point 2). Returning a plain `Unit` and throwing on failure is as dishonest as `void` and throwing.
 - **At a framework's `void` boundary.** A `void OnButtonClicked()` handler that the framework calls isn't yours to change, and the framework would ignore the return value anyway. Use `void` there, and switch to `Unit` one layer in if the rest of the code wants it.
 - **For an async operation with no result.** In C#, `Task` already is "an async `Unit`". `Task<Unit>` is noise unless you are writing generic code that can't special-case `Task`. The same goes for `CompletableFuture<Void>` in Java.
+- **When nothing flows on.** If every branch of a case analysis only acts, and nothing is returned, chained or stored, don't return `Unit` from each one: use `Handle` from [Axiom 12](axiom-12-pattern-matching.md#when-the-branches-only-act-handle) and return nothing. `Unit` earns its place when the result keeps flowing.
 - **When the function does have an answer.** Don't reach for `Unit` to simplify a function that has something to report. Give it its honest return type ([Axiom 7](axiom-07-honest-total-signatures.md)).
 
 ---

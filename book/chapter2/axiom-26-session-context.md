@@ -75,17 +75,10 @@ public sealed class CustomerImporter(
         {
             rowNumber++;
             var validation = ValidateRow(row);        // pure
-            switch (validation)
-            {
-                case Success<Customer, string>(var customer):
-                    db.Customers.Add(customer);
-                    break;
-                case Failure<Customer, string>(var reason):
-                    context.Errors.Add(new ImportError(rowNumber, reason));
-                    break;
-                default:
-                    throw new UnreachableException();
-            }
+            validation.Handle(
+                success: customer => db.Customers.Add(customer),
+                failure: reason => context.Errors.Add(
+                    new ImportError(rowNumber, reason)));
             context.ProcessedCount++;
             context.ReportProgress(context.ProcessedCount);
         }
@@ -133,18 +126,16 @@ public final class CustomerImporter {
             BatchContext context) {                  // session: passed per call
         int rowNumber = 0;
         for (String[] row : rows) {
-            rowNumber++;
+            int number = ++rowNumber;               // a copy the lambda can capture
             var validation = validateRow(row);       // pure
-            switch (validation) {
-                case Success<Customer, String> s -> dsl
+            validation.handle(
+                customer -> dsl
                     .insertInto(CUSTOMER)
-                    .set(CUSTOMER.NAME, s.value().name())
-                    .set(CUSTOMER.EMAIL, s.value().email())
-                    .execute();
-                case Failure<Customer, String> f ->
-                    context.errors.add(
-                        new ImportError(rowNumber, f.error()));
-            }
+                    .set(CUSTOMER.NAME, customer.name())
+                    .set(CUSTOMER.EMAIL, customer.email())
+                    .execute(),
+                reason -> context.errors.add(
+                    new ImportError(number, reason)));
             context.processedCount++;
             context.reportProgress.accept(context.processedCount);
         }

@@ -143,14 +143,13 @@ Sealing declares every case in one place, and an exhaustive match makes the comp
 - **Too many cases.** A DU with fifteen cases usually means the data wants redesigning (see [Axiom 12](axiom-12-pattern-matching.md#trade-offs)). Group related cases in a nested DU (`Settled(SettledKind) | Pending | Rejected`), or split the function into smaller decisions.
 - **One allocation per result.** The cases are classes: a C# `record struct` can't inherit from an `abstract record`, Java records are always reference types, and C# 15 unions box value types. In ordinary code this doesn't matter. Where measurements say it does, a struct-based union library (`OneOf` in .NET) avoids the allocation, at the cost of a weaker check; keep the DU everywhere else.
 - **Java records can't hide their constructor.** As in [Axiom 19](axiom-19-value-objects.md#trade-offs), `record Approved(String authCode)` accepts `null` and the empty string. When a case has rules beyond its shape, make it a `final class` with a `Parse` factory, or give its fields value-object types that carry the rules.
-- **Some operations belong on the type.** When an operation is part of what each case is (such as "is this outcome final?"), a method on each case can be clearer than a `switch` in every consumer. That is the same choice [Axiom 12](axiom-12-pattern-matching.md#when-not-to) describes, now for a DU.
 
 ---
 
 ## When NOT to
 
 - **Two cases that already have a name.** "Value or nothing", "one of two things" and "success or failure" are [Axiom 14](axiom-14-maybe.md), [Axiom 15](axiom-15-either.md) and [Axiom 17](axiom-17-result.md). A new sealed hierarchy for one of those is reinvention. The general DU pays off from three cases up.
-- **A set that is open by design.** Plugins and extension points need cases added outside the module, which sealing forbids. Use an interface with a method per implementation (see [Axiom 12](axiom-12-pattern-matching.md#when-not-to)).
+- **A set that is open by design.** Plugins and extension points need cases added outside the module, which sealing forbids, so a sealed DU is the wrong tool (see [Axiom 12](axiom-12-pattern-matching.md#when-not-to)).
 - **Cases that carry no data.** Days of the week, log levels, colors: a set of constants where no case carries its own data is an `enum`. A DU of empty records is an enum written the long way.
 
 ---
