@@ -564,7 +564,7 @@ The over-inheritance half — the hierarchy designed away, kept honestly:
 
 - [Axiom 2 — Data is not Behavior](chapter2/axiom-02-data-is-not-behavior.md) — the root: inert data plus free functions removes the base-class-for-reuse reflex at the source.
 - [Axiom 22 — Discriminated unions](chapter2/axiom-22-discriminated-unions.md) — a closed subtype hierarchy consumed by polymorphic dispatch becomes a sealed DU + pattern match; the *When NOT to* keeps an interface with a method per implementation for a set open by design.
-- [Axiom 12 — Pattern matching](chapter2/axiom-12-pattern-matching.md) — the same virtual-dispatch-vs-match trade-off, inheritance kept as the right tool for intrinsic behaviour and open sets.
+- [Axiom 12 — Pattern matching](chapter2/axiom-12-pattern-matching.md) — the same virtual-dispatch-vs-match trade-off, inheritance kept as the right tool for a set of cases open by design.
 
 Echoes the [SOLID critique](#solid-critique)'s note that the **O**/**L** letters are about inheritance hierarchies this FP-leaning register sidesteps.
 
