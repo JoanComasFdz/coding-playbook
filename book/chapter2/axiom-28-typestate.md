@@ -401,4 +401,4 @@ A long-running shell ([Axiom 27](axiom-27-stateful-shell.md)) that holds an `Aut
 
 ---
 
-← Previous: [Axiom 27 — Stateful Shell](axiom-27-stateful-shell.md) · [Chapter 2 Contents](README.md) · [Coding rules](coding-rules.md) · Next: [Chapter 3 — Testing](../chapter3/README.md) →
+← Previous: [Axiom 27 — Stateful Shell](axiom-27-stateful-shell.md) · [Chapter 2 Contents](README.md) · Coding rules: [C#](coding-rules-csharp.md), [Java](coding-rules-java.md) · Next: [Chapter 3 — Testing](../chapter3/README.md) →

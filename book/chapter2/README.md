@@ -213,7 +213,7 @@ A unit you build, version and test on its own, with a core and a shell like the 
 
 ## The rules in one page
 
-[Coding rules](coding-rules.md) condenses every axiom into a one-line rule, with a link back to its axiom. It assumes you know the concepts, and is meant to be copied into a repository as its baseline.
+The coding rules condense every axiom into a one-line rule, with a link back to its axiom, in one file per language: [C#](coding-rules-csharp.md) and [Java](coding-rules-java.md). The two files have the same rules in the same order; only the language's constructs differ. It assumes you know the concepts, and is meant to be copied into a repository as its baseline.
 
 ---
 
