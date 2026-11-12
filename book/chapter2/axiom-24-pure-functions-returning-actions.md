@@ -38,7 +38,10 @@ This is [command–query separation](axiom-13-impureim.md#definitions) taken to 
 public sealed record CartLine(ProductId ProductId, int Quantity);
 public sealed record Cart(IReadOnlyList<CartLine> Lines);
 
-public abstract record CartAction;
+public abstract record CartAction
+{
+    // Match, as in Axiom 22
+}
 public sealed record AddLine(ProductId ProductId, int Quantity)
     : CartAction;
 public sealed record IncreaseLine(ProductId ProductId, int NewQuantity)
@@ -113,13 +116,10 @@ public HttpResponse HandleAddProduct(
 
     var action = DecideAdd(cart, productId, quantity);   // decide
 
-    return action switch                                 // act
-    {
-        AddLine a      => InsertLine(id, a),
-        IncreaseLine i => UpdateLine(id, i),
-        Rejected r     => new HttpResponse(400, r.Reason),
-        _ => throw new UnreachableException()
-    };
+    return action.Match(                                 // act
+        addLine:      a => InsertLine(id, a),
+        increaseLine: i => UpdateLine(id, i),
+        rejected:     r => new HttpResponse(400, r.Reason));
 }
 
 private HttpResponse InsertLine(CartId id, AddLine a)

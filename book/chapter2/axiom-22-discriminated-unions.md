@@ -22,7 +22,7 @@ A *discriminated union* (DU, also called a [tagged union](https://en.wikipedia.o
 
 A DU is the *sum* half of an [algebraic data type](https://en.wikipedia.org/wiki/Algebraic_data_type): exactly one of its cases. The record ([Axiom 3](axiom-03-immutability.md)) is the *product* half: all of its fields at once.
 
-How much the compiler checks differs (see [Axiom 12](axiom-12-pattern-matching.md#definitions)). Java makes a missing case a compile error. C# can't prove an `abstract record` hierarchy closed, so it needs a discard branch and only warns about a missing case. C# 15's `union` types ([Axiom 14](axiom-14-maybe.md#maybe-in-c-beyond-t)) close that gap: `public union PaymentOutcome(Approved, Declined, RequiresVerification);` is a closed set, and a `switch` over it needs no discard branch.
+How much the compiler checks differs (see [Axiom 12](axiom-12-pattern-matching.md#definitions)). Java makes a missing case a compile error. C# can't prove an `abstract record` hierarchy closed, so the discard branch goes inside the type's `Match`, once, and callers use `Match` instead of a `switch`. C# 15's `union` types ([Axiom 14](axiom-14-maybe.md#maybe-in-c-beyond-t)) close that gap: `public union PaymentOutcome(Approved, Declined, RequiresVerification);` is a closed set, and a `switch` over it needs no discard branch, only a `null` arm where the union can be `default`.
 
 ---
 
@@ -36,19 +36,29 @@ A card payment has three outcomes. *Approved* carries the issuer's authorization
 <td>
 
 ```csharp
-public abstract record PaymentOutcome;
+public abstract record PaymentOutcome
+{
+    public R Match<R>(
+        Func<Approved, R>             approved,
+        Func<Declined, R>             declined,
+        Func<RequiresVerification, R> requiresVerification) =>
+        this switch
+        {
+            Approved a             => approved(a),
+            Declined d             => declined(d),
+            RequiresVerification r => requiresVerification(r),
+            _ => throw new UnreachableException()
+        };
+}
 public sealed record Approved(string AuthCode) : PaymentOutcome;
 public sealed record Declined(string Reason) : PaymentOutcome;
 public sealed record RequiresVerification(string ChallengeUrl)
     : PaymentOutcome;
 
-public static string Describe(PaymentOutcome outcome) => outcome switch
-{
-    Approved a             => $"Charged. Auth: {a.AuthCode}",
-    Declined d             => $"Declined: {d.Reason}",
-    RequiresVerification r => $"Verify at {r.ChallengeUrl}",
-    _ => throw new UnreachableException()
-};
+public static string Describe(PaymentOutcome outcome) => outcome.Match(
+    approved:             a => $"Charged. Auth: {a.AuthCode}",
+    declined:             d => $"Declined: {d.Reason}",
+    requiresVerification: r => $"Verify at {r.ChallengeUrl}");
 ```
 
 </td>
@@ -76,7 +86,7 @@ public static String describe(PaymentOutcome outcome) {
 </tr>
 </table>
 
-No `PaymentOutcome` can carry both an authorization code and a verification URL, and there is no fourth case. Add a `Pending` case, and the compiler points at every `switch` that doesn't handle it yet (in C#, as a warning).
+No `PaymentOutcome` can carry both an authorization code and a verification URL, and there is no fourth case. Add a `Pending` case, and the compiler points at every consumer that doesn't handle it yet: every `switch` in Java, and in C# every `Match` call, once `Match` gets its fourth parameter. In C#, every union in this book has a `Match` like this one, and a `Handle` where branches only act ([Axiom 12](axiom-12-pattern-matching.md#switch-or-match)); later examples leave them out.
 
 Now put `Either` and `Result` next to it:
 
@@ -142,7 +152,7 @@ Sealing declares every case in one place, and an exhaustive match makes the comp
 
 - **Too many cases.** A DU with fifteen cases usually means the data wants redesigning (see [Axiom 12](axiom-12-pattern-matching.md#trade-offs)). Group related cases in a nested DU (`Settled(SettledKind) | Pending | Rejected`), or split the function into smaller decisions.
 - **One allocation per result.** The cases are classes: a C# `record struct` can't inherit from an `abstract record`, Java records are always reference types, and C# 15 unions box value types. In ordinary code this doesn't matter. Where measurements say it does, a struct-based union library (`OneOf` in .NET) avoids the allocation, at the cost of a weaker check; keep the DU everywhere else.
-- **Java records can't hide their constructor.** As in [Axiom 19](axiom-19-value-objects.md#trade-offs), `record Approved(String authCode)` accepts `null` and the empty string. When a case has rules beyond its shape, make it a `final class` with a `Parse` factory, or give its fields value-object types that carry the rules.
+- **Java records can't hide their constructor.** As in [Axiom 19](axiom-19-value-objects.md#definitions), `record Approved(String authCode)` accepts `null` and the empty string. When a case has rules beyond its shape, make it a `final class` with a `Parse` factory, or give its fields value-object types that carry the rules.
 
 ---
 

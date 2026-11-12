@@ -46,12 +46,7 @@ Result<int, string> ParseAge(string input)
 }
 
 var result = ParseAge("42");
-var message = result switch
-{
-    Success<int, string> s => $"Age {s.Value}",
-    Failure<int, string> f => $"Invalid age: {f.Error}",
-    _ => throw new UnreachableException()
-};
+// consumed with Match, below
 ```
 
 </td>
@@ -85,11 +80,11 @@ String message = switch (result) {
 </tr>
 </table>
 
-Both failures are in the return type. The C# version turns `TryParse`'s flag into a value; the Java version catches `parseInt`'s exception and turns it into one. Either way, the conversion happens once, inside `ParseAge`, and no caller sees a flag or an exception. The caller handles both outcomes in one `switch` ([Axiom 12](axiom-12-pattern-matching.md)).
+Both failures are in the return type. The C# version turns `TryParse`'s flag into a value; the Java version catches `parseInt`'s exception and turns it into one. Either way, the conversion happens once, inside `ParseAge`, and no caller sees a flag or an exception. The caller handles both outcomes in one match ([Axiom 12](axiom-12-pattern-matching.md)): a `switch` in Java, `Match` in C#.
 
 ### With `Match`
 
-Every branch of that `switch` repeats the generic arguments (`Success<int, string>`), which gets tiresome as the types grow. [Axiom 12](axiom-12-pattern-matching.md#the-method-form) showed the alternative: put the case analysis on the type as a `Match` method, and let each caller pass one function per case. For `Result`:
+In Java, every branch of that `switch` repeats the generic arguments (`Success<Integer, String>`), which gets tiresome as the types grow. In C#, a `switch` would also need a discard branch at every caller. [Axiom 12](axiom-12-pattern-matching.md#the-method-form) showed the alternative: put the case analysis on the type as a `Match` method, and let each caller pass one function per case. For `Result`:
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -137,7 +132,7 @@ String message = result.match(
 </tr>
 </table>
 
-Same caller, same result. Which form to use is the choice in [switch or Match?](axiom-12-pattern-matching.md#switch-or-match).
+Same result. In Java, which form to use is the choice in [switch or Match?](axiom-12-pattern-matching.md#switch-or-match); in C#, `Match` is the form.
 
 ### With `Handle`
 

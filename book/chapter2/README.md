@@ -211,6 +211,10 @@ Object-oriented programming doesn't disappear. It moves: out of the core, where 
 
 A unit you build, version and test on its own, with a core and a shell like the ones above, is what this book calls a **component**: a deployable unit (an API, a worker) or a library. Where only a deployable fits, this book says *service*. Don't confuse it with a *module*, which is the much smaller static class of pure functions from [Axiom 2](axiom-02-data-is-not-behavior.md).
 
+## The rules in one page
+
+The coding rules condense every axiom into a one-line rule, with a link back to its axiom, in one file per language: [C#](coding-rules-csharp.md) and [Java](coding-rules-java.md). The two files have the same rules in the same order; only the language's constructs differ. It assumes you know the concepts, and is meant to be copied into a repository as its baseline.
+
 ---
 
 ← Previous: [Chapter 1](../chapter1/README.md) · Start: [Axiom 0 — Ubiquitous Language](axiom-00-ubiquitous-language.md) →

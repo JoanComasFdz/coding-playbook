@@ -29,6 +29,8 @@ Not every convention draws the line here. Swift's guidelines name a function by 
 - **A name fixed by the language or a framework.** When you override or implement a member, it keeps the name you were given: Java's `hashCode()` and `iterator()`, C#'s `ToString()`.
 - **A [domain-specific language](https://en.wikipedia.org/wiki/Domain-specific_language) (DSL), including one you build.** When your own code is a SQL builder, a test helper or another small language, it should follow the style of the language it imitates: SQL's keywords (`From`, `Where`), a test's `Given`, `When`, `Then`. Turning them into verbs would make the code harder to read for anyone who knows that language. That is a valid use case, not a lapse.
 
+Two idioms also count as verbs: predicates that start with `Is`, `Has` or `Can` (`IsValid`, `HasRole`), and conversions named `ToX` or `FromX` (`ToTonnes`, `FromString`). They read as actions where they are used: `if (order.IsPaid)`, `lots.ToTonnes()`.
+
 Everywhere else, the rule holds.
 
 This axiom departs from the common OO default of **fusing** the two: an object that owns mutable state *and* the methods that quietly change it.
@@ -178,6 +180,7 @@ Sharvit is upfront about the costs [5]:
 ## When NOT to
 
 - **When the code is built around mutable objects, Tell, Don't Ask is the right tool.** In that world, its rules are sound (see below). This axiom changes the premise; it does not claim the maxim is wrong.
+- **Code a framework shapes, at the boundary.** Controllers, event subscriptions, background workers, UI handlers, ORM entities, DTOs with binding attributes: each mixes data and behavior the way its framework requires, and that is fine there. Keep the business logic out of them. They hand plain records to the functions that decide, and get plain records back.
 - **Mutable resources.** Where mutable state legitimately lives (a connection, a cache, a stream), *telling* the resource what to do, instead of asking for its insides, stays exactly right.
 - **Performance-driven layouts.** Mike Acton's **Data-Oriented *Design*** [6] uses the same slogan for a *performance* argument (cache locality, memory layout). That is a different problem, and out of scope for this book (see the [playbook scope](../../README.md#scope)).
 

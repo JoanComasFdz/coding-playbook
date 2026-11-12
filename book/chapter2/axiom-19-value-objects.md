@@ -21,6 +21,8 @@ A [value object](https://en.wikipedia.org/wiki/Value_object) has three propertie
 - **Equal by value.** Two instances with the same data are equal; there is no identity beyond the data. Records give you this for free. A hand-written class has to override `Equals`/`GetHashCode` (`equals`/`hashCode` in Java) consistently.
 - **Valid by construction.** The constructor is private. The only way in is a static factory, `Parse` in C# and `parse` in Java, that checks the input once and returns `Result<T, string>`. Functional programmers call this a [smart constructor](https://wiki.haskell.org/Smart_constructors).
 
+> **In Java, a value object is a `final class`, never a record.** A record's canonical constructor is always as visible as the record itself, so it can't be made private, and any caller can skip `parse`. A `final class` with a private constructor is the only way to keep `parse` as the one way in. It costs hand-written `equals` and `hashCode`; the example below shows them. C# has no such limit: a `sealed record` can have a private constructor.
+
 The first two properties come from earlier axioms. The third is what this axiom adds: it turns a record from "some fields" into "proof that these fields follow a rule". A function that takes a `Username` never checks whether it is empty, because `Username.Parse` already did.
 
 This axiom departs from three common defaults:
@@ -274,7 +276,7 @@ Two `Order` values with the same `Id` are the same order, however their `Total` 
 
 ## Trade-offs
 
-- **Java records can't hide their constructor.** A record's canonical constructor is as visible as the record itself. Either write the value object as a `final class` with hand-written `equals` and `hashCode` (as in the example), or accept the public constructor and rely on review to keep callers on `parse`. This book prefers the `final class`. Decide once per codebase, not per type.
+- **The Java `final class` is more code.** Hand-written `equals` and `hashCode` for every value object (see *Definitions*). The cheaper alternative, a record whose public constructor only review keeps callers away from, gives up the guarantee this axiom is about.
 - **Mapping at the persistence boundary.** ORMs and serializers expect public constructors or settable properties. Map at the boundary instead (see *Problem / forces*): read the primitive, call `Parse`, and treat a `Failure` as an error, because it means the stored data breaks today's rule.
 - **Several values, several Results.** A handler that builds three value objects has three `Result`s to handle. The combinators of [Axiom 18](axiom-18-result-combinators.md) apply directly: a factory is exactly the kind of step `Bind` chains. A later axiom builds on this to compose many.
 

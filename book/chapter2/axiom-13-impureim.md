@@ -1,10 +1,10 @@
 # Axiom 13 — Impureim
 
-**Effects at the edges, decisions in the middle: read the world, decide with one pure function, then write the world.**
+**Effects at the edges, decisions in the middle: read the world, decide with pure functions, then write the world.**
 
 - The **shell** is the impure part. It *gathers* values from the world before the decision and *acts* on the result after it.
 - The **core** is the pure part. It *decides*, and touches nothing outside its parameters and its return value.
-- The picture is a sandwich: impure, pure, impure. One sandwich per request, message or job.
+- The picture is a sandwich: impure, pure, impure. A request, message or job is one sandwich, or several in a row.
 
 [Axiom 4](axiom-04-side-effects.md) named the effects, [Axiom 5](axiom-05-impure-functions.md) the functions that carry them, [Axiom 6](axiom-06-pure-functions.md) their opposite, and [Axiom 7](axiom-07-honest-total-signatures.md) the signature the core must have. This axiom puts those pieces into one shape. It is a concept, not a construct: it shows the target the rest of this chapter builds toward, so it stays short.
 
@@ -18,7 +18,7 @@ Through [Axiom 9](axiom-09-connascence.md)'s lens, the sandwich improves the *lo
 
 ## Definitions
 
-> For each unit of work (one request, one message, one job), every effect happens either before or after a single pure call, and that call is where the decisions are made.
+> For each unit of work (one request, one message, one job), every effect happens in a gather or an act step, and every decision in the pure step between them. That step can be one pure call or several, as long as no effect sits between them.
 
 A unit of work that fits the shape runs three steps, in this order:
 
@@ -26,11 +26,13 @@ A unit of work that fits the shape runs three steps, in this order:
 - **Decide (pure).** Turn those values into a result: validate, apply the rules, work out what should change. No I/O, no clock, no logging, and no `throw` on bad input: every outcome is named in the return type ([Axiom 7](axiom-07-honest-total-signatures.md)).
 - **Act (impure).** Carry out the decision: save the row, publish the message, write the response, log. Nothing is left to decide.
 
+**Several rounds.** When a read depends on a decision (fetch the shipping rates only for a cart that passed its checks), run another round: gather, decide, gather more, decide again, act. A unit of work can be any number of rounds; each one keeps the shape.
+
 Either end of the shell can be empty. A query reads, decides and returns, with nothing to write. A scheduled cleanup may have nothing to read. The rule is "effects at the edges, decisions in the middle"; the full sandwich is the common case, not the only one.
 
 You recognize the shape by the core's signature: its parameters are the gathered values, and its return value is everything the act step needs. If the core reads the clock, logs, or throws on bad input, the sandwich collapses back into a mixed function.
 
-**The core and the shell use classes differently.** The core is `static` functions over immutable data ([Axiom 6](axiom-06-pure-functions.md)), grouped in static classes that work as modules ([Axiom 2](axiom-02-data-is-not-behavior.md)). The shell is ordinary object-oriented code: a handler is a class, its dependencies (a `DbContext`, an HTTP client) arrive through its constructor, and it holds state where state is needed, such as a cache or a connection. Nothing in this book takes classes, dependency injection or state away from the shell. They just stay out of the core.
+**The core and the shell use classes differently.** The core is `static` functions over immutable data ([Axiom 6](axiom-06-pure-functions.md)), grouped in static classes that work as modules ([Axiom 2](axiom-02-data-is-not-behavior.md)). The shell is ordinary object-oriented code: a handler is a class, its dependencies (a `DbContext`, an HTTP client) arrive through its constructor, and it holds state where state is needed, such as a cache or a connection. Nothing in this book takes classes, dependency injection or state away from the shell. They just stay out of the core. **The framework shapes the shell's entry points; this book shapes what runs inside them.** A controller, an event subscription, a background worker or a UI handler has the signature, attributes and lifecycle its framework requires ([Axiom 2](axiom-02-data-is-not-behavior.md#when-not-to)). Behind that entry point, the shell's steps and the core's decisions follow these axioms.
 
 The shape is an older rule, lifted one level. **[Command–query separation](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation)** (CQS) asks each *method* to either return a value (a query) or change state (a command), never both [4]. Impureim draws the same line around the whole unit of work: gather is all query, act is all command, and the line between them is a step boundary rather than a naming convention per method. The core goes further than CQS asks: a CQS query may still read mutable state, while the core reads nothing outside its parameters.
 
@@ -142,7 +144,7 @@ Two pure decisions combine into one larger pure decision, and the shell around t
 
 ## Trade-offs
 
-- **The shell gathers up front.** It has to read everything the core might need before the core runs. A mixed handler reads the discount rules only when the cart turns out to be non-empty. The sandwich either reads them every time, sometimes for nothing, or moves the emptiness check into the shell, where it is a decision in the wrong place. When a read really depends on a decision, run two sandwiches in a row: gather, decide, gather more, decide again, act.
+- **The shell gathers up front.** It has to read everything the core might need before the core runs. A mixed handler reads the discount rules only when the cart turns out to be non-empty. The sandwich either reads them every time, sometimes for nothing, or moves the emptiness check into the shell, where it is a decision in the wrong place. When a read really depends on a decision, run another round (see *Definitions*).
 - **A long-running process is many sandwiches.** One request fits one sandwich. A process that consumes a stream of events and keeps state between them runs one sandwich per event, and the state between events lives in the shell. The shape still holds; it just no longer fits in one diagram.
 
 ---
