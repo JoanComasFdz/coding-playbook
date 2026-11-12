@@ -24,7 +24,7 @@ Modern C# and Java support several kinds of pattern:
 A match is *exhaustive* when its branches cover every value the input type can hold. How much the compiler helps differs:
 
 - **Java** checks exhaustiveness over sealed interfaces and enums. A `switch` that misses a case doesn't compile [3].
-- **C#** warns (CS8509) when a `switch` expression isn't exhaustive, and you can turn that warning into an error. But C# can't yet prove that a class hierarchy is closed, so a `switch` over an abstract record base needs a discard branch (`_ => throw ...`), and a newly added subtype isn't flagged.
+- **C#** warns (CS8509) when a `switch` expression isn't exhaustive, and you can turn that warning into an error. But C# can't yet prove that a class hierarchy is closed, so a `switch` over an abstract record base needs a discard branch (`_ => throw ...`), and a newly added subtype isn't flagged. It compiles, and throws at runtime. *The method form* below gives C# the check back.
 
 ---
 
@@ -89,7 +89,7 @@ public static string Classify(Shape shape) =>
         Rectangle r when r.L > 3     => "too large",
         Rectangle                     => "fits",
         Circle                        => "not supported",
-        _ => throw new UnreachableException() // C# can't prove Shape is closed
+        _ => throw new UnreachableException() // ❌ C# can't prove Shape is closed
     };
 ```
 
@@ -117,7 +117,7 @@ public static String classify(Shape shape) {
 </tr>
 </table>
 
-The Java version has no `default` branch, and adding a `Triangle` later points you at every `switch` that must handle it. The C# version needs the discard branch (see *Definitions*).
+The Java version has no `default` branch, and adding a `Triangle` later points you at every `switch` that must handle it. The C# version needs the discard branch (see *Definitions*): add a `Triangle` and it still compiles, then throws when one arrives.
 
 ---
 
@@ -170,7 +170,7 @@ sealed interface Shape permits Circle, Rectangle, Square {
 </tr>
 </table>
 
-Its body is the same `switch` as before: `Match` wraps it as a method on the type. Java needs no fallback branch; C# does, for the reason in *Definitions*.
+Its body is the same `switch` as before: `Match` wraps it as a method on the type. Java needs no fallback branch. C# still does, for the reason in *Definitions*, but now it is written once, inside the type, and no caller sees it. Add a `Triangle` and `Match` gets a fourth parameter, so every call site stops compiling until it handles the new case. In C#, that is how a closed type gets the check Java's `switch` gives for free.
 
 The same `CalculateArea` function, first as a `switch` expression and then as a `Match` call:
 
@@ -180,7 +180,7 @@ The same `CalculateArea` function, first as a `switch` expression and then as a 
 <td>
 
 ```csharp
-// switch — case analysis at the call site
+// switch — case analysis at the call site (❌ in C#, see below)
 public static double CalculateArea(Shape shape) => shape switch
 {
     Circle c    => Math.PI * c.Radius * c.Radius,
@@ -298,9 +298,19 @@ The pair is not new. C# libraries such as OneOf [5] and ErrorOr [6] offer `Match
 - **`Match` puts the case list on the type.** Every consumer gets one uniform call shape, and no branch spells out a type. The costs:
   - the method's signature grows with the number of variants (seven variants, seven function parameters);
   - each branch is a lambda allocation;
-  - every consumer is coupled to the variant list, so adding, removing or renaming a variant changes a method signature every caller sees.
+  - every consumer is coupled to the variant list, so adding, removing or renaming a variant changes a method signature every caller sees (in C#, that is the point: see below);
+  - each branch is a lambda, so it can't `return` from the calling method or `break` out of its loop, and a guard becomes an `if` or a `?:` inside the branch.
 
-For most line-of-business code the performance costs don't matter. Start with `switch`. Move to `Match` once the variant list has settled and enough consumers exist that spelling out the case types becomes a visible tax. The answer can differ between types in the same codebase.
+The answer depends on the language:
+
+- **Java: start with `switch`.** The compiler checks a sealed `switch` at every call site, guards and nested patterns included. Move to `match` once the variant list has settled and enough consumers exist that spelling out the case types becomes a visible tax.
+- **C#: consume a closed type with `Match` or `Handle`, never with a discard that throws.** A `_ => throw` branch tells the reader nothing and hides a missing case until runtime; `Match` turns it into a build error. A `switch` stays only where it checks or decides something itself:
+  - inside the type's own `Match` and `Handle`, the one place the discard lives;
+  - over a C# 15 `union`, which the compiler knows is closed, so it needs no discard;
+  - over a type that was never closed: `object` (as in `Describe` above), a nullable `T?` (where `null` and the value cover every case), an `enum` (which can hold any integer);
+  - where the wildcard is a real branch ("any other event: no change"), not a `throw`.
+
+For most line-of-business code the performance costs don't matter.
 
 ---
 
@@ -327,7 +337,7 @@ Inside a branch typed `Circle c`, the value already *is* a `Circle` with a radiu
 An `if` chain (see *Problem / forces*) gives each case its own braces, type test, cast and local. The match removes that scaffolding: one `switch`, and between its braces the cases themselves, one per line. Apply the [decisions-vs-ceremony test](../chapter1/README.md#enforce-decisions-not-ceremony) from [Chapter 1](../chapter1/README.md): remove the type test, the cast and the local, and the reader loses nothing. Every line left is a decision. The cases also sit *together*, where an `if` chain leaves them as separate blocks the reader has to reassemble into "the set of cases this code handles".
 
 **3. Missing cases become build errors, not production bugs.**
-For a closed type, the compiler knows every shape (fully in Java; with the limits in *Definitions* in C#). A match that misses one is flagged at build time, and adding a shape points you at every match that has to handle it.
+For a closed type, the compiler knows every shape (in Java through `switch`; in C# through `Match`, see *The method form*). A match that misses one is flagged at build time, and adding a shape points you at every match that has to handle it.
 
 **4. The dispatch lives where the decision lives.**
 The consumer that needs to branch on a shape holds the branching logic; the data type stays a passive description of *what it is*. A second consumer with a different question writes its own match, and neither touches the data type. This is the practical payoff of [Axiom 2](axiom-02-data-is-not-behavior.md): data is data, and the operations over it live with the consumers that need them. (When it reads better, the case list can move onto the type instead: see *The method form*.)
@@ -339,7 +349,7 @@ The consumer that needs to branch on a shape holds the branching logic; the data
 - **The temptation to grow the match forever.** A match with forty branches usually means the data should be redesigned: maybe the cases should be grouped, or the consumer is making too many decisions in one place. The match is doing its job by making the size of the decision visible.
 - **Concise can turn cryptic.** Nested patterns and long guards pack a decision into one line the reader has to decode. The same test applies in reverse: if taking the line apart shows a decision the reader had to rebuild, pull it out into a named step.
 - **The guarantee needs a closed type.** A match over a non-sealed type compiles, but nothing checks completeness and the `default` branch carries the weight. Acceptable for `Object`-typed dispatch or hierarchies you don't own; where the cases are under your control, seal them. (For sets that are open by design, see *When NOT to*.)
-- **`switch` versus `Match` is your call.** Each has its own costs (see *`switch` or `Match`?*).
+- **`Match` has costs.** A signature per type, a lambda per branch, and no `return` or `break` from inside a branch. In Java you weigh them; in C# this book pays them for the check (see *`switch` or `Match`?*).
 
 ---
 
@@ -351,7 +361,7 @@ The consumer that needs to branch on a shape holds the branching logic; the data
 
 ## Convention: match on a named value, never on an inline call
 
-A pattern match (a `switch` expression, a `switch` statement or a `Match` call) always reads from a *named variable*, never from a call expression. Wherever you're tempted to write `switch (Compute(...)) { ... }`, split it into two statements:
+A pattern match (a `switch` expression, a `switch` statement, or a `Match` or `Handle` call) always reads from a *named variable*, never from a call expression. Wherever you're tempted to write `Compute(...).Handle(...)` or `switch (Compute(...)) { ... }`, split it into two statements:
 
 <table>
 <tr><th>Don't</th><th>Do</th></tr>
@@ -359,11 +369,9 @@ A pattern match (a `switch` expression, a `switch` statement or a `Match` call) 
 <td>
 
 ```csharp
-switch (Decide(state, command))
-{
-    case Approved a: Persist(a); break;
-    case Denied d:   Log(d);     break;
-}
+Decide(state, command).Handle(
+    approved: a => Persist(a),
+    denied:   d => Log(d));
 ```
 
 </td>
@@ -371,18 +379,16 @@ switch (Decide(state, command))
 
 ```csharp
 var decision = Decide(state, command);   // pure
-switch (decision)                         // impure dispatch
-{
-    case Approved a: Persist(a); break;
-    case Denied d:   Log(d);     break;
-}
+decision.Handle(                          // impure dispatch
+    approved: a => Persist(a),
+    denied:   d => Log(d));
 ```
 
 </td>
 </tr>
 </table>
 
-The same goes for `Match`: `var result = x.Compute(...); result.Match(...)`, not `x.Compute(...).Match(...)`.
+The same goes for `Match` and for `switch`: `var result = x.Compute(...); result.Match(...)`, not `x.Compute(...).Match(...)`.
 
 The reason is **visual separation between pure and impure code**. The pure call is on one line; the impure dispatch is on the next. A reviewer scanning down sees the two halves at once, *compute* then *act*, without parsing an expression. Inlining the call merges them into one expression and hides the boundary this book works hard to mark.
 
@@ -390,7 +396,7 @@ It also brings three smaller benefits:
 
 1. **The intermediate value gets a name.** A reviewer knows what is being dispatched on by reading one identifier.
 2. **A debugger can stop between the two statements** and show the result before the dispatch runs.
-3. **Every example has the same rhythm.** `var x = Pure(...); switch (x) { ... }` becomes a shape the eye recognizes without parsing.
+3. **Every example has the same rhythm.** `var x = Pure(...); x.Match(...)` becomes a shape the eye recognizes without parsing.
 
 A property access (`x.Status`) is fine to inline; the rule is about real *calls*, not every member access.
 

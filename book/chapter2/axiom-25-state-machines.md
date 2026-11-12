@@ -1,6 +1,6 @@
 # Axiom 25 — State machines
 
-**A state machine is one pure function: `Transition(state, command) → event`. It takes the current state and a command, and returns an event that carries the next state, or `NoChange` with the same state when the command doesn't apply. It is the shape of [Axiom 24](axiom-24-pure-functions-returning-actions.md) with the current state added to the inputs.**
+**A [finite state machine](https://en.wikipedia.org/wiki/Finite-state_machine) is one pure function: `Transition(state, command) → event`. It takes the current state and a command, and returns an event that carries the next state, or `NoChange` with the same state when the command doesn't apply. It is the shape of [Axiom 24](axiom-24-pure-functions-returning-actions.md) with the current state added to the inputs.**
 
 - **State, command and event are data**: each is a sealed DU of immutable records ([Axiom 22](axiom-22-discriminated-unions.md)), and the state has one record per condition ([Axiom 23](axiom-23-illegal-states.md)).
 - **Each successful event carries the specific next state it produces** (`Activated(Active)`, `Cancelled(Ended)`), so the transition table is checked by the type system.
@@ -24,7 +24,7 @@ Four words, each with one meaning:
 - **Event**: a *fact* about what happened, in the past tense: "this subscription was activated". A sealed DU. Successful events carry the next state. `NoChange` carries the unchanged state when the command doesn't apply (a second click, a stale request, a resent message): the machine reports an honest no-op instead of an error.
 - **Transition**: the function that computes the event from a state and a command.
 
-`Transition` matches on the *pair* of state and command ([Axiom 12](axiom-12-pattern-matching.md)). In automata theory this is a [Mealy machine](https://en.wikipedia.org/wiki/Mealy_machine), whose output depends on both the current state and the input [1]. Because each successful event names the specific state it produces, `new Activated(new Trial(...))` doesn't compile: [Axiom 23](axiom-23-illegal-states.md)'s idea, applied to the relationship between an event and its next state.
+Together they make a finite state machine: a fixed set of states, and a rule that says which command moves which state where. `Transition` matches on the *pair* of state and command ([Axiom 12](axiom-12-pattern-matching.md)). In automata theory this kind of finite state machine is a [Mealy machine](https://en.wikipedia.org/wiki/Mealy_machine), whose output depends on both the current state and the input [1]. Because each successful event names the specific state it produces, `new Activated(new Trial(...))` doesn't compile: [Axiom 23](axiom-23-illegal-states.md)'s idea, applied to the relationship between an event and its next state.
 
 The shell is the sandwich of [Axiom 13](axiom-13-impureim.md), in four steps:
 
@@ -49,7 +49,10 @@ A subscription that is in `Trial`, `Active` or `Ended`. Three commands: `Activat
 <td>
 
 ```csharp
-public abstract record SubscriptionState;
+public abstract record SubscriptionState
+{
+    // Match, as in Axiom 22, for each of the three unions
+}
 public sealed record Trial(DateOnly StartedOn, DateOnly ExpiresOn)
     : SubscriptionState;
 public sealed record Active(DateOnly RenewsOn) : SubscriptionState;
@@ -70,18 +73,16 @@ public sealed record NoChange(SubscriptionState State)
 public static SubscriptionEvent Transition(
     SubscriptionState state, SubscriptionCommand command,
     DateOnly today) =>
-    (state, command) switch
-    {
-        (Trial, Activate) =>
-            new Activated(new Active(today.AddMonths(1))),
-        (Active, Renew) =>
-            new Renewed(new Active(today.AddMonths(1))),
-        (Trial or Active, Cancel) =>
-            new Cancelled(new Ended()),
-        (_, Activate or Renew or Cancel) =>
-            new NoChange(state),
-        _ => throw new UnreachableException()
-    };
+    state.Match<SubscriptionEvent>(
+        trial: _ => command.Match<SubscriptionEvent>(
+            activate: _ => new Activated(new Active(today.AddMonths(1))),
+            renew:    _ => new NoChange(state),
+            cancel:   _ => new Cancelled(new Ended())),
+        active: _ => command.Match<SubscriptionEvent>(
+            activate: _ => new NoChange(state),
+            renew:    _ => new Renewed(new Active(today.AddMonths(1))),
+            cancel:   _ => new Cancelled(new Ended())),
+        ended: _ => new NoChange(state));
 ```
 
 </td>
@@ -132,7 +133,7 @@ public static SubscriptionEvent transition(
 </tr>
 </table>
 
-`Transition` is the whole state machine. `today` is a parameter, not a clock read, so the function stays pure ([Axiom 6](axiom-06-pure-functions.md)). C# matches on the pair with tuple patterns; Java, which has no tuple patterns, switches on the state and then on the command. Both are total: a double-clicked Cancel or a resent message gets `NoChange(state)` instead of an error, so idempotency is built into the shape.
+`Transition` is the whole state machine. `today` is a parameter, not a clock read, so the function stays pure ([Axiom 6](axiom-06-pure-functions.md)). Both match on the state and then on the command: C# with `Match` ([Axiom 12](axiom-12-pattern-matching.md#switch-or-match)), Java with `switch`. Both are total: a double-clicked Cancel or a resent message gets `NoChange(state)` instead of an error, so idempotency is built into the shape.
 
 The shell:
 
@@ -151,16 +152,13 @@ public HttpResponse HandleCommand(
 
     var ev = Transition(state, command, today);            // decide
 
-    return ev switch                                       // act
-    {
-        Activated a => SaveAndRespond(id, a.NewState,
+    return ev.Match(                                       // act
+        activated: a => SaveAndRespond(id, a.NewState,
             $"activated; renews {a.NewState.RenewsOn}"),
-        Renewed r   => SaveAndRespond(id, r.NewState,
+        renewed:   r => SaveAndRespond(id, r.NewState,
             $"renewed; next renewal {r.NewState.RenewsOn}"),
-        Cancelled c => SaveAndRespond(id, c.NewState, "cancelled"),
-        NoChange    => new HttpResponse(200, "no change"),
-        _ => throw new UnreachableException()
-    };
+        cancelled: c => SaveAndRespond(id, c.NewState, "cancelled"),
+        noChange:  _ => new HttpResponse(200, "no change"));
 }
 
 private HttpResponse SaveAndRespond(
@@ -218,7 +216,7 @@ When something changes condition over time and answers commands differently in e
 3. **A status enum and methods that throw.** Illegal transitions throw `InvalidOperationException`, the cost [Axiom 17](axiom-17-result.md#problem--forces) ruled out: the caller is pushed into `try`/`catch`, and nothing checks that every case was handled.
 4. **The [State pattern](https://en.wikipedia.org/wiki/State_pattern).** One class per state, one method per command; a transition is `state = state.Cancel()` [3]. A good fit when each command's behavior genuinely belongs with the state it starts from. The rules are spread across the state classes, and a new command means editing every one of them.
 5. **A state-machine library** (Stateless in .NET, Spring Statemachine, Akka FSM, Erlang's `gen_statem`). The states and transitions are declared as a graph that a runtime drives. A good fit when you need what the runtime provides, such as persistence or retries. The rules sit in one place, but in configuration rather than in the types, and testing involves the runtime.
-6. **One pure `Transition` function.** The legal transitions are in one `switch`, the event types enforce which state each produces, and the function is tested as a table. The runtime is whatever shell wraps it.
+6. **One pure `Transition` function.** The legal transitions are in one match, the event types enforce which state each produces, and the function is tested as a table. The runtime is whatever shell wraps it.
 
 Options 1 to 3 keep state inside an object and change it through methods, so the compiler can't help. Options 4 to 6 all separate *describing* the machine from *running* it. Between 4 and 6, the choice is the one [Axiom 22](axiom-22-discriminated-unions.md#trade-offs) describes: behavior on each case, or one `switch` in a consumer. Between 5 and 6, the question is whether what the library's runtime gives you is worth the dependency. This book defaults to the single function, because the rules become values the type system can check.
 
@@ -227,7 +225,7 @@ Options 1 to 3 keep state inside an object and change it through methods, so the
 ## Why
 
 **1. Every rule is in one place.**
-To learn which commands are allowed in which state, read `Transition`: one `switch`, one branch per legal pair plus the no-ops, each with its next state. There is no second file, no subclass and no configuration to check.
+To learn which commands are allowed in which state, read `Transition`: one match, one branch per legal pair plus the no-ops, each with its next state. There is no second file, no subclass and no configuration to check.
 
 **2. Every trigger uses the same rules.**
 The same state is usually changed from several places: an HTTP endpoint, a queue consumer, a scheduled job, a webhook. Without a state machine, each grows its own copy of the rules: the endpoint checks "is it still in trial?" with an `if`, the consumer re-implements the check slightly differently, the scheduled job filters states in its own query. Three copies drift apart. With `Transition`, every trigger has the same shape (load, transition, act on the event), and the rules live in one function that can be read, reasoned about and tested as a table. That is [Axiom 8](axiom-08-cohesion.md)'s one reason to change, kept in one place.

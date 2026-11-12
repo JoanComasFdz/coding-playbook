@@ -4,7 +4,7 @@
 
 - Model each state as its own immutable record ([Axiom 3](axiom-03-immutability.md)) and gather them under one sealed parent: a discriminated union ([Axiom 22](axiom-22-discriminated-unions.md)).
 - A field appears only where it is always set. If `Paid` has a payment reference, `Pending` doesn't have one at all; it isn't a nullable field on a shared record.
-- Consumers use an exhaustive `switch` ([Axiom 12](axiom-12-pattern-matching.md)), so adding a state points at every consumer that must handle it.
+- Consumers use an exhaustive match ([Axiom 12](axiom-12-pattern-matching.md)), so adding a state points at every consumer that must handle it.
 - This axiom is about *data*: how a state is represented, not how it changes. How things move between states comes later in this chapter, and it is cheap precisely because the representation is honest first.
 
 [Axiom 19](axiom-19-value-objects.md) made a single value honest: `Username.Parse("")` can't produce a `Username`. This axiom makes a *combination* of values honest: a `Paid` bill can't exist without its payment reference, and a `Pending` bill can't carry one. [Axiom 22](axiom-22-discriminated-unions.md) provided the mechanism and pointed it at the outcomes of a computation; this axiom points it at the lifecycle of a thing. It is the form of the idea you will reach for most often: long before anything heavier, you need to stop modeling something with five states as one record with nine nullable fields.
@@ -94,7 +94,10 @@ Then with one record per state. The enum is gone, and every field is non-null an
 <td>
 
 ```csharp
-public abstract record Bill(BillId Id, Money Amount);
+public abstract record Bill(BillId Id, Money Amount)
+{
+    // Match, as in Axiom 22
+}
 
 public sealed record Pending(BillId Id, Money Amount)
     : Bill(Id, Amount);
@@ -113,16 +116,13 @@ public sealed record Failed(
     BillId Id, Money Amount, string Reason)
     : Bill(Id, Amount);
 
-var line = bill switch
-{
-    Pending     => "awaiting processing",
-    Processing  => "in progress",
-    Processed p => $"processed {p.ProcessedAt:d}",
-    Sent s      => $"sent {s.SentAt:d}",
-    Paid p      => $"paid, ref {p.PaymentRef}",
-    Failed f    => $"failed: {f.Reason}",
-    _ => throw new UnreachableException()
-};
+var line = bill.Match(
+    pending:    _ => "awaiting processing",
+    processing: _ => "in progress",
+    processed:  p => $"processed {p.ProcessedAt:d}",
+    sent:       s => $"sent {s.SentAt:d}",
+    paid:       p => $"paid, ref {p.PaymentRef}",
+    failed:     f => $"failed: {f.Reason}");
 ```
 
 </td>

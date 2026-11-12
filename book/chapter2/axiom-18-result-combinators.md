@@ -42,28 +42,22 @@ The three combinators, written once each over the `Result` type from [Axiom 17](
 public static class ResultCombinators
 {
     public static Result<U, E> Map<T, U, E>(
-        this Result<T, E> r, Func<T, U> step) => r switch
-    {
-        Success<T, E> s => new Success<U, E>(step(s.Value)),
-        Failure<T, E> f => new Failure<U, E>(f.Error),
-        _ => throw new UnreachableException()
-    };
+        this Result<T, E> r, Func<T, U> step) =>
+        r.Match<Result<U, E>>(
+            success: value => new Success<U, E>(step(value)),
+            failure: error => new Failure<U, E>(error));
 
     public static Result<T, F> MapError<T, E, F>(
-        this Result<T, E> r, Func<E, F> step) => r switch
-    {
-        Success<T, E> s => new Success<T, F>(s.Value),
-        Failure<T, E> f => new Failure<T, F>(step(f.Error)),
-        _ => throw new UnreachableException()
-    };
+        this Result<T, E> r, Func<E, F> step) =>
+        r.Match<Result<T, F>>(
+            success: value => new Success<T, F>(value),
+            failure: error => new Failure<T, F>(step(error)));
 
     public static Result<U, E> Bind<T, U, E>(
-        this Result<T, E> r, Func<T, Result<U, E>> step) => r switch
-    {
-        Success<T, E> s => step(s.Value),
-        Failure<T, E> f => new Failure<U, E>(f.Error),
-        _ => throw new UnreachableException()
-    };
+        this Result<T, E> r, Func<T, Result<U, E>> step) =>
+        r.Match(
+            success: value => step(value),
+            failure: error => new Failure<U, E>(error));
 }
 ```
 

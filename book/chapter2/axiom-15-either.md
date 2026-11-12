@@ -35,7 +35,16 @@ By convention the left side holds the error and the right side the result. Haske
 <td>
 
 ```csharp
-public abstract record Either<L, R>;
+public abstract record Either<L, R>
+{
+    public T Match<T>(Func<L, T> left, Func<R, T> right) =>
+        this switch
+        {
+            Left<L, R> l  => left(l.Value),
+            Right<L, R> r => right(r.Value),
+            _ => throw new UnreachableException()
+        };
+}
 public sealed record Left<L, R>(L Value) : Either<L, R>;
 public sealed record Right<L, R>(R Value) : Either<L, R>;
 
@@ -45,12 +54,9 @@ Either<string, int> Divide(int numerator, int denominator) =>
         : new Right<string, int>(numerator / denominator);
 
 var result = Divide(1, 0);
-var message = result switch
-{
-    Left<string, int> l  => "Error: "  + l.Value,
-    Right<string, int> r => "Result: " + r.Value,
-    _ => throw new UnreachableException()
-};
+var message = result.Match(
+    left:  error => "Error: "  + error,
+    right: value => "Result: " + value);
 Console.WriteLine(message);
 ```
 
@@ -80,7 +86,7 @@ System.out.println(message);
 </tr>
 </table>
 
-Both outcomes come back through the same return value, and the caller handles both in one `switch` ([Axiom 12](axiom-12-pattern-matching.md)). Java's sealed interface makes a missing branch a compile error. C# can't prove the hierarchy closed, so it needs the discard branch, and a missing case is only a warning (see [Axiom 12](axiom-12-pattern-matching.md#definitions)). C# 15's union types, shown in [Axiom 14](axiom-14-maybe.md#maybe-in-c-beyond-t), remove the need for the discard branch.
+Both outcomes come back through the same return value, and the caller handles both in one match ([Axiom 12](axiom-12-pattern-matching.md)): a `switch` in Java, whose sealed interface makes a missing branch a compile error, and `Match` in C#, which can't prove the hierarchy closed and keeps its discard branch inside the type (see [Axiom 12](axiom-12-pattern-matching.md#switch-or-match)). C# 15's union types, shown in [Axiom 14](axiom-14-maybe.md#maybe-in-c-beyond-t), remove the discard branch altogether.
 
 ---
 

@@ -54,7 +54,10 @@ A message-queue subscriber. It connects to a broker, reads messages until the co
 <td>
 
 ```csharp
-public abstract record RunningState;
+public abstract record RunningState
+{
+    // Match, as in Axiom 22, for each of the three unions
+}
 public sealed record Connecting(int Attempt) : RunningState;
 public sealed record Connected(BrokerConnection Connection)
     : RunningState;
@@ -98,28 +101,21 @@ public static ConnState Transition(RunningState state, ConnEvent ev) =>
 
 public Failed Run(SubscriberContext context)
 {
-    RunningState state = new Connecting(1);
-    while (!context.Cancellation.IsCancellationRequested)
+    ConnState current = new Running(new Connecting(1));
+    while (current is Running(var state)
+        && !context.Cancellation.IsCancellationRequested)
     {
-        ConnEvent ev = state switch                     // act
-        {
-            Connecting   => TryConnect(),
-            Connected c  => ConsumeUntilDropped(c.Connection, context),
-            BackingOff b => WaitFor(
-                CalculateBackoffDelay(b.NextAttempt), context.Cancellation),
-            _ => throw new UnreachableException()
-        };
+        ConnEvent ev = state.Match(                     // act
+            connecting: _ => TryConnect(),
+            connected:  c => ConsumeUntilDropped(c.Connection, context),
+            backingOff: b => WaitFor(
+                CalculateBackoffDelay(b.NextAttempt), context.Cancellation));
 
-        var next = Transition(state, ev);               // decide
-
-        switch (next)
-        {
-            case Running r: state = r.State; break;
-            case Failed f:  return f;
-            default:        throw new UnreachableException();
-        }
+        current = Transition(state, ev);                // decide
     }
-    return new Failed("cancelled");
+    return current.Match(
+        running: _ => new Failed("cancelled"),
+        failed:  f => f);
 }
 ```
 
@@ -177,8 +173,9 @@ public static ConnState transition(RunningState state, ConnEvent ev) {
 }
 
 public Failed run(SubscriberContext context) {
-    RunningState state = new Connecting(1);
-    while (!context.cancelled.get()) {
+    ConnState current = new Running(new Connecting(1));
+    while (current instanceof Running(var state)
+            && !context.cancelled.get()) {
         ConnEvent ev = switch (state) {                 // act
             case Connecting c -> tryConnect();
             case Connected c  -> consumeUntilDropped(c.connection(), context);
@@ -186,14 +183,12 @@ public Failed run(SubscriberContext context) {
                 calculateBackoffDelay(b.nextAttempt()), context.cancelled);
         };
 
-        var next = transition(state, ev);               // decide
-
-        switch (next) {
-            case Running r -> state = r.state();
-            case Failed f  -> { return f; }
-        }
+        current = transition(state, ev);                // decide
     }
-    return new Failed("cancelled");
+    return switch (current) {
+        case Running r -> new Failed("cancelled");
+        case Failed f  -> f;
+    };
 }
 ```
 
@@ -201,7 +196,7 @@ public Failed run(SubscriberContext context) {
 </tr>
 </table>
 
-`Transition` never sees the connection, the clock, the cancellation signal or the counter. It is pure ([Axiom 6](axiom-06-pure-functions.md)) and tested as a table of (state, event, expected) rows. The loop matches on the running state, and there is no `Failed` branch to write, because the variable's type can't hold a `Failed`: the final state lives only in `Transition`'s return type. (The C# discard branch is the usual limitation of [Axiom 12](axiom-12-pattern-matching.md#definitions), not a real case; C# 15's union types would remove it.)
+`Transition` never sees the connection, the clock, the cancellation signal or the counter. It is pure ([Axiom 6](axiom-06-pure-functions.md)) and tested as a table of (state, event, expected) rows. The loop runs while the state is `Running`, and inside it matches only on the running state, so there is no `Failed` branch to write there: a `Failed` from `Transition` ends the loop, and the one match after it says what `Run` returns. The C# `Transition` keeps a `switch` because its wildcard is a real branch, "this event doesn't apply", like Java's `default` ([Axiom 12](axiom-12-pattern-matching.md#switch-or-match)).
 
 `ConsumeUntilDropped` is the one effect that touches the Session Context. Message processing lives inside it, not as events of the machine, because the machine models only the connection's life:
 
@@ -260,7 +255,7 @@ Options 1 and 2 never name the state machine the program really is. Options 3 an
 `Transition` is still pure and total; reviewing what the machine does still means reading one function. Each iteration of the loop is the shell of [Axiom 25](axiom-25-state-machines.md), so the loop adds only the repetition [1].
 
 **2. The state implies the effect.**
-To learn what the program does in state X, read the one branch of the loop's `switch` for X. There is no other place where an effect might fire, and no callback registered elsewhere. The shell is also the one place that holds the socket: the kind of secret [Axiom 1](axiom-01-explicit-over-implicit.md#encapsulation-read-precisely) says is worth hiding, while every decision stays visible in `Transition`.
+To learn what the program does in state X, read the one branch of the loop's match for X. There is no other place where an effect might fire, and no callback registered elsewhere. The shell is also the one place that holds the socket: the kind of secret [Axiom 1](axiom-01-explicit-over-implicit.md#encapsulation-read-precisely) says is worth hiding, while every decision stays visible in `Transition`.
 
 **3. Both exits are visible.**
 The loop ends when `Transition` returns a final state or when cancellation arrives, and both checks are in plain sight. In a `while (true)`, exits hide as `break`s and `return`s scattered through the body.
@@ -274,8 +269,8 @@ The same loop runs on a dedicated thread, an async task, a virtual thread or a c
 
 ## Trade-offs
 
-- **The loop's `switch` grows with the states.** Fifteen states mean fifteen branches. As with `Transition` ([Axiom 25](axiom-25-state-machines.md#trade-offs)), split the work into one helper per state, which the loop calls.
-- **The final state needs its own place in the types.** Splitting `RunningState` from `ConnState` keeps the loop's `switch` free of a `Failed` branch. A single flat DU is simpler for a tiny machine, but then every `switch` in the loop needs a branch for a state it can never see. Either way, *have* a final state: a Stateful Shell without one runs forever.
+- **The loop's match grows with the states.** Fifteen states mean fifteen branches. As with `Transition` ([Axiom 25](axiom-25-state-machines.md#trade-offs)), split the work into one helper per state, which the loop calls.
+- **The final state needs its own place in the types.** Splitting `RunningState` from `ConnState` keeps the loop's match free of a `Failed` branch. A single flat DU is simpler for a tiny machine, but then every match in the loop needs a branch for a state it can never see. Either way, *have* a final state: a Stateful Shell without one runs forever.
 - **Cancellation is part of the contract.** A long-running loop that can't be stopped is a leak. The signal goes into the loop condition *and* into every long-running effect, so a wait ends early and a read stops. The one-shot shell of [Axiom 25](axiom-25-state-machines.md) never paid this cost.
 - **Inner loops are a design choice.** The example processes messages inside `ConsumeUntilDropped`. The alternative is to make each message an event (`MessageReceived`) that `Transition` mostly ignores. Keep the inner loop while messages don't change the machine's state; promote a message to an event when it does (a message that means "this session is ending").
 - **Batching, back-pressure and bad messages belong to the effect.** How `ConsumeUntilDropped` acknowledges messages in batches, slows down, or treats a malformed message is about *how* the `Connected` effect works; the machine only cares about the event it returns. Split those concerns into named helpers rather than into the machine.
