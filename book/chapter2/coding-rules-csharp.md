@@ -27,7 +27,7 @@ The first five sections can be checked by reading the code. The last one can't, 
 
 ## Matching
 
-- **`Match` or `Handle`, never `_ => throw`.** Each union gets them once, and its `_ => throw new UnreachableException()` lives only inside them. A `switch` stays only over a C# 15 `union` (with a `null` arm where it can be `default`), a type that was never closed (`object`, `T?`, `enum`), or where the wildcard is a real branch. ([Axiom 12][A12m])
+- **A union is matched with `Match` or `Handle`.** Each union declares them once; every consumer calls them. A `switch` stays only over a C# 15 `union` (with a `null` arm where it can be `default`), a type that was never closed (`object`, `T?`, `enum`), or where a catch-all case is a real decision ("any other event: no change"). ([Axiom 12][A12m])
 - **`Match` when every branch returns a value, `Handle` when every branch only acts.** ([Axiom 12][A12h])
 - **A pure call gets its own line, into a named value.** `var decision = Decide(…);` on one line, the match or the impure call on the next. Never `Decide(…).Handle(…)`, never `Save(Decide(…))`. ([Axiom 12][A12c])
 
