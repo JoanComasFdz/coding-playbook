@@ -626,6 +626,24 @@ The *strategic* half — decomposition at architectural altitude — stays out o
 
 ---
 
+## Anatomy of a component
+
+🔍 **Open** — a **Chapter 4 Play**, [*Anatomy of a component*](chapter4/04-anatomy-of-a-component.md) (work in progress: the layout by visibility is drafted, the rest is to do).
+
+**What:** how the code inside one component is laid out: the public API at the root, everything else in `Internal/`.
+
+**Verdict:** a Play, not a principle: information hiding applied to the folder layout. Still to develop into the full anatomy (API, handlers, core modules, adapters, service vs. library).
+
+- [Axiom 1](chapter2/axiom-01-explicit-over-implicit.md#encapsulation-read-precisely) — the root shows what a caller needs; `Internal/` holds the secret.
+- [Axiom 10](chapter2/axiom-10-first-class-functions.md) — the API offers delegates, declared in one `Api.cs`.
+- [Axiom 13](chapter2/axiom-13-impureim.md#definitions) — `ServiceCollectionExtensions` is the entry point the framework shapes; visibility and purity are separate splits.
+- [Axiom 19](chapter2/axiom-19-value-objects.md) — value objects in the API's signatures are public.
+- [*Information hiding*](chapter4/03-information-hiding.md) and [*Vertical slices*](chapter4/02-vertical-slices.md) — the secret's home, and slices inside `Internal/`.
+
+**Sources:** Go's `internal` directories (Go 1.4); Eclipse's `internal` packages; ASP.NET Core's "pubternal" types (.NET Core 3.0).
+
+---
+
 ## Leaky abstraction — [🔁 FOLDED]
 
 An abstraction whose underlying detail shows through — the caller must know what it claims to hide (Spolsky: "all non-trivial abstractions are, to some degree, leaky"). The *failure mode* of the two open Chapter 4 module Plays, with a function-grain echo.
