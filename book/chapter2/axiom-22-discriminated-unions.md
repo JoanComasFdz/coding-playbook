@@ -22,7 +22,7 @@ A *discriminated union* (DU, also called a [tagged union](https://en.wikipedia.o
 
 A DU is the *sum* half of an [algebraic data type](https://en.wikipedia.org/wiki/Algebraic_data_type): exactly one of its cases. The record ([Axiom 3](axiom-03-immutability.md)) is the *product* half: all of its fields at once.
 
-How much the compiler checks differs (see [Axiom 12](axiom-12-pattern-matching.md#definitions)). Java makes a missing case a compile error. C# can't prove an `abstract record` hierarchy closed, so the discard branch goes inside the type's `Match`, once, and callers use `Match` instead of a `switch`. C# 15's `union` types ([Axiom 14](axiom-14-maybe.md#maybe-in-c-beyond-t)) close that gap: `public union PaymentOutcome(Approved, Declined, RequiresVerification);` is a closed set, and a `switch` over it needs no discard branch.
+How much the compiler checks differs (see [Axiom 12](axiom-12-pattern-matching.md#definitions)). Java makes a missing case a compile error. C# can't prove an `abstract record` hierarchy closed, so the discard branch goes inside the type's `Match`, once, and callers use `Match` instead of a `switch`. C# 15's `union` types ([Axiom 14](axiom-14-maybe.md#maybe-in-c-beyond-t)) close that gap: `public union PaymentOutcome(Approved, Declined, RequiresVerification);` is a closed set, and a `switch` over it needs no discard branch, only a `null` arm where the union can be `default`.
 
 ---
 

@@ -306,7 +306,7 @@ The answer depends on the language:
 - **Java: start with `switch`.** The compiler checks a sealed `switch` at every call site, guards and nested patterns included. Move to `match` once the variant list has settled and enough consumers exist that spelling out the case types becomes a visible tax.
 - **C#: consume a closed type with `Match` or `Handle`, never with a discard that throws.** A `_ => throw` branch tells the reader nothing and hides a missing case until runtime; `Match` turns it into a build error. A `switch` stays only where it checks or decides something itself:
   - inside the type's own `Match` and `Handle`, the one place the discard lives;
-  - over a C# 15 `union`, which the compiler knows is closed, so it needs no discard;
+  - over a C# 15 `union`, which the compiler knows is closed, so it needs no discard (only a `null` arm where the union can be `default`, which is a real branch);
   - over a type that was never closed: `object` (as in `Describe` above), a nullable `T?` (where `null` and the value cover every case), an `enum` (which can hold any integer);
   - where the wildcard is a real branch ("any other event: no change"), not a `throw`.
 

@@ -357,7 +357,7 @@ public sealed record Some<T>(T Value);
 public union Option<T>(Some<T>, None);
 ```
 
-A `switch` that covers every case type needs no discard branch, and a missing case is a compiler warning. One limit: the built-in union stores its contents as an `object?` reference, so value types are boxed. Once C# 15 is in use, the question "which library?" may go away.
+A `switch` that covers every case type needs no discard branch, and a missing case is a compiler warning. Two limits. The built-in union stores its contents as an `object?` reference, so value types are boxed. And the union is a `struct` whose `default` value holds no case at all: its `Value` is `null`. Where a union can be `default` (an uninitialized field, a new array) or a case type is nullable, the `switch` needs a `null` arm [6]. Unlike a discard, that arm is a real branch: it handles "no case yet". Once C# 15 is in use, the question "which library?" may go away.
 
 Which option to pick is a contextual choice, not a principle. It depends on the project's style, how many dependencies it accepts, and how much functional tooling it wants alongside Maybe [5]. The axiom is the same either way: a function whose result might be absent says so in its return type.
 
@@ -383,7 +383,7 @@ Which option to pick is a contextual choice, not a principle. It depends on the 
 - OneOf: <https://www.nuget.org/packages/OneOf> · <https://github.com/mcintyre321/OneOf>
 - Optional: <https://www.nuget.org/packages/Optional> · <https://github.com/nlkl/Optional>
 
-[6] **Bill Wagner**, *Explore union types in C# 15*, .NET Blog, 2 April 2026. Union declarations, exhaustive `switch` without a discard, and how a union stores (and boxes) its value.
+[6] **Bill Wagner**, *Explore union types in C# 15*, .NET Blog, 2 April 2026. Union declarations, exhaustive `switch` without a discard, when a `null` arm is needed, and how a union stores (and boxes) its value.
 <https://devblogs.microsoft.com/dotnet/csharp-15-union-types/>
 
 ---
