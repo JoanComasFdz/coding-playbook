@@ -35,6 +35,8 @@ The split between pure and impure code ([Axiom 5](../chapter2/axiom-05-impure-fu
 
 The three rows hold each other up. Without a mock to feed, the interface has no job. And once the shell is never tested alone, there is no reason to make it reusable either.
 
+None of this is a testing strategy I picked. It is what is left once the code is split. The rules are pure, so function tests cover them, value objects included. Everything else is plumbing, and the only useful test of plumbing is to run it.
+
 In practice:
 
 - **The pure core gets function tests.** Decisions over immutable values need no setup and no mocks. Every edge case of a rule is one more test.
@@ -56,7 +58,7 @@ The business logic is pure, so its function tests already prove it: same input, 
 A component test starts the whole component with its real dependencies, and the plumbing is exactly what it checks. Sometimes it also shows that a rule was wrong about the real system. Then the rule changes, and its function tests with it. That is a component test doing its job, not a gap in the function tests.
 
 **3. Tests at stable boundaries survive refactoring.**
-A test that mocks what a controller calls encodes the wiring: which method is called, in which order, with which arguments. Change the wiring without changing the behavior, and the test breaks anyway. Tests that call a pure function through its signature, or a component through its own API, only break when the behavior changes. A component test is a black box: it knows the API, not the classes, tables or queues behind it, so all of them are free to change.
+A test that mocks what a controller calls encodes the wiring: which method is called, in which order, with which arguments. Change the wiring without changing the behavior, and the test breaks anyway. Fowler names this cost of mock-based tests: "Mockist tests are thus more coupled to the implementation of a method" [1]. Tests that call a pure function through its signature, or a component through its own API, only break when the behavior changes. A component test is a black box: it knows the API, not the classes, tables or queues behind it, so all of them are free to change.
 
 **4. The cheap level gets many tests, the expensive one few.**
 A pure function needs no setup, so thorough testing costs little there. It is also deterministic: same input, same result, every run, so a function test can't flake. The shell holds no decisions, so a few component tests cover its paths.
@@ -67,7 +69,7 @@ The usual objection to component tests is that a failure doesn't say *where*. He
 For example, a refund is decided by a pure `DecideRefund(order, request, today)`, function-tested with one test per rule. If a component test then gets an error back from the component, *"cannot insert NULL into column `refunded_at`"*, while every `DecideRefund` test passes, the rule is fine and the mapping to the row is not.
 
 **6. Component tests are cheaper than their reputation.**
-Starting a database container takes seconds, once per test run. After that, a request that validates input and writes a row takes milliseconds. And a component test is cheaper to keep than the mocks it replaces: it only changes when the component's behavior changes.
+Starting a database container takes seconds, once per test run. After that, a request that validates input and writes a row takes milliseconds. In my experience, a C# minimal API with Entity Framework starts in under half a second, and the containers can be kept running between test runs, so only the very first run pays for starting them. Slower than a mock, yes, but for a test that can find real faults. A fast test that proves nothing is not a bargain. And a component test is cheaper to keep than the mocks it replaces: it only changes when the component's behavior changes.
 
 The common complaint about broad tests is speed. The common answer is to write fewer of them: that is what the [test pyramid](https://martinfowler.com/bliki/TestPyramid.html), and the shapes that followed it, encode. I'd rather fix the cause. Broad tests are slow mostly because they run one after another, and they run one after another because they share state: the same rows, the same simulator expectations. **Isolate each test** (its own data created through the component's API, its own customer or tenant, its own simulator setup) and the suite can run in parallel. Isolation also removes failures that depend on test order, which is how component tests become as deterministic as function tests.
 
@@ -112,6 +114,11 @@ More to come: how a test is designed at each level.
 
 - **Performance tests.** How to write them, and when they pay for what they cost. They measure how fast, not whether correct, so they are probably not a fifth level next to function, component, product and solution.
 - **Sources to verify before citing:** Gary Bernhardt, *Boundaries* (SCNA 2012), unit-test the core and integration-test the shell (his *Functional Core, Imperative Shell* screencast is verified and cited in [Axiom 13](../chapter2/axiom-13-impureim.md)); Spotify's "testing honeycomb" (2018); Martin Fowler, *On the Diverse And Fantastical Shapes of Testing* (2021), on what "unit" means.
+
+## References
+
+[1] **Martin Fowler**, *Mocks Aren't Stubs*, martinfowler.com, 2007. Classical testing uses real objects where it can; mockist testing checks the calls a unit makes, which couples the test to how the unit is written.
+<https://martinfowler.com/articles/mocksArentStubs.html>
 
 ---
 

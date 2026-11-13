@@ -15,7 +15,7 @@ Four things that usually arrive together:
 - **Hexagonal architecture**, or Ports and Adapters (Cockburn, 2005) [1]. The application sits in the middle and talks to the outside only through ports. Each technology gets an adapter.
 - **Onion Architecture** (Palermo, 2008) [2] and **Clean Architecture** (Martin, 2012) [3]. The same idea drawn as layers, with one rule: dependencies point inward.
 - **The tactical patterns of DDD** (Evans, 2003) [4]: entities, value objects, aggregates, repositories, domain events.
-- **A [mediator](https://en.wikipedia.org/wiki/Mediator_pattern) library**, MediatR in .NET [9]: one handler class per request, dispatched through a pipeline.
+- **A [mediator](https://en.wikipedia.org/wiki/Mediator_pattern) library**, MediatR in .NET [9]: one handler class per request, dispatched through a pipeline. I know of no Java library with the same standing. The closest is PipelinR, which describes itself as "similar to a popular MediatR .NET library" [10].
 
 As it usually lands in a codebase, in my experience and in Microsoft's reference design [5]:
 
@@ -80,32 +80,36 @@ So proposing a lighter default for smaller products doesn't contradict this lite
 | 1 | Test business rules without UI or database | [1] [3] | Rules are pure static functions ([Axiom 6](../chapter2/axiom-06-pure-functions.md)). A function test passes values in and compares the result ([Chapter 3](../chapter3/README.md)): no mock, no in-memory adapter. | Met, with fewer parts |
 | 2 | Keep business logic out of UI and database code | [1] [4] | The core reads only its parameters and acts only through its return value ([Axiom 13](../chapter2/axiom-13-impureim.md)). | Met, with fewer parts |
 | 3 | The domain depends on no framework or infrastructure | [2] [3] [5] | The core takes values and returns values or actions ([Axiom 24](../chapter2/axiom-24-pure-functions-returning-actions.md)). There is no dependency left to invert. | Met, with fewer parts |
-| 4 | Any driver can run the application: UI, API, tests, batch | [1] | Each entry point is a thin handler in the shell, and all of them call the same core. Orchestration may repeat between entry points ([Axiom 8](../chapter2/axiom-08-cohesion.md#what-dry-is-for)). | Met, with some repetition |
+| 4 | Any driver can run the application: UI, API, tests, batch | [1] | An entry point is a few lines that call a handler: an ordinary class that runs one unit of work ([Axiom 13](../chapter2/axiom-13-impureim.md#example)). Any entry point can call the same handler. | Met, with fewer parts |
 | 5 | The code speaks the business language | [4] | [Axiom 0](../chapter2/axiom-00-ubiquitous-language.md). | Met, same idea |
-| 6 † | Invariants always hold | [4] [5] | An invalid value can't be built: value objects ([Axiom 19](../chapter2/axiom-19-value-objects.md)), unions ([Axiom 22](../chapter2/axiom-22-discriminated-unions.md), [Axiom 23](../chapter2/axiom-23-illegal-states.md)), state machines ([Axiom 25](../chapter2/axiom-25-state-machines.md)). | Met for one value or record; open for several |
+| 6 † | Invariants always hold | [4] [5] | An invalid value can't be built: value objects ([Axiom 19](../chapter2/axiom-19-value-objects.md)), unions ([Axiom 22](../chapter2/axiom-22-discriminated-unions.md), [Axiom 23](../chapter2/axiom-23-illegal-states.md)), state machines ([Axiom 25](../chapter2/axiom-25-state-machines.md)). A rule across several records is a pure decision over the value that holds them ([Axiom 24](../chapter2/axiom-24-pure-functions-returning-actions.md#example)). | Met for the rules; the transaction boundary is open |
 | 7 | Logic lives in the domain, not in services | [4] [6] | Logic lives in modules of pure functions next to the types they work on ([Axiom 2](../chapter2/axiom-02-data-is-not-behavior.md)). | Met differently |
 | 8 | Fewer tangled dependencies in handlers | [9] | One handler per unit of work ([*Vertical slices*](../chapter4/02-vertical-slices.md)). The core is static, so it has nothing to inject. | Met, with fewer parts |
 | 9 † | Database access doesn't swamp or bypass the domain | [4] | Handlers use the database directly. What they load is parsed into types the rules can trust ([Axiom 19](../chapter2/axiom-19-value-objects.md)). | Met differently |
-| 10 | Test a use case without real infrastructure | [1] | Not attempted. The boundary is tested as a whole, with real dependencies ([Chapter 3](../chapter3/README.md)). | Not met, by choice |
+| 10 | Test a use case without real infrastructure | [1] | Not pursued. Once the rules are tested as functions, what is left is plumbing, and plumbing is tested for real ([Chapter 3](../chapter3/README.md)). | Not pursued: nothing left to test in isolation |
 | 11 | Swap a technology cheaply | [1] [3] | Systems owned by others are hidden behind a small surface. The component's own database is not ([*Information hiding*](../chapter4/03-information-hiding.md)). | Partly, by choice |
-| 12 | Layering the compiler enforces | [5] | Only `static` and `internal` are enforced. The rest are rules a reader checks: the coding rules for [C#](../chapter2/coding-rules-csharp.md) and [Java](../chapter2/coding-rules-java.md). | Not met |
+| 12 | The build rejects a dependency in the wrong direction | [5] | Not by default. Here the compiler checks other things: which values can exist, that every case is handled, what is `internal`. The direction check can be added the same way, with a project for the core. | Not met by default; can be added |
 | 13 | Strategic design: core domain, bounded contexts | [4] | Out of scope. | Not met; can be combined |
 
 Notes on the rows that need one:
 
 **Rows 1 to 3: the same goal, reached by purity.** Hex DDD protects the domain with a rule about references: nothing in the domain may point outward. This book gets there by another route. A pure function has nothing to point at, because everything it needs arrives as a value. Seemann makes the same observation about functional code in general: "A pure function can call other pure functions, but it can't call impure functions", so a functional design falls "into a pit of success that looks a lot like Ports and Adapters". Of the object-oriented route he says it is possible, "but it takes so much effort" [8]. One caveat: in Haskell the compiler enforces purity. In C# and Java it is a rule (see row 12).
 
-**Row 4: orchestration can repeat.** In hex DDD, an HTTP endpoint and a queue consumer call the same use-case object. Here each is its own shell handler around the same pure decision. The decision is shared; the gathering and acting are written per entry point.
+**Row 4: the handler is the use case.** This book's shell has two parts. The entry point is what the framework shapes: a controller, an event subscription, a background service. The handler is what runs inside it: one unit of work, as rounds of gather, decide, act. A controller and a queue consumer can call the same handler, the way both would call a use case through its port in hex DDD, without the port. [Axiom 8](../chapter2/axiom-08-cohesion.md#what-dry-is-for) also lets two entry points each write their own orchestration, when sharing it would tie them together.
 
-**Row 6: one record, yes; several, not yet.** Types make an invalid value or an illegal state impossible to build, which is stronger than a check inside an aggregate root. What an aggregate adds is the boundary of what is loaded, changed and saved together, under concurrent use. That belongs to the [*DDD tactical patterns*](../chapter4/01-DDD-tactical-patterns.md) Play, which is a draft.
+**Row 6: the rules are covered; the transaction is not yet.** Types make an invalid value or an illegal state impossible to build, which is stronger than a check inside an aggregate root. A rule that spans several records is covered too, as long as they are loaded as one value: `DecideAdd` in [Axiom 24](../chapter2/axiom-24-pure-functions-returning-actions.md#example) checks the number of lines in the whole `Cart`. What an aggregate adds is on the shell's side: which records are loaded and saved together in one transaction, and what happens when two requests change them at the same time. That part belongs to the [*DDD tactical patterns*](../chapter4/01-DDD-tactical-patterns.md) Play, which is a draft.
 
 **Row 7: is this an anemic model?** By the look of it, yes: records without methods, logic elsewhere. By Fowler's argument, no. His objection is to logic scattered through procedural services, and he ties the worth of a domain model to one condition: "This is worthwhile iff you use the powerful OO techniques to organize complex logic" [6]. This book organizes complex logic with other techniques: unions, state machines, composition. The logic still lives in the domain, in one place per rule, with no service and no dependency around it. And without an identity-tracking ORM, most of the mapping cost he mentions is gone. A reader who defines a rich model as "methods on entities" will still call it anemic; [Axiom 2](../chapter2/axiom-02-data-is-not-behavior.md#tell-dont-ask-the-road-not-taken) says why I take the other road.
 
-**Row 9: no repository interface.** Evans's two worries are real. This book answers the second one with types: data loaded from the database is parsed, so a query can't produce a value that skips the rules. The first one, database code swamping the caller, is answered only by keeping handlers thin. When the same query is needed in many handlers, a shared function for it earns its place. The persistence Play, not written yet, is where this gets shown.
+**Anemic is a property with a verdict attached.** The word describes something neutral: data without methods. But it arrives with a verdict. Fowler introduces it as an anti-pattern whose "fundamental horror" is that "it's so contrary to the basic idea of object-oriented design; which is to combine data and process together" [6]. That is a fair charge inside object-oriented design, where it was made. It doesn't carry over to a design that separates data and process on purpose. The pair of names also does part of the arguing: if only methods on data may be called *rich*, everything else is poor before anyone has looked at it. I use *anemic* here as a description, not as a grade.
 
-**Row 10: a real disagreement.** Hex DDD tests a use case by replacing its ports with mocks. [Chapter 3](../chapter3/README.md) argues that such a test returns nothing here: the rules are already proven by function tests, and the mocks replace exactly the plumbing a test of the boundary should check. So this book skips that level and tests the component as a whole, with real dependencies. The price is in Chapter 3's *Trade-offs*: containers, setup, and slower tests than mocks.
+**Row 9: a repository where it earns its place.** Evans's two worries are real. This book answers the second one with types: data loaded from the database is parsed, so a query can't produce a value that skips the rules. The first one, database code swamping the caller, depends on the query. A simple read or write stays in the handler. A query complex enough that a developer needs a second read to understand it earns a named function of its own, and that is a repository in all but the interface. What this book drops is the repository produced mechanically for every table, CRUD queries included: an indirection with no job left, since nothing in the shell is swapped for a mock. The persistence Play, not written yet, is where this gets shown.
+
+**Row 10: this isn't a preference; it follows from the split.** Hex DDD tests a use case by replacing its ports with mocks. In this book, the rules are pure and already proven by function tests, value objects included. What is left in a handler is plumbing: it passes what it loaded to a pure function and acts on the result. A mock for that returns exactly the value the function test already used, so the test proves nothing new, and it has to know which calls the handler makes, in which order. Fowler names that cost: "Mockist tests are thus more coupled to the implementation of a method. Changing the nature of calls to collaborators usually cause a mockist test to break" [11]. So this book skips that level and tests the component as a whole, with real dependencies, where plumbing can really fail ([Chapter 3](../chapter3/README.md)). Those tests are slower than mocks, and they return far more. A fast test that proves nothing is not a bargain. The price is in Chapter 3's *Trade-offs*.
 
 **Row 11: who pays for the option to swap.** In hex DDD a repository port has two jobs: it lets tests replace the database, and it allows a swap. This book takes the first job away (rows 1 and 10). The second then has to pay for the layer alone, on every feature, for an event that may never come. The [*Information hiding*](../chapter4/03-information-hiding.md#trade-offs--when-not-to) Play makes that argument. Systems owned by others are different: they do change, and this book hides them too.
+
+**Row 12: what the build checks, on each side.** Separate projects make the compiler check one thing: the domain project can't use a type from a project or package it doesn't reference. That is real. It stops an ORM type or a repository implementation from appearing in the domain. It doesn't check where a rule is written (it can still sit in a controller), or where an interface is placed. And it doesn't stop effects that need no reference at all: the clock, the file system and the network are in the standard library of both languages. This book moves other checks to the compiler: an invalid value can't be built, a missing case doesn't compile, a failure is in the signature. Neither approach makes the compiler check purity in C# or Java. The two sets of checks don't compete, and a component that wants the reference check as well can give its core a project of its own. Whether this book should prescribe that is open (see *Still to do*).
 
 ## What "simpler" means here
 
@@ -117,14 +121,14 @@ It means fewer parts for the same feature. For a product built by this book's ru
 - no mediator between a controller and its handler;
 - no separate project per layer.
 
-It doesn't mean easier to learn. This book asks for things many C# and Java teams have not used: `Result`, unions, `Match`, composition, and the discipline of keeping effects out of the core. Hex DDD asks for more structure, but it is structure many engineers already know. That is a real cost of this book's approach, and the first objection I expect.
+It doesn't mean familiar. This book asks for things many C# and Java teams have not used: `Result`, unions, `Match`, composition, and the discipline of keeping effects out of the core. Whether that is harder to learn for someone who has seen neither approach, I don't know; fewer parts suggests it isn't. But most engineers in these languages have already seen hex DDD. A team that switches pays for retraining, and a new hire brings less with them. That is a real cost of this book's approach, and the first objection I expect.
 
 ## What hex DDD gets right
 
 - **The objectives.** Rows 1 to 9 are goals this book shares. It disagrees about the means, not the ends.
-- **The vocabulary.** Ubiquitous language, value object, aggregate, repository, domain event: this book takes these names from DDD and keeps them ([Chapter 4](../chapter4/README.md)).
+- **The vocabulary.** Ubiquitous language ([Axiom 0](../chapter2/axiom-00-ubiquitous-language.md)) and value object ([Axiom 19](../chapter2/axiom-19-value-objects.md)) are DDD's names, and this book keeps them. Aggregate, repository and domain event come back in the [*DDD tactical patterns*](../chapter4/01-DDD-tactical-patterns.md) Play, modeled this book's way.
 - **A known shape.** A new team member who has seen one hex DDD codebase can find their way in the next. That counts in a large organization.
-- **Enforcement by the compiler** (row 12). With many developers, a boundary the build checks beats one a reviewer checks.
+- **One check by the build** (row 12). Project references stop the domain from using infrastructure types. It is one check, not the whole discipline, but with many developers a boundary the build checks beats one a reviewer checks.
 - **Strategic design** (row 13). Evans himself is reported to consider the building blocks over-emphasized next to it. This book has nothing to say there.
 
 ## When to use hex DDD instead
@@ -133,7 +137,7 @@ Each "not met" above becomes a criterion:
 
 - **Several teams, or several business areas, in one product.** That is what bounded contexts and context maps are for. Strategic DDD can also sit on top of this book's way of writing code: the two are at different levels.
 - **Invariants across several records, changed concurrently.** Until the aggregate Play is written, this book has no worked answer, and DDD's aggregate is a proven one.
-- **So many developers that review can't hold the line.** Then project references that the compiler checks are worth their cost.
+- **So many developers that review can't hold the line.** Then the reference check of separate projects is worth having. It can be had without the rest of hex DDD (row 12).
 - **A replacement that is planned, not imagined.** A team that knows it will move off a store or a data source is no longer paying for a maybe, and a port pays for itself.
 - **A domain complex enough to justify it.** That is the condition Microsoft, Palermo and Vernon set themselves.
 
@@ -147,6 +151,7 @@ Each "not met" above becomes a criterion:
 
 - **The rows marked †.** They wait for the persistence Play and the [*DDD tactical patterns*](../chapter4/01-DDD-tactical-patterns.md) Play.
 - **One feature, built both ways,** in C# and Java, with the files and types counted.
+- **A project for the core?** Whether this book should prescribe one, so the build checks references, and an analyzer that rejects the clock and I/O inside it (row 12). The tool would be a choice for an ADR.
 - **Sources to verify before citing:**
   - Netflix, *Ready for changes with Hexagonal Architecture* (2020): a team that chose hexagonal for a planned change of data sources, and tests use cases with mocked sources. Read only through notes.
   - Eric Evans at QCon London 2009 and DDD Europe 2016, on the over-emphasis on building blocks. Read only through an attendee's notes.
@@ -181,6 +186,12 @@ Each "not met" above becomes a criterion:
 
 [9] **Jimmy Bogard**, *You Probably Don't Need to Worry About MediatR*, 2022. The author of MediatR on what it is for, and where he uses it.
 <https://jimmybogard.com/you-probably-dont-need-to-worry-about-mediatr/>
+
+[10] **Eduards Sizovs**, *PipelinR*, GitHub. A command processing pipeline for Java: "similar to a popular MediatR .NET library".
+<https://github.com/sizovs/PipelinR>
+
+[11] **Martin Fowler**, *Mocks Aren't Stubs*, martinfowler.com, 2007. Classical and mockist testing, and what each couples a test to.
+<https://martinfowler.com/articles/mocksArentStubs.html>
 
 ---
 

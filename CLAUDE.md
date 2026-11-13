@@ -61,7 +61,7 @@ Compares this book with "hex DDD" (hexagonal / Onion / Clean Architecture, DDD's
 - **The claim stays narrow.** For small and medium products, this book reaches *most* of hex DDD's objectives with fewer parts. Never "all", never "better".
 - **Evidence first.** Every objective is taken from a source that states it, before this book's answer. Quote only what was checked against the original; paraphrase and list under *Sources to verify* otherwise.
 - **The credit and limits sections stay:** *What hex DDD gets right*, *When to use hex DDD instead* and *What this comparison does not show* are what make the comparison fair. Every "not met" row must appear as a criterion.
-- **"Simpler" means fewer parts,** not easier to learn. Keep the learning cost stated.
+- **"Simpler" means fewer parts,** not more familiar. Don't claim it is easier or harder to learn; keep the retraining cost for teams that know hex DDD stated.
 - Rows that rest on unwritten Plays are marked †. Remove the mark when the Play exists.
 
 ## The central model
