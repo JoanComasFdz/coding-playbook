@@ -644,6 +644,23 @@ The *strategic* half — decomposition at architectural altitude — stays out o
 
 ---
 
+## Hexagonal architecture, Onion, Clean Architecture, mediator
+
+🔍 **Open** — compared with this book in [Chapter 5](chapter5/README.md) (draft; two rows wait for Plays not yet written).
+
+**What:** the industry's usual structure for business software: ports and adapters, inward-pointing layers, DDD's tactical patterns inside, often a mediator in front.
+
+**Verdict:** not adopted as a structure. Its objectives are mostly met by the axioms, with fewer parts; the ones not met are the criteria for using it.
+
+- [Axiom 6](chapter2/axiom-06-pure-functions.md) and [Axiom 13](chapter2/axiom-13-impureim.md) — the domain depends on nothing, by purity instead of by dependency inversion.
+- [Chapter 3](chapter3/README.md) — rules tested as functions; the boundary tested whole, not through mocked ports.
+- [*Information hiding*](chapter4/03-information-hiding.md) — ports only for systems owned by others; the database is not hidden.
+- [Chapter 5](chapter5/README.md) — the objective-by-objective comparison, and when to use hex DDD instead.
+
+**Sources:** Cockburn, *Hexagonal architecture* (2005); Palermo, *The Onion Architecture* (2008); Martin, *The Clean Architecture* (2012); Evans, *Domain-Driven Design* (2003).
+
+---
+
 ## Leaky abstraction — [🔁 FOLDED]
 
 An abstraction whose underlying detail shows through — the caller must know what it claims to hide (Spolsky: "all non-trivial abstractions are, to some degree, leaky"). The *failure mode* of the two open Chapter 4 module Plays, with a function-grain echo.

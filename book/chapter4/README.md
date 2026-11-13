@@ -25,3 +25,7 @@ One stance holds the chapter together: **FP-style DDD**. Behaviour is pure funct
 - **When code becomes a library.** Code shared by several services is its own product, with its own reason to change, its own versioning and its own tests. Only pure business rules and real infrastructure qualify; orchestration never does ([Axiom 8](../chapter2/axiom-08-cohesion.md#what-dry-is-for)).
 
 > This README is a skeleton — the scope and planned Plays, not yet the Plays themselves. Order still to be decided (likely: design the immutable domain first, then persist it).
+
+---
+
+← Previous: [Chapter 3 — Testing](../chapter3/README.md) · Next: [Chapter 5 — Next to Hexagonal Architecture and DDD](../chapter5/README.md) →

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A personal **Coding Playbook** by the author — a curated set of building blocks, concise how-tos, and dated decisions for writing simple, honest, robust code in high-level general-purpose languages (C# and Java are the named targets).
 
-The book is organized in four chapters. **Chapter 1 — the SOLID critique** is the motivating hook: it argues that SOLID names real smells but can't be *acted on* to generate design, and ends on the question the rest of the book answers — so what do I reason with instead? It sits *before* the code altitudes as motivation, not as a third altitude. The two code altitudes are Chapters 2 and 4, with Chapter 3 between them. **Chapter 2 — Fundamentals** is the anatomy of a module and its functions: the axioms (explicit over implicit, data vs behavior, immutability, purity, honest signatures, `Result`, value objects, …). **Chapter 3 — Testing** follows straight from Chapter 2's pure/impure split: tests named by what they test (function, component, product, solution), the pure core tested at function level, the shell at component level. **Chapter 4 — Plays** is one level up: how those axioms compose into a designed, persisted domain — FP-style DDD tactical patterns, immutable-data persistence, deep modules. Each chapter has its own scope rules below; the voice, the three-kinds-of-why model, the registry, and the per-topic template apply to all four.
+The book is organized in five chapters. **Chapter 1 — the SOLID critique** is the motivating hook: it argues that SOLID names real smells but can't be *acted on* to generate design, and ends on the question the rest of the book answers — so what do I reason with instead? It sits *before* the code altitudes as motivation, not as a third altitude. The two code altitudes are Chapters 2 and 4, with Chapter 3 between them. **Chapter 2 — Fundamentals** is the anatomy of a module and its functions: the axioms (explicit over implicit, data vs behavior, immutability, purity, honest signatures, `Result`, value objects, …). **Chapter 3 — Testing** follows straight from Chapter 2's pure/impure split: tests named by what they test (function, component, product, solution), the pure core tested at function level, the shell at component level. **Chapter 4 — Plays** is one level up: how those axioms compose into a designed, persisted domain — FP-style DDD tactical patterns, immutable-data persistence, deep modules. **Chapter 5 — Next to Hexagonal Architecture and DDD** closes the book: it sets the result next to the industry's usual structure, objective by objective, and says when to use which. Each chapter has its own scope rules below; the voice, the three-kinds-of-why model, the registry, and the per-topic template apply to all five.
 
 It is **documentation, not software**. There is no build system, no test suite, and no runnable code at present. Content lives (or will live) as Markdown files. The `.gitignore` is a stock .NET template — its presence does not imply a .NET project; treat it as boilerplate until actual code appears.
 
@@ -17,7 +17,7 @@ It is **documentation, not software**. There is no build system, no test suite, 
 
 ## Scope: two altitudes, neither is system architecture
 
-This is a *Coding* Playbook, not an architecture book. The two code chapters (2 and 4) sit *below* system topology; what changes between them is how far up from a single function they reach. Chapter 3 says how to test code written that way. Chapter 1 is the preface that motivates them.
+This is a *Coding* Playbook, not an architecture book. The two code chapters (2 and 4) sit *below* system topology; what changes between them is how far up from a single function they reach. Chapter 3 says how to test code written that way. Chapter 1 is the preface that motivates them, and Chapter 5 is the closing comparison.
 
 Two things are **out of scope for the whole book**:
 
@@ -53,6 +53,16 @@ One level up from a single function: how the Chapter 2 building blocks assemble 
 - **Information hiding** — Parnas's "a module hides a design decision likely to change," at the in-scope, code-shaping end (the impure shell hiding the stateful secret), not as architectural decomposition.
 
 Chapter 4 is **Plays, not new principles**: it should *apply and compose* the Chapter 2 axioms, link back to them for the durable why, and never re-teach them under a DDD name. When a Chapter 4 technique is really a Chapter 2 axiom wearing a pattern's clothes (a DDD value object *is* Axiom 19), say so and link, rather than redefining it.
+
+### Chapter 5 — Next to Hexagonal Architecture and DDD: the closing comparison
+
+Compares this book with "hex DDD" (hexagonal / Onion / Clean Architecture, DDD's tactical patterns, a mediator) at the level of code inside one deployable. Strategic DDD and system topology stay out of scope; the chapter names them only as criteria for when to use hex DDD. When editing:
+
+- **The claim stays narrow.** For small and medium products, this book reaches *most* of hex DDD's objectives with fewer parts. Never "all", never "better".
+- **Evidence first.** Every objective is taken from a source that states it, before this book's answer. Quote only what was checked against the original; paraphrase and list under *Sources to verify* otherwise.
+- **The credit and limits sections stay:** *What hex DDD gets right*, *When to use hex DDD instead* and *What this comparison does not show* are what make the comparison fair. Every "not met" row must appear as a criterion.
+- **"Simpler" means fewer parts,** not more familiar. Don't claim it is easier or harder to learn; keep the retraining cost for teams that know hex DDD stated.
+- Rows that rest on unwritten Plays are marked †. Remove the mark when the Play exists.
 
 ## The central model
 
@@ -113,10 +123,11 @@ Prose density runs in three tiers: a **how-to** file is near-zero prose (mechani
 - **Chapter 2 axioms:** Definitions → Example → Problem / forces → Why → Trade-offs → When NOT to → References. No per-axiom "What might change tomorrow": axioms are stable ideas, and how this book changes is covered once, in the main README.
 - **Chapter 3 (Testing):** no fixed template yet. Each file states a position (what to test, at which level), its why, an example, and when not to. Tool picks go to ADRs.
 - **Chapter 4 Plays:** Problem / forces → What I do today → Why → C#/Java example → Trade-offs & when NOT to → What might change tomorrow. Plays are compositions and tactical choices that can change, so the last two sections are their non-dogmatism. Don't skip them.
+- **Chapter 5 (the comparison):** What I am comparing against → The evidence → What the sources say about their limits → Objective by objective → What "simpler" means → What hex DDD gets right → When to use hex DDD instead → What this comparison does not show.
 
 ## When adding content
 
 - Prefer extending or splitting existing Markdown files over new top-level files. Once a directory structure emerges, follow it; until then, **ask before introducing one** (ADRs conventionally collect in one place — confirm the location before creating it).
-- Mind the structure: **Chapter 1 is the SOLID critique** (the motivating preface), **Chapter 2 is the Fundamentals** (the axioms), **Chapter 3 is Testing** (how code built on the axioms is tested), **Chapter 4 is the Plays** (axioms composed into a designed, persisted domain). A Play must link back to every Chapter 2 axiom it rests on and must not restate the axiom's argument; guard the tactical/strategic line in Chapter 4 the way Chapter 2 guards the code/architecture line. Chapter 1 is the exception that links freely *forward* into Chapters 2–4 — pointing ahead to the axioms is its job.
+- Mind the structure: **Chapter 1 is the SOLID critique** (the motivating preface), **Chapter 2 is the Fundamentals** (the axioms), **Chapter 3 is Testing** (how code built on the axioms is tested), **Chapter 4 is the Plays** (axioms composed into a designed, persisted domain), **Chapter 5 is the comparison with hexagonal architecture and DDD** (the closing chapter). A Play must link back to every Chapter 2 axiom it rests on and must not restate the axiom's argument; guard the tactical/strategic line in Chapter 4 the way Chapter 2 guards the code/architecture line. Chapter 1 is the exception that links freely *forward* into Chapters 2–5 — pointing ahead to the axioms is its job.
 - **(Chapter 2.) Situate new construct axioms against the two evaluative lenses.** Whenever it reads naturally, an axiom should note what it does through [Cohesion](book/chapter2/axiom-08-cohesion.md) (Axiom 8) and [Connascence](book/chapter2/axiom-09-connascence.md) (Axiom 9) — typically a short *"Through Axiom 9's lens, this weakens a Connascence of X into Y"* aside in the intro. Keep it an aside, not the argument, and skip it where there is genuinely no angle (some carrier/composition axioms rate only a one-liner, or none).
 - **(Chapter 2.) Foreshadow, don't spoil.** Reference *earlier* axioms freely — backward links build the argument. A *later* axiom may be **foreshadowed** (a concept glimpsed at altitude, no pointer) but never **spoiled** (linked, numbered, or named). When a forward thread is worth drawing, write it as a backward link *from* the later axiom, not a forward link *to* it. (The strict axiom-numbering arc is a Chapter 2 device; Chapter 4 Plays link freely across chapters, and Chapter 1's preface is exempt — forward-referencing the axioms is its purpose.)
