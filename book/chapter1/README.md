@@ -286,7 +286,7 @@ That is the whole point in one line. A heuristic you can *recognize* but not *en
 
 ### What CUPID leaves above this book
 
-This book is stacked by level: Chapter 1 is the motivation, Chapter 2 the building blocks, Chapter 3 testing, Chapter 4 the Plays. The parts of CUPID that do not map into Chapters 2 to 4 all point the same way: **up**.
+This book is stacked by level: Chapter 1 is the motivation, Chapter 2 the building blocks, Chapter 3 testing, Chapter 4 the Plays. [Chapter 5](../chapter5/README.md) then sets the result next to hexagonal architecture and DDD. The parts of CUPID that do not map into Chapters 2 to 4 all point the same way: **up**.
 
 - Observable
 - Minimal dependencies, in the packaging sense
