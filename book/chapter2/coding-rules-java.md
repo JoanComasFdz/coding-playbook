@@ -39,8 +39,9 @@ The first five sections can be checked by reading the code. The last one can't, 
 
 ## Core and shell
 
-- **A unit of work is rounds of gather, decide, act.** Impure reads, then pure calls, then impure writes, with no effect between the pure calls. When a read depends on a decision, run another round. ([Axiom 13][A13])
+- **A unit of work is one orchestrator: gather, decide, act.** Impure reads, then pure calls, then impure writes, with no effect between the pure calls. ([Axiom 13][A13])
 - **The framework shapes the shell's entry points; these rules shape what runs inside them.** The shell is ordinary object-oriented code: classes, constructor injection, and state where state is needed. ([Axiom 13][A13])
+- **An entry point calls one orchestrator; an orchestrator never calls another.** Several entry points may share an orchestrator. Units of work share pure decisions and queries, not orchestration. ([Axiom 13][A13])
 - **A decision about what should happen returns an action union;** the shell carries it out. ([Axiom 24][A24])
 - **A lifecycle with more than two states is a finite state machine:** a pure `transition(state, command)` returning the event. A repeated command returns `NoChange`, not an error. ([Axiom 25][A25])
 - **A long-running process is a loop around `transition`:** read the state, carry out its effect, wait for the event, transition, repeat. ([Axiom 27][A27])
@@ -54,6 +55,7 @@ These can't be checked from the code alone. Whoever writes the code, a person or
 - **One reason to change per function.** ([Axiom 8][A8])
 - **Share only pure business rules, from the third repetition.** Orchestration may repeat. ([Axiom 8][A8])
 - **Prefer what the compiler checks** over meanings, positions and call order that only a convention carries. ([Axiom 9][A9])
+- **One round of gather, decide, act per unit of work.** A second round, for a read that depends on a decision, is a smell: try reading everything up front, or splitting the unit of work, before keeping it. ([Axiom 13][A13])
 - **Eliminate an error before you return it.** If a narrower type can make it impossible, it isn't an outcome. ([Axiom 17][A17l])
 - **An error is a `String` until a caller branches on it.** Then it gets a named case. ([Axiom 19][A19])
 - **Use typestate only when a wrong call order does real harm.** ([Axiom 28][A28])

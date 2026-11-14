@@ -4,7 +4,7 @@
 
 - The **shell** is the impure part. It *gathers* values from the world before the decision and *acts* on the result after it.
 - The **core** is the pure part. It *decides*, and touches nothing outside its parameters and its return value.
-- The picture is a sandwich: impure, pure, impure. A request, message or job is one sandwich, or several in a row.
+- The picture is a sandwich: impure, pure, impure. A request, message or job is one sandwich, run by one **orchestrator**.
 
 [Axiom 4](axiom-04-side-effects.md) named the effects, [Axiom 5](axiom-05-impure-functions.md) the functions that carry them, [Axiom 6](axiom-06-pure-functions.md) their opposite, and [Axiom 7](axiom-07-honest-total-signatures.md) the signature the core must have. This axiom puts those pieces into one shape. It is a concept, not a construct: it shows the target the rest of this chapter builds toward, so it stays short.
 
@@ -26,13 +26,25 @@ A unit of work that fits the shape runs three steps, in this order:
 - **Decide (pure).** Turn those values into a result: validate, apply the rules, work out what should change. No I/O, no clock, no logging, and no `throw` on bad input: every outcome is named in the return type ([Axiom 7](axiom-07-honest-total-signatures.md)).
 - **Act (impure).** Carry out the decision: save the row, publish the message, write the response, log. Nothing is left to decide.
 
-**Several rounds.** When a read depends on a decision (fetch the shipping rates only for a cart that passed its checks), run another round: gather, decide, gather more, decide again, act. A unit of work can be any number of rounds; each one keeps the shape.
+**Entry point and orchestrator.** The shell has two parts:
+
+- The **entry point** is what the framework calls: a controller action, an event subscription, a background service, a command-line command. It turns the outside request into values and calls an orchestrator.
+- The **orchestrator** runs one unit of work: it gathers, calls the core, and acts. Hexagonal architecture calls the same thing a *use case* or an *application service*.
+
+Several entry points can call the same orchestrator: an API call and a nightly job may cancel a subscription the same way. Orchestrators don't call each other, because shells don't compose (see *Why*, point 4). Two units of work share a pure decision or a query, not a whole orchestrator.
+
+**One round is the goal; more is a smell.** Sometimes a read depends on a decision: fetch the shipping rates only for a cart that passed its checks. Then the orchestrator runs a second round: gather, decide, gather more, decide again, act. That is allowed, but every extra round is one more place where effects interleave, and a reader has to follow the order again. Seemann, who named the sandwich, draws the line at two impure phases, and warns: "We shouldn't be cavalier about adding more impure slices to the sandwich" [6]. So treat a second round as a sign to restructure, not as a rule broken:
+
+- **Read everything up front.** Fetch the rates for every cart, even the ones that will fail their checks. Seemann calls this speculative prefetching: "It often turns out that you can fetch all the data before passing them to a pure function" [7].
+- **Split the unit of work.** If the second read belongs to a later step of the business process, it may be a second request, not a second round.
+
+When neither works, keep the second round, written out in the orchestrator where a reader sees it. This is a smell to look into, not a number to meet.
 
 Either end of the shell can be empty. A query reads, decides and returns, with nothing to write. A scheduled cleanup may have nothing to read. The rule is "effects at the edges, decisions in the middle"; the full sandwich is the common case, not the only one.
 
 You recognize the shape by the core's signature: its parameters are the gathered values, and its return value is everything the act step needs. If the core reads the clock, logs, or throws on bad input, the sandwich collapses back into a mixed function.
 
-**The core and the shell use classes differently.** The core is `static` functions over immutable data ([Axiom 6](axiom-06-pure-functions.md)), grouped in static classes that work as modules ([Axiom 2](axiom-02-data-is-not-behavior.md)). The shell is ordinary object-oriented code: a handler is a class, its dependencies (a `DbContext`, an HTTP client) arrive through its constructor, and it holds state where state is needed, such as a cache or a connection. Nothing in this book takes classes, dependency injection or state away from the shell. They just stay out of the core. **The framework shapes the shell's entry points; this book shapes what runs inside them.** A controller, an event subscription, a background worker or a UI handler has the signature, attributes and lifecycle its framework requires ([Axiom 2](axiom-02-data-is-not-behavior.md#when-not-to)). Behind that entry point, the shell's steps and the core's decisions follow these axioms.
+**The core and the shell use classes differently.** The core is `static` functions over immutable data ([Axiom 6](axiom-06-pure-functions.md)), grouped in static classes that work as modules ([Axiom 2](axiom-02-data-is-not-behavior.md)). The shell is ordinary object-oriented code: an orchestrator is a class, its dependencies (a `DbContext`, an HTTP client) arrive through its constructor, and it holds state where state is needed, such as a cache or a connection. Nothing in this book takes classes, dependency injection or state away from the shell. They just stay out of the core. **The framework shapes the shell's entry points; this book shapes what runs inside them.** A controller, an event subscription, a background worker or a UI callback has the signature, attributes and lifecycle its framework requires ([Axiom 2](axiom-02-data-is-not-behavior.md#when-not-to)). Behind that entry point, the shell's steps and the core's decisions follow these axioms.
 
 The shape is an older rule, lifted one level. **[Command–query separation](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation)** (CQS) asks each *method* to either return a value (a query) or change state (a command), never both [4]. Impureim draws the same line around the whole unit of work: gather is all query, act is all command, and the line between them is a step boundary rather than a naming convention per method. The core goes further than CQS asks: a CQS query may still read mutable state, while the core reads nothing outside its parameters.
 
@@ -40,7 +52,7 @@ The shape is an older rule, lifted one level. **[Command–query separation](htt
 
 ## Example
 
-A handler that prices an order. The shell gathers and acts; the pure function in the middle decides.
+An orchestrator that prices an order. The shell gathers and acts; the pure function in the middle decides.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -108,15 +120,15 @@ private static PricedOrder calculatePrice(
 </tr>
 </table>
 
-The handler has six lines that matter: three reads, one pure call, two writes. Move the clock read into `CalculatePrice`, or an eligibility check into the handler, and the steps stop being separable: either the core is no longer pure, or the shell starts deciding.
+The orchestrator has six lines that matter: three reads, one pure call, two writes. Move the clock read into `CalculatePrice`, or an eligibility check into the orchestrator, and the steps stop being separable: either the core is no longer pure, or the shell starts deciding.
 
 ---
 
 ## Problem / forces
 
-Most line-of-business handlers interleave: read a value, decide something, call a service, read another value, decide again. Each step is simple, and the body reads fine from top to bottom.
+Most line-of-business code that serves a request interleaves: read a value, decide something, call a service, read another value, decide again. Each step is simple, and the body reads fine from top to bottom.
 
-The cost shows up as soon as you do anything with the handler other than run it:
+The cost shows up as soon as you do anything with that code other than run it:
 
 - **Testing** means stubbing every effect, in the right order, with the right return values. The test mirrors the runtime environment.
 - **Reusing a decision** means pulling it out of the interleaving first, which is the same work as building the sandwich.
@@ -138,13 +150,13 @@ The core gets the plain tests of [Axiom 6](axiom-06-pure-functions.md#why) (poin
 "Where does this time come from?" The gather. "What happens if this save fails?" The act. "Does this decision handle an empty cart?" The core. In an interleaved body, every question means scanning the whole body.
 
 **4. The cores compose.**
-Two pure decisions combine into one larger pure decision, and the shell around them is still one gather and one act. Shells don't compose that way: chaining them interleaves effects again. So grow the core and keep the shell thin; chain shells only when a read depends on a decision (see *Trade-offs*).
+Two pure decisions combine into one larger pure decision, and the shell around them is still one gather and one act. Shells don't compose that way: chaining them interleaves effects again. So grow the core and keep the shell thin. An orchestrator never calls another orchestrator; a read that depends on a decision is a second round inside one orchestrator (see *Definitions*).
 
 ---
 
 ## Trade-offs
 
-- **The shell gathers up front.** It has to read everything the core might need before the core runs. A mixed handler reads the discount rules only when the cart turns out to be non-empty. The sandwich either reads them every time, sometimes for nothing, or moves the emptiness check into the shell, where it is a decision in the wrong place. When a read really depends on a decision, run another round (see *Definitions*).
+- **The shell gathers up front.** It has to read everything the core might need before the core runs. Mixed code reads the discount rules only when the cart turns out to be non-empty. The sandwich either reads them every time, sometimes for nothing, or moves the emptiness check into the shell, where it is a decision in the wrong place. When a read really depends on a decision, see *One round is the goal* in *Definitions*.
 - **A long-running process is many sandwiches.** One request fits one sandwich. A process that consumes a stream of events and keeps state between them runs one sandwich per event, and the state between events lives in the shell. The shape still holds; it just no longer fits in one diagram.
 
 ---
@@ -153,7 +165,7 @@ Two pure decisions combine into one larger pure decision, and the shell around t
 
 Two cases where the shape would be ceremony (see the [decisions-vs-ceremony test](../chapter1/README.md#enforce-decisions-not-ceremony) in [Chapter 1](../chapter1/README.md)):
 
-- **Code that decides nothing.** Some handlers only move things around: forward a request, copy a value, fan a message out to N subscribers. The whole body is shell. Don't invent an empty core to satisfy the shape.
+- **Code that decides nothing.** Some orchestrators only move things around: forward a request, copy a value, fan a message out to N subscribers. The whole body is shell. Don't invent an empty core to satisfy the shape.
 - **A tiny script.** A throwaway tool that reads one file, prints one summary and exits gains nothing from three steps. The shape pays off where reuse, testing and reasoning matter; below that, write the three lines.
 
 ---
@@ -173,6 +185,12 @@ Two cases where the shape would be ceremony (see the [decisions-vs-ceremony test
 
 [5] **Mark Seemann**, *Functional architecture is Ports and Adapters*, ploeh blog, 18 March 2016. In Haskell the split is enforced by the type system: impure IO code at the edges, pure functions at the core, which is Ports and Adapters falling out of the language.
 <https://blog.ploeh.dk/2016/03/18/functional-architecture-is-ports-and-adapters/>
+
+[6] **Mark Seemann**, *What's a sandwich?*, ploeh blog, 9 October 2023. An Impureim sandwich "may have at most two impure phases, but from one to three pure slices"; more tiers make "a Dagwood sandwich which is clearly a gimmick of little practicality".
+<https://blog.ploeh.dk/2023/10/09/whats-a-sandwich/>
+
+[7] **Mark Seemann**, *A conditional sandwich example*, ploeh blog, 14 February 2022. A read that seems to depend on a decision, restructured by speculative prefetching.
+<https://blog.ploeh.dk/2022/02/14/a-conditional-sandwich-example/>
 
 ---
 

@@ -1,6 +1,6 @@
 # Anatomy of a Component
 
-> **Work in progress.** This draft covers one part of the Play: how the code inside a component is laid out by visibility. The rest is still to do (see *Still to write*). The layout is something I am trying out, not yet something I have settled on.
+> **Work in progress.** This draft covers two parts of the Play: how the code inside a component is laid out by visibility, and who may call whom. The rest is still to do (see *Still to write*). The layout is something I am trying out, not yet something I have settled on.
 
 A [component](../chapter2/README.md#components) is a deployable unit or a library. Its callers see its API and nothing else. This Play is about the inside view: where the public code goes, where the private code goes, and how a reader tells them apart without opening every file.
 
@@ -23,6 +23,20 @@ Like every Play, it adds no new principle. It is [Axiom 1](../chapter2/axiom-01-
 - **`ServiceCollectionExtensions.cs` is the entry point the framework shapes** ([Axiom 13](../chapter2/axiom-13-impureim.md#definitions)): one `Add{Feature}` method that wires the internals to the delegates in `Api.cs`.
 - **Visibility and purity are two different splits.** `Internal/` holds both the pure core (static modules) and the impure shell (a `BackgroundService`, an adapter). The layout says who may call a type, not whether it has effects. [Axiom 13](../chapter2/axiom-13-impureim.md) still decides that.
 - **Slices go inside `Internal/`.** When a component grows, its internals are grouped by feature ([*Vertical slices*](02-vertical-slices.md)): `Internal/Sampling/`, `Internal/Collection/`. The root stays flat, because it is the interface, and an interface should be small.
+
+### Who calls whom
+
+Inside a component:
+
+- **An entry point calls one orchestrator.** It turns the outside request into values and passes them on; it decides nothing ([Axiom 13](../chapter2/axiom-13-impureim.md#definitions)).
+- **An orchestrator calls the core, its own data access, and adapters.** Never another orchestrator.
+- **The core calls only the core.**
+- **A slice writes only its own data.** It reads another slice's data through that slice's API, which is read-only to other slices. This is a rule a friend uses, and I adopt it: once a request is inside a slice, its effects stay in that slice. A write that needs two slices is a sign that the boundary is in the wrong place, or that the data belongs together, which is the question an aggregate answers ([*DDD tactical patterns*](01-DDD-tactical-patterns.md#aggregate)).
+
+To other components:
+
+- **Only through their API.** A component never reads another component's database, the same black box its component tests respect ([Chapter 3](../chapter3/README.md)).
+- **Systems owned by others sit behind an adapter** in `Internal/`, with a small surface in domain words ([*Information hiding*](03-information-hiding.md)).
 
 ## Why
 
@@ -57,13 +71,14 @@ Java has no assembly boundary. Package-private access stops at the package, and 
 - Whether one `Api.cs` stays readable as a component grows, or splits into one file per concept at the root.
 - The Java choice: same package, or a JPMS module.
 - Whether the same layout works for a deployable service, which adds a composition root and its own dependencies.
+- Whether a slice reads another slice through its API, or through a read model of its own, once the reads get heavy.
 
 ## Still to write
 
 From the scope in the [Chapter 4 README](README.md):
 
 - **The API, API-first,** as [Chapter 3](../chapter3/README.md) requires of component tests.
-- **The shell's handlers** as ordinary classes, and **the core's static modules.**
+- **The entry points and orchestrators** as ordinary classes, and **the core's static modules.**
 - **The adapters** to systems owned by others.
 - **A service vs. a library:** the composition root and the service's own dependencies.
 

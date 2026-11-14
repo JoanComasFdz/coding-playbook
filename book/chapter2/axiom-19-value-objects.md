@@ -278,7 +278,7 @@ Two `Order` values with the same `Id` are the same order, however their `Total` 
 
 - **The Java `final class` is more code.** Hand-written `equals` and `hashCode` for every value object (see *Definitions*). The cheaper alternative, a record whose public constructor only review keeps callers away from, gives up the guarantee this axiom is about.
 - **Mapping at the persistence boundary.** ORMs and serializers expect public constructors or settable properties. Map at the boundary instead (see *Problem / forces*): read the primitive, call `Parse`, and treat a `Failure` as an error, because it means the stored data breaks today's rule.
-- **Several values, several Results.** A handler that builds three value objects has three `Result`s to handle. The combinators of [Axiom 18](axiom-18-result-combinators.md) apply directly: a factory is exactly the kind of step `Bind` chains. A later axiom builds on this to compose many.
+- **Several values, several Results.** An orchestrator that builds three value objects has three `Result`s to handle. The combinators of [Axiom 18](axiom-18-result-combinators.md) apply directly: a factory is exactly the kind of step `Bind` chains. A later axiom builds on this to compose many.
 
 ---
 

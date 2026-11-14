@@ -279,7 +279,7 @@ The same loop runs on a dedicated thread, an async task, a virtual thread or a c
 
 ## When NOT to
 
-- **One-shot work.** A request handler that loads a state, calls `Transition` once, saves and responds ([Axiom 25](axiom-25-state-machines.md)) has no loop. Neither does a handler where each message is independent: the web server or queue listener is the loop, and each handling is a one-shot shell.
+- **One-shot work.** An orchestrator that loads a state, calls `Transition` once, saves and responds ([Axiom 25](axiom-25-state-machines.md)) has no loop. Neither does an orchestrator where each message is independent: the web server or queue listener is the loop, and each handling is a one-shot shell.
 - **Plain batch processing.** A program that runs a pure function over each item of a stream and exits has no state beyond its position in the stream: it is `foreach`, not a state machine. The Stateful Shell earns its vocabulary when the *next* step depends on the *current* state of something long-lived, such as a connection.
 - **A workflow engine already runs it.** Temporal, Camunda or AWS Step Functions are Stateful Shells with persistence built in; a hand-written loop on top would duplicate them ([Axiom 25](axiom-25-state-machines.md#when-not-to)).
 
