@@ -39,9 +39,9 @@ The first five sections can be checked by reading the code. The last one can't, 
 
 ## Core and shell
 
-- **A unit of work is one orchestrator: gather, decide, act.** Impure reads, then pure calls, then impure writes, with no effect between the pure calls. ([Axiom 13][A13])
+- **A unit of work is one use case: gather, decide, act.** Impure reads, then pure calls, then impure writes, with no effect between the pure calls. ([Axiom 13][A13])
 - **The framework shapes the shell's entry points; these rules shape what runs inside them.** The shell is ordinary object-oriented code: classes, constructor injection, and state where state is needed. ([Axiom 13][A13])
-- **An entry point calls one orchestrator; an orchestrator never calls another.** Several entry points may share an orchestrator. Units of work share pure decisions and queries, not orchestration. ([Axiom 13][A13])
+- **An entry point calls one use case; a use case never calls another.** Several entry points may share a use case. Units of work share pure decisions and queries, not orchestration. ([Axiom 13][A13])
 - **A decision about what should happen returns an action union;** the shell carries it out. ([Axiom 24][A24])
 - **A lifecycle with more than two states is a finite state machine:** a pure `transition(state, command)` returning the event. A repeated command returns `NoChange`, not an error. ([Axiom 25][A25])
 - **A long-running process is a loop around `transition`:** read the state, carry out its effect, wait for the event, transition, repeat. ([Axiom 27][A27])

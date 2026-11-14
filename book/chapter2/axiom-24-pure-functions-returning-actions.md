@@ -202,7 +202,7 @@ An action can be logged ("here is what the cart decided"), replayed against anot
 
 ## Trade-offs
 
-- **More types.** Each decision now has an output DU with its cases, plus a shell that matches on it. For one orchestrator that is real overhead; by the tenth, it is habit.
+- **More types.** Each decision now has an output DU with its cases, plus a shell that matches on it. For one use case that is real overhead; by the tenth, it is habit.
 - **Keep presentation out of the actions.** An `HttpResponse` is not an action; it is an output format. Putting it in the DU ties the decision to one boundary. Actions describe the work in the program's own terms (insert a row, publish an event); each shell maps them to its boundary's format, as the example does in its branches.
 - **Several effects need a list, not nesting.** When a decision means "insert a row *and* publish an event", return a list of actions and let the shell run each one. That keeps every branch "do one thing", however many actions arrive.
 - **The core grows with the rules.** Fifteen rules make `DecideAdd` long. The fix is not to make it impure, but to split it into smaller pure functions that `DecideAdd` combines.

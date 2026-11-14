@@ -200,7 +200,7 @@ Each run gets its own context, created when the run starts and dropped when it e
 
 ## When NOT to
 
-- **A one-shot shell with nothing to collect.** An orchestrator that loads a state, calls `Transition` once, saves and responds ([Axiom 25](axiom-25-state-machines.md#example)) has no working memory across steps. A context there is dead weight.
+- **A one-shot shell with nothing to collect.** A use case that loads a state, calls `Transition` once, saves and responds ([Axiom 25](axiom-25-state-machines.md#example)) has no working memory across steps. A context there is dead weight.
 - **Tests of pure functions.** `Transition`, `DecideAdd` and `ValidateRow` never take a context, so their tests don't need one.
 - **Anything listed under *What doesn't* in *Definitions*.** State that changes as the domain moves through conditions belongs in a state DU ([Axiom 25](axiom-25-state-machines.md#why), point 3). Dependencies belong in the shell's construction, and cross-session resources at a higher level. The context is not a shortcut around any of them.
 

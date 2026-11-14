@@ -632,7 +632,7 @@ The *strategic* half — decomposition at architectural altitude — stays out o
 
 **What:** how the code inside one component is laid out: the public API at the root, everything else in `Internal/`.
 
-**Verdict:** a Play, not a principle: information hiding applied to the folder layout. Still to develop into the full anatomy (API, entry points and orchestrators, core modules, adapters, service vs. library).
+**Verdict:** a Play, not a principle: information hiding applied to the folder layout. Still to develop into the full anatomy (API, entry points and use cases, core modules, adapters, service vs. library).
 
 - [Axiom 1](chapter2/axiom-01-explicit-over-implicit.md#encapsulation-read-precisely) — the root shows what a caller needs; `Internal/` holds the secret.
 - [Axiom 10](chapter2/axiom-10-first-class-functions.md) — the API offers delegates, declared in one `Api.cs`.
@@ -644,17 +644,17 @@ The *strategic* half — decomposition at architectural altitude — stays out o
 
 ---
 
-## Use case / application service / orchestrator — [🔁 FOLDED]
+## Use case / application service — [🔁 FOLDED]
 
 **What:** the class that runs one unit of work: loads, calls the domain, saves. Hexagonal and DDD call it a use case or application service.
 
-**Verdict:** folded as the **orchestrator**, the shell half of the sandwich. No layer of use cases above it.
+**Verdict:** folded as the **use case**, the shell half of the sandwich: one ordinary class per goal of an actor. No interface, no port, no layer of use cases above it.
 
-- [Axiom 13](chapter2/axiom-13-impureim.md#definitions) — entry point and orchestrator defined; orchestrators never call each other; one round is the goal, more is a smell.
+- [Axiom 13](chapter2/axiom-13-impureim.md#definitions) — entry point and use case defined; use cases never call each other; one round is the goal, more is a smell.
 - [*Anatomy of a component*](chapter4/04-anatomy-of-a-component.md) — who calls whom, inside a component and across.
-- [Chapter 5](chapter5/README.md) — row 4: the orchestrator is the use case, without the port.
+- [Chapter 5](chapter5/README.md) — row 4: the same use case, without the port.
 
-**Source:** Mark Seemann, *What's a sandwich?* (2023); Jimmy Bogard, *Dealing with Duplication in MediatR Handlers* (2016).
+**Source:** Ivar Jacobson, *Object-Oriented Software Engineering* (1992); Mark Seemann, *What's a sandwich?* (2023); Jimmy Bogard, *Dealing with Duplication in MediatR Handlers* (2016).
 
 ---
 

@@ -28,8 +28,8 @@ Like every Play, it adds no new principle. It is [Axiom 1](../chapter2/axiom-01-
 
 Inside a component:
 
-- **An entry point calls one orchestrator.** It turns the outside request into values and passes them on; it decides nothing ([Axiom 13](../chapter2/axiom-13-impureim.md#definitions)).
-- **An orchestrator calls the core, its own data access, and adapters.** Never another orchestrator.
+- **An entry point calls one use case.** It turns the outside request into values and passes them on; it decides nothing ([Axiom 13](../chapter2/axiom-13-impureim.md#definitions)).
+- **A use case calls the core, its own data access, and adapters.** Never another use case.
 - **The core calls only the core.**
 - **A slice writes only its own data.** It reads another slice's data through that slice's API, which is read-only to other slices. This is a rule a friend uses, and I adopt it: once a request is inside a slice, its effects stay in that slice. A write that needs two slices is a sign that the boundary is in the wrong place, or that the data belongs together, which is the question an aggregate answers ([*DDD tactical patterns*](01-DDD-tactical-patterns.md#aggregate)).
 
@@ -78,7 +78,7 @@ Java has no assembly boundary. Package-private access stops at the package, and 
 From the scope in the [Chapter 4 README](README.md):
 
 - **The API, API-first,** as [Chapter 3](../chapter3/README.md) requires of component tests.
-- **The entry points and orchestrators** as ordinary classes, and **the core's static modules.**
+- **The entry points and use cases** as ordinary classes, and **the core's static modules.**
 - **The adapters** to systems owned by others.
 - **A service vs. a library:** the composition root and the service's own dependencies.
 
