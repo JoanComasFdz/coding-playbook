@@ -164,7 +164,7 @@ public static Result<VerifiedUser, String> verify(
 
 ### In the shell
 
-The handler that runs the railway is the sandwich from [Axiom 13](axiom-13-impureim.md): gather, decide, act.
+The use case that runs the railway is the sandwich from [Axiom 13](axiom-13-impureim.md): gather, decide, act.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -215,12 +215,12 @@ Everything [Axiom 17's synthesis](axiom-17-result.md#the-first-synthesis) showed
 
 ## Problem / forces
 
-[Axiom 18](axiom-18-result-combinators.md#problem--forces) compared checking each step by hand with throwing and with combinators. At the scale of a whole handler, two more ways to lose the picture appear:
+[Axiom 18](axiom-18-result-combinators.md#problem--forces) compared checking each step by hand with throwing and with combinators. At the scale of a whole use case, two more ways to lose the picture appear:
 
 - **Nested matches, one per step.** Each step adds a level of indentation (the [arrow anti-pattern](https://blog.codinghorror.com/flattening-arrow-code/)), and the propagation rule is written again at every level.
 - **One giant lambda.** The chain stays technically correct, but the steps are never extracted, so the closures nest and the pipeline disappears inside them. Extract each step into a named function and the picture comes back.
 
-Checking by hand still has its place when one step genuinely needs different handling (see *When NOT to*). For runs of steps that all follow the same rule, which is most handlers in a domain built on value objects, the railway is the default.
+Checking by hand still has its place when one step genuinely needs different handling (see *When NOT to*). For runs of steps that all follow the same rule, which is most use cases in a domain built on value objects, the railway is the default.
 
 ---
 

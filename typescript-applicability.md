@@ -10,7 +10,7 @@
 
 **The principles transfer almost entirely; the *mechanisms* split into three groups, and one language trait — structural typing — is the thread that decides which.**
 
-The playbook's central model — *pure functions over immutable types, returning values or action DUs; a single impure orchestrator is the only seam; stateful resources held in the shell and fed in as values* — is, if anything, **more native to TypeScript than to C#/Java**, because discriminated unions are TS's idiomatic core rather than a ceremony assembled out of `abstract record` / `sealed interface`.
+The playbook's central model — *pure functions over immutable types, returning values or action DUs; a single impure use case is the only seam; stateful resources held in the shell and fed in as values* — is, if anything, **more native to TypeScript than to C#/Java**, because discriminated unions are TS's idiomatic core rather than a ceremony assembled out of `abstract record` / `sealed interface`.
 
 But four of the playbook's load-bearing guarantees lean on **nominal typing** and **automatic exhaustiveness**, and TypeScript gives you neither for free. So the axioms are *right* for TS, yet several of the **C#/Java examples would actively mislead a TS reader** if transcribed literally: they would compile and silently fail to deliver the guarantee the prose claims.
 

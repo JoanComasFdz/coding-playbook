@@ -149,9 +149,9 @@ In practice, the knowledge DRY protects is the business rules. In this book, tho
 
 Share those. A rule that lives in one place changes in one place.
 
-Impure orchestration ([Axiom 5](axiom-05-impure-functions.md)) is different. Three handlers that each load data, transform it, and then save, publish or return the result look alike. But they share a *shape*, not knowledge: each changes for its own reasons, with its own data, its own consumers, its own endpoint. Let them repeat. Share the pure parts they call (the validation, the transformation), not the plumbing around them.
+Impure orchestration ([Axiom 5](axiom-05-impure-functions.md)) is different. Three use cases that each load data, transform it, and then save, publish or return the result look alike. But they share a *shape*, not knowledge: each changes for its own reasons, with its own data, its own consumers, its own endpoint. Let them repeat. Share the pure parts they call (the validation, the transformation), not the plumbing around them.
 
-Merging them into one generic handler that takes the transformation as a parameter doesn't fix this. It is the `bool isReceipt` flag from the example in disguise: a parameter that picks the behavior, with three reasons to change behind one body.
+Merging them into one generic use case that takes the transformation as a parameter doesn't fix this. It is the `bool isReceipt` flag from the example in disguise: a parameter that picks the behavior, with three reasons to change behind one body.
 
 The exception is infrastructure written once for many applications, like a framework or a library. It is its own product, with its own single reason to change.
 

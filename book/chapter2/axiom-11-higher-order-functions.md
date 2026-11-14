@@ -159,7 +159,7 @@ Three cases where reaching for a function parameter is the wrong reflex:
 
 - **Behavior that really has several methods.** `IEnumerator<T>` and `IObserver<T>` declare *several* operations that must be implemented together; their cohesion is the point of having a type. Collapsing them into one function loses something, so the interface is the right shape.
 - **Behavior that needs a stable identity.** A plugin handler looked up by string key in a `Map<String, Function<...>>` works as long as the keys live inside the same program. A handler that has to survive serialization, be found by an annotation scanner, or be registered across processes needs a class: the same exception as in [Axiom 10](axiom-10-first-class-functions.md).
-- **Wrapping impure plumbing.** Don't write reusable wrappers around impure steps, like a `WithTransaction(step)`, `WithLock(step)` or `Logged(step)` that every handler passes its work into. That hides impure code behind a reusable facade, and it is the generic handler with the business step passed in that [Axiom 8](axiom-08-cohesion.md#what-dry-is-for) warns against. Let each orchestration do its own transaction, locking and logging, in plain sight; where the framework already provides the wrapper, use it.
+- **Wrapping impure plumbing.** Don't write reusable wrappers around impure steps, like a `WithTransaction(step)`, `WithLock(step)` or `Logged(step)` that every use case passes its work into. That hides impure code behind a reusable facade, and it is the generic use case with the business step passed in that [Axiom 8](axiom-08-cohesion.md#what-dry-is-for) warns against. Let each orchestration do its own transaction, locking and logging, in plain sight; where the framework already provides the wrapper, use it.
 
 ---
 
