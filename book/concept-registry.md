@@ -648,11 +648,11 @@ The *strategic* half — decomposition at architectural altitude — stays out o
 
 **What:** the class that runs one unit of work: loads, calls the domain, saves. Hexagonal and DDD call it a use case or application service.
 
-**Verdict:** folded as the **use case**, the shell half of the sandwich: one ordinary class per goal of an actor. No interface, no port, no layer of use cases above it.
+**Verdict:** folded as a tool, not a layer. The shell lives in the entry point by default; a use case is extracted only when entry points repeat the same unit of work. No interface, no port, never calling another use case.
 
-- [Axiom 13](chapter2/axiom-13-impureim.md#definitions) — entry point and use case defined; use cases never call each other; one round is the goal, more is a smell.
+- [Axiom 13](chapter2/axiom-13-impureim.md#definitions) — the shell lives in the entry point; a use case is a tool for repeated units of work; one round is the goal, more is a smell.
 - [*Anatomy of a component*](chapter4/04-anatomy-of-a-component.md) — who calls whom, inside a component and across.
-- [Chapter 5](chapter5/README.md) — row 4: the same use case, without the port.
+- [Chapter 5](chapter5/README.md) — row 4: a use case when it is needed, without the port.
 
 **Source:** Ivar Jacobson, *Object-Oriented Software Engineering* (1992); Mark Seemann, *What's a sandwich?* (2023); Jimmy Bogard, *Dealing with Duplication in MediatR Handlers* (2016).
 

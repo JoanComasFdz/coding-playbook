@@ -4,7 +4,7 @@
 
 - The **shell** is the impure part. It *gathers* values from the world before the decision and *acts* on the result after it.
 - The **core** is the pure part. It *decides*, and touches nothing outside its parameters and its return value.
-- The picture is a sandwich: impure, pure, impure. A request, message or job is one sandwich, run by one **use case**.
+- The picture is a sandwich: impure, pure, impure. A request, message or job is one sandwich.
 
 [Axiom 4](axiom-04-side-effects.md) named the effects, [Axiom 5](axiom-05-impure-functions.md) the functions that carry them, [Axiom 6](axiom-06-pure-functions.md) their opposite, and [Axiom 7](axiom-07-honest-total-signatures.md) the signature the core must have. This axiom puts those pieces into one shape. It is a concept, not a construct: it shows the target the rest of this chapter builds toward, so it stays short.
 
@@ -26,27 +26,27 @@ A unit of work that fits the shape runs three steps, in this order:
 - **Decide (pure).** Turn those values into a result: validate, apply the rules, work out what should change. No I/O, no clock, no logging, and no `throw` on bad input: every outcome is named in the return type ([Axiom 7](axiom-07-honest-total-signatures.md)).
 - **Act (impure).** Carry out the decision: save the row, publish the message, write the response, log. Nothing is left to decide.
 
-**Entry point and use case.** The shell has two parts:
+**The shell lives in the entry point.** The **entry point** is what the framework calls: a controller action, an event subscription, a background service, a command-line command. By default, it is the whole shell. A controller that receives a `DbContext` and a message publisher, reads, calls the core, then saves and publishes, is a complete sandwich. It needs no class of its own around it, and no test of its own: it is tested as part of the component ([Chapter 3](../chapter3/README.md)). Most units of work never need more. Simplicity first.
 
-- The **entry point** is what the framework calls: a controller action, an event subscription, a background service, a command-line command. It turns the outside request into values and calls a use case.
-- The **use case** runs one unit of work for one goal of one actor: a user, another system, or time. It orchestrates: it gathers, calls the core, and acts.
+**A use case is a tool, not a layer.** Sometimes two entry points run the same unit of work: an API call and a nightly job cancel a subscription the same way. First share what is pure: the decision ([Axiom 8](axiom-08-cohesion.md#what-dry-is-for)). The gathering and acting around it may repeat. Only when the same unit of work repeats, for the same reason, by the third time ([Axiom 8](axiom-08-cohesion.md#wait-before-you-share)), move it into a **use case**: one ordinary class that gathers, calls the core and acts, for one goal of one actor (a user, another system, or time). Each entry point then calls it, and turns its result into what its framework expects: an HTTP status code, an ACK or a NACK.
 
-The pair is old. Jacobson's *entity–control–boundary* (1992) splits a use case the same way: a boundary "encapsulates interaction with external actors (users or external systems)", and a control "coordinates, sequences controls other objects involved in the use case" [8]. The name says what the code is for, a goal someone has, where a name like *orchestrator* would only say how it works.
+- **No interface, no port, no layer.** A use case is extracted when it is needed, not created for every request in advance.
+- **A use case never calls another.** Shells don't compose (see *Why*, point 4). Two units of work share a pure decision or a query, not a whole use case.
 
-A use case here is one ordinary class: no interface, no port, no use-case layer above it. Several entry points can call the same use case: an API call and a nightly job may cancel a subscription the same way. Use cases don't call each other, because shells don't compose (see *Why*, point 4). Two units of work share a pure decision or a query, not a whole use case.
+The name is old. Jacobson's *entity–control–boundary* (1992) gives a use case its own class: a boundary "encapsulates interaction with external actors (users or external systems)", and a control "coordinates, sequences controls other objects involved in the use case" [8]. The name says what the code is for, a goal someone has, where a name like *orchestrator* would only say how it works.
 
-**One round is the goal; more is a smell.** Sometimes a read depends on a decision: fetch the shipping rates only for a cart that passed its checks. Then the use case runs a second round: gather, decide, gather more, decide again, act. That is allowed, but every extra round is one more place where effects interleave, and a reader has to follow the order again. Seemann, who named the sandwich, draws the line at two impure phases, and warns: "We shouldn't be cavalier about adding more impure slices to the sandwich" [6]. So treat a second round as a sign to restructure, not as a rule broken:
+**One round is the goal; more is a smell.** Sometimes a read depends on a decision: fetch the shipping rates only for a cart that passed its checks. Then the shell runs a second round: gather, decide, gather more, decide again, act. That is allowed, but every extra round is one more place where effects interleave, and a reader has to follow the order again. Seemann, who named the sandwich, draws the line at two impure phases, and warns: "We shouldn't be cavalier about adding more impure slices to the sandwich" [6]. So treat a second round as a sign to restructure, not as a rule broken:
 
 - **Read everything up front.** Fetch the rates for every cart, even the ones that will fail their checks. Seemann calls this speculative prefetching: "It often turns out that you can fetch all the data before passing them to a pure function" [7].
 - **Split the unit of work.** If the second read belongs to a later step of the business process, it may be a second request, not a second round.
 
-When neither works, keep the second round, written out in the use case where a reader sees it. This is a smell to look into, not a number to meet.
+When neither works, keep the second round, written out in the shell where a reader sees it. This is a smell to look into, not a number to meet.
 
 Either end of the shell can be empty. A query reads, decides and returns, with nothing to write. A scheduled cleanup may have nothing to read. The rule is "effects at the edges, decisions in the middle"; the full sandwich is the common case, not the only one.
 
 You recognize the shape by the core's signature: its parameters are the gathered values, and its return value is everything the act step needs. If the core reads the clock, logs, or throws on bad input, the sandwich collapses back into a mixed function.
 
-**The core and the shell use classes differently.** The core is `static` functions over immutable data ([Axiom 6](axiom-06-pure-functions.md)), grouped in static classes that work as modules ([Axiom 2](axiom-02-data-is-not-behavior.md)). The shell is ordinary object-oriented code: a use case is a class, its dependencies (a `DbContext`, an HTTP client) arrive through its constructor, and it holds state where state is needed, such as a cache or a connection. Nothing in this book takes classes, dependency injection or state away from the shell. They just stay out of the core. **The framework shapes the shell's entry points; this book shapes what runs inside them.** A controller, an event subscription, a background worker or a UI callback has the signature, attributes and lifecycle its framework requires ([Axiom 2](axiom-02-data-is-not-behavior.md#when-not-to)). Behind that entry point, the shell's steps and the core's decisions follow these axioms.
+**The core and the shell use classes differently.** The core is `static` functions over immutable data ([Axiom 6](axiom-06-pure-functions.md)), grouped in static classes that work as modules ([Axiom 2](axiom-02-data-is-not-behavior.md)). The shell is ordinary object-oriented code: a controller is a class, its dependencies (a `DbContext`, an HTTP client) arrive through its constructor, and it holds state where state is needed, such as a cache or a connection. Nothing in this book takes classes, dependency injection or state away from the shell. They just stay out of the core. **The framework shapes the shell's entry points; this book shapes what runs inside them.** A controller, an event subscription, a background worker or a UI callback has the signature, attributes and lifecycle its framework requires ([Axiom 2](axiom-02-data-is-not-behavior.md#when-not-to)). Behind that entry point, the shell's steps and the core's decisions follow these axioms.
 
 The shape is an older rule, lifted one level. **[Command–query separation](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation)** (CQS) asks each *method* to either return a value (a query) or change state (a command), never both [4]. Impureim draws the same line around the whole unit of work: gather is all query, act is all command, and the line between them is a step boundary rather than a naming convention per method. The core goes further than CQS asks: a CQS query may still read mutable state, while the core reads nothing outside its parameters.
 
@@ -54,7 +54,7 @@ The shape is an older rule, lifted one level. **[Command–query separation](htt
 
 ## Example
 
-A use case that prices an order. The shell gathers and acts; the pure function in the middle decides.
+A shell that prices an order. It gathers and acts; the pure function in the middle decides.
 
 <table>
 <tr><th>C#</th><th>Java</th></tr>
@@ -122,7 +122,7 @@ private static PricedOrder calculatePrice(
 </tr>
 </table>
 
-The use case has six lines that matter: three reads, one pure call, two writes. Move the clock read into `CalculatePrice`, or an eligibility check into the use case, and the steps stop being separable: either the core is no longer pure, or the shell starts deciding.
+The shell has six lines that matter: three reads, one pure call, two writes. Move the clock read into `CalculatePrice`, or an eligibility check into the shell, and the steps stop being separable: either the core is no longer pure, or the shell starts deciding.
 
 ---
 
@@ -152,7 +152,7 @@ The core gets the plain tests of [Axiom 6](axiom-06-pure-functions.md#why) (poin
 "Where does this time come from?" The gather. "What happens if this save fails?" The act. "Does this decision handle an empty cart?" The core. In an interleaved body, every question means scanning the whole body.
 
 **4. The cores compose.**
-Two pure decisions combine into one larger pure decision, and the shell around them is still one gather and one act. Shells don't compose that way: chaining them interleaves effects again. So grow the core and keep the shell thin. A use case never calls another use case; a read that depends on a decision is a second round inside one use case (see *Definitions*).
+Two pure decisions combine into one larger pure decision, and the shell around them is still one gather and one act. Shells don't compose that way: chaining them interleaves effects again. So grow the core and keep the shell thin. A shell never calls another shell; a read that depends on a decision is a second round inside one shell (see *Definitions*).
 
 ---
 
@@ -167,7 +167,7 @@ Two pure decisions combine into one larger pure decision, and the shell around t
 
 Two cases where the shape would be ceremony (see the [decisions-vs-ceremony test](../chapter1/README.md#enforce-decisions-not-ceremony) in [Chapter 1](../chapter1/README.md)):
 
-- **Code that decides nothing.** Some use cases only move things around: forward a request, copy a value, fan a message out to N subscribers. The whole body is shell. Don't invent an empty core to satisfy the shape.
+- **Code that decides nothing.** Some shells only move things around: forward a request, copy a value, fan a message out to N subscribers. The whole body is shell. Don't invent an empty core to satisfy the shape.
 - **A tiny script.** A throwaway tool that reads one file, prints one summary and exits gains nothing from three steps. The shape pays off where reuse, testing and reasoning matter; below that, write the three lines.
 
 ---
@@ -194,7 +194,7 @@ Two cases where the shape would be ceremony (see the [decisions-vs-ceremony test
 [7] **Mark Seemann**, *A conditional sandwich example*, ploeh blog, 14 February 2022. A read that seems to depend on a decision, restructured by speculative prefetching.
 <https://blog.ploeh.dk/2022/02/14/a-conditional-sandwich-example/>
 
-[8] **Ivar Jacobson et al.**, *Object-Oriented Software Engineering: A Use Case Driven Approach*, Addison-Wesley, 1992. The origin of *use case* and of the entity–control–boundary split; quoted here through Wikipedia's summary.
+[8] **Ivar Jacobson et al.**, *Object-Oriented Software Engineering: A Use Case Driven Approach*, Addison-Wesley, 1992. The origin of *use case*, and of a class of its own for one; quoted here through Wikipedia's summary.
 <https://en.wikipedia.org/wiki/Entity%E2%80%93control%E2%80%93boundary>
 
 ---

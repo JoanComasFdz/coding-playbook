@@ -68,7 +68,7 @@ Compares this book with "hex DDD" (hexagonal / Onion / Clean Architecture, DDD's
 
 Most content should align to one model:
 
-> Pure functions over immutable types, returning values or **action DUs**; a single impure use case is the only seam; stateful resources are held in the shell and fed in as values.
+> Pure functions over immutable types, returning values or **action DUs**; a single impure shell is the only seam; stateful resources are held in the shell and fed in as values.
 
 That sentence is effectively a module's public-API contract. Five consequences to keep consistent across examples:
 
@@ -80,7 +80,7 @@ That sentence is effectively a module's public-API contract. Five consequences t
 
 ## Vocabulary
 
-Use these terms consistently — they are the playbook's building blocks: **module** (a static class of pure functions) vs **component** (a deployable unit or a library; *service* only when it must be deployable), **entry point** (what the framework calls: a controller, an event subscription, a background service) vs **use case** (one unit of work in the shell, for one goal of one actor: gather, decide, act; one ordinary class, no interface or port, never calling another use case; never *handler*, which collides with Axiom 12's `Handle`, and not *orchestrator*, which says how instead of what for), explicit over implicit, data vs behavior, immutable records, `Option`/`Maybe`, `Result`/`Either`, discriminated unions, pattern matching, total/honest signatures, pure vs impure functions, first-class & higher-order functions, the **Impureim sandwich**, value objects with smart constructors, **parse don't validate**, **make illegal states unrepresentable**, the **Decider**, composition/combinators.
+Use these terms consistently — they are the playbook's building blocks: **module** (a static class of pure functions) vs **component** (a deployable unit or a library; *service* only when it must be deployable), **entry point** (what the framework calls: a controller, an event subscription, a background service; by default it *is* the shell) vs **use case** (a tool, not a layer: one ordinary class for a unit of work that several entry points repeat; no interface or port, never calling another use case; never call the shell *handler*, which collides with Axiom 12's `Handle`, or *orchestrator*), explicit over implicit, data vs behavior, immutable records, `Option`/`Maybe`, `Result`/`Either`, discriminated unions, pattern matching, total/honest signatures, pure vs impure functions, first-class & higher-order functions, the **Impureim sandwich**, value objects with smart constructors, **parse don't validate**, **make illegal states unrepresentable**, the **Decider**, composition/combinators. Never write as if every request goes entry point → use case → sandwich: by default the entry point runs the sandwich itself.
 
 Chapter 4 adds its own tactical vocabulary — aggregate, entity, repository, deep module, information hiding — each introduced by linking back to the Chapter 2 axiom it composes, never as a fresh definition.
 
