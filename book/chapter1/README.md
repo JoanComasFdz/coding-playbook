@@ -174,7 +174,7 @@ SOLID as practiced enforces the first kind. This book enforces the second.
 
 Its intent, "open for extension, closed for modification", lives on in Vertical Slice Architecture. In Bogard's words: "New features only add code, you're not changing shared code and worrying about side effects" ([Bogard](https://www.jimmybogard.com/vertical-slice-architecture/)).
 
-The unit that stays closed moved from the *class* to the *slice*, and there it becomes actionable. "Does this change touch one slice or several?" is a question two reviewers answer the same way. The [Vertical slices](../chapter4/02-vertical-slices.md) Play (Chapter 4) builds it from Cohesion and Connascence.
+The unit that stays closed moved from the *class* to the *slice*, and there it becomes actionable. "Does this change touch one slice or several?" is a question two reviewers answer the same way. The [Vertical slices](../chapter5/02-vertical-slices.md) Play (Chapter 5) builds it from Cohesion and Connascence.
 
 ### Refactoring to extract a shared concept is OCP working, not failing
 
@@ -253,7 +253,7 @@ Every property maps to something I already reason with, or to a level above this
 
 | Property | Where it lands | Why |
 |---|---|---|
-| **Composable:** small surface area | The future *Deep modules, small interfaces* Play (Chapter 4) | A module's value is its functionality divided by the cost of its interface |
+| **Composable:** small surface area | The future *Deep modules, small interfaces* Play (Chapter 5) | A module's value is its functionality divided by the cost of its interface |
 | **Composable:** intention-revealing | [Honest signatures](../chapter2/axiom-07-honest-total-signatures.md), [value objects](../chapter2/axiom-19-value-objects.md), [illegal states unrepresentable](../chapter2/axiom-23-illegal-states.md), [discriminated unions](../chapter2/axiom-22-discriminated-unions.md) | The type, not a comment, reveals the intent |
 | **Composable:** minimal dependencies | Above this book (see the note below) | North means external packages, a packaging concern |
 | **Composable:** composing itself | [Higher-order functions](../chapter2/axiom-11-higher-order-functions.md) and `Result` composition (map/bind/traverse) | Composability is built, with combinators |
@@ -263,8 +263,8 @@ Every property maps to something I already reason with, or to a level above this
 | **Predictable:** deterministic | [Pure functions](../chapter2/axiom-06-pure-functions.md) | A pure function is deterministic by definition |
 | **Predictable:** observable | Above this book | Operational: telemetry, monitoring |
 | **Idiomatic:** language and team idioms | ADRs, as contextual choices (see the note below) | What feels natural depends on the reader, not on the code |
-| **Domain-based:** language | [Value objects](../chapter2/axiom-19-value-objects.md) and the [DDD tactical patterns](../chapter4/01-DDD-tactical-patterns.md) Play | `Surname`, not `string`: close the gap between code and conversation |
-| **Domain-based:** structure | The [Vertical slices](../chapter4/02-vertical-slices.md) Play | Folders mirror the domain, not technical layers. Also where [OCP moved to](#ocp-did-not-die-it-moved-up-the-stack) |
+| **Domain-based:** language | [Value objects](../chapter2/axiom-19-value-objects.md) and the [DDD tactical patterns](../chapter5/01-DDD-tactical-patterns.md) Play | `Surname`, not `string`: close the gap between code and conversation |
+| **Domain-based:** structure | The [Vertical slices](../chapter5/02-vertical-slices.md) Play | Folders mirror the domain, not technical layers. Also where [OCP moved to](#ocp-did-not-die-it-moved-up-the-stack) |
 | **Domain-based:** boundaries | Above this book | Module = deployment unit is architecture |
 
 Two properties need more than a table cell:
@@ -286,7 +286,7 @@ That is the whole point in one line. A heuristic you can *recognize* but not *en
 
 ### What CUPID leaves above this book
 
-This book is stacked by level: Chapter 1 is the motivation, Chapter 2 the building blocks, Chapter 3 testing, Chapter 4 the Plays. [Chapter 5](../chapter5/README.md) then sets the result next to hexagonal architecture and DDD. The parts of CUPID that do not map into Chapters 2 to 4 all point the same way: **up**.
+This book is stacked by level: Chapter 1 is the motivation, Chapter 2 the building blocks, Chapter 3 testing, [Chapter 4](../chapter4/README.md) concurrency, Chapter 5 the Plays. [Chapter 6](../chapter6/README.md) then sets the result next to hexagonal architecture and DDD. The parts of CUPID that do not map into Chapters 2 to 5 all point the same way: **up**.
 
 - Observable
 - Minimal dependencies, in the packaging sense

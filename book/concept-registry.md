@@ -141,7 +141,7 @@ Gary Bernhardt's name for the same split. This book says *impure* shell: the spl
 
 The complement of the value object's equality-by-value: a type identified by a key field, and the typed ID that carries it.
 
-- [Axiom 19 — Value objects](chapter2/axiom-19-value-objects.md#identity-and-typed-ids) — the home: the typed ID as the smallest value object, equality-by-key as the mirror of equality-by-value, and why identity must live in a field once immutable values dissolve [Connascence of Identity](chapter2/axiom-09-connascence.md#connascence-of-identity-coi). The full DDD *Entity* pattern — identity lifecycle, reconstitution — composes this in the Chapter 4 Plays.
+- [Axiom 19 — Value objects](chapter2/axiom-19-value-objects.md#identity-and-typed-ids) — the home: the typed ID as the smallest value object, equality-by-key as the mirror of equality-by-value, and why identity must live in a field once immutable values dissolve [Connascence of Identity](chapter2/axiom-09-connascence.md#connascence-of-identity-coi). The full DDD *Entity* pattern — identity lifecycle, reconstitution — composes this in the Chapter 5 Plays.
 
 ---
 
@@ -218,7 +218,7 @@ Redesign so the error case cannot arise, instead of reporting it (`substring` cl
 - [Axiom 17 — Result](chapter2/axiom-17-result.md) — the ordering: the explicit ladder *eliminate, then return, then fail fast* positions Result as rung 2, not rung 1, completing the north star (*simple → honest → robust*) for error handling.
 - Structural eliminators — the same move at larger grain, each making the bad case unconstructable rather than handled: a value ([Axiom 19](chapter2/axiom-19-value-objects.md)), a record's shape ([Axiom 23](chapter2/axiom-23-illegal-states.md)), a call sequence ([Axiom 28](chapter2/axiom-28-typestate.md)).
 - Honest-return rung — [Axiom 14](chapter2/axiom-14-maybe.md) / [Axiom 15](chapter2/axiom-15-either.md): when the case is a real outcome that cannot be erased, it becomes a value.
-- **Surfaces in Chapter 4** as the Play *"Designing errors out of existence"* — the same move at design grain (aggregate boundaries, value-object invariants-at-construction); see the [Chapter 4 README](chapter4/README.md). Its home stays the folded axioms above; the Play composes them, adding no new principle.
+- **Surfaces in Chapter 5** as the Play *"Designing errors out of existence"* — the same move at design grain (aggregate boundaries, value-object invariants-at-construction); see the [Chapter 5 README](chapter5/README.md). Its home stays the folded axioms above; the Play composes them, adding no new principle.
 
 **Not carried:** Ousterhout's other ch. 10 techniques — *exception masking* and *exception aggregation* are handler-placement / topology concerns (out of scope); *just crash* is already the fail-fast rung folded into [Axiom 17](chapter2/axiom-17-result.md).
 
@@ -332,7 +332,7 @@ Often taught as "make everything private". Read precisely, it bundles three jobs
 - [Axiom 19 — Value objects](chapter2/axiom-19-value-objects.md) — invariants, kept: protected where the value is built, not by hiding fields.
 - [Axiom 27 — Stateful Shell](chapter2/axiom-27-stateful-shell.md) — secrets, kept: the shell holds the socket; decisions stay visible.
 - [Axiom 2 — Data is not Behavior](chapter2/axiom-02-data-is-not-behavior.md) — state hidden behind behavior, dropped: an immutable value has nothing to hide.
-- [*Information hiding*](chapter4/03-information-hiding.md), the Chapter 4 Play — secrets at module grain.
+- [*Information hiding*](chapter5/03-information-hiding.md), the Chapter 5 Play — secrets at module grain.
 
 **Source:** Mark Seemann, *Poka-yoke Design* (2011) and *Code That Fits in Your Head* (2021); D.L. Parnas (1972).
 
@@ -574,7 +574,7 @@ Echoes the [SOLID critique](#solid-critique)'s note that the **O**/**L** letters
 
 ## DDD Tactical Patterns
 
-🔍 **Open** — the chapter's headline area: a **Chapter 4 Play**, *DDD Tactical Patterns* ([draft](chapter4/01-DDD-tactical-patterns.md), its Repository section under review).
+🔍 **Open** — the chapter's headline area: a **Chapter 5 Play**, *DDD Tactical Patterns* ([draft](chapter5/01-DDD-tactical-patterns.md), its Repository section under review).
 
 - Anemic models real definition, not "put methods in domain objects" — the rebuttal the FP-style domain owes, since pure-functions-over-immutable-data looks anemic only by the naive reading.
 - Aggregate as a [Decider](chapter2/axiom-25-state-machines.md#definitions); domain event as a [discriminated union](chapter2/axiom-22-discriminated-unions.md); entity lifecycle as a [state machine](chapter2/axiom-25-state-machines.md); value object as [Axiom 19](chapter2/axiom-19-value-objects.md).
@@ -583,7 +583,7 @@ Echoes the [SOLID critique](#solid-critique)'s note that the **O**/**L** letters
 
 ## Vertical Slice Architecture
 
-🔍 **Open** — a planned **Chapter 4 Play**, *Vertical slices* ([skeleton](chapter4/02-vertical-slices.md), not yet drafted).
+🔍 **Open** — a planned **Chapter 5 Play**, *Vertical slices* ([skeleton](chapter5/02-vertical-slices.md), not yet drafted).
 
 **What:** group code by feature instead of by technical layer, inside one deployable.
 
@@ -600,11 +600,11 @@ Echoes the [SOLID critique](#solid-critique)'s note that the **O**/**L** letters
 
 ## Deep vs. shallow modules (Ousterhout)
 
-🔍 **Open** — splits across both altitudes; the positive half is a planned **Chapter 4 Play**, *"Deep modules, small interfaces"* (scoped in the [Chapter 4 README](chapter4/README.md), not yet drafted).
+🔍 **Open** — splits across both altitudes; the positive half is a planned **Chapter 5 Play**, *"Deep modules, small interfaces"* (scoped in the [Chapter 5 README](chapter5/README.md), not yet drafted).
 
 **What:** module value = functionality ÷ interface cost; **deep** = small interface over lots of implementation. The counterweight: over-splitting into many tiny functions multiplies *shallow* interfaces and can *increase* complexity.
 
-**Verdict:** splits by altitude. The **counterweight** half — don't over-split functions into shallow one-line helpers — stays folded at function grain in [Axiom 8](chapter2/axiom-08-cohesion.md)'s *When NOT to* (shred-locality) and [Axiom 11](chapter2/axiom-11-higher-order-functions.md)'s *Trade-offs* (deep chains of wrappers). The **positive** half — functionality ÷ interface cost — is the Chapter 4 Play, paired there with [Information Hiding](#information-hiding-parnas) as its other face and read through [Cohesion](chapter2/axiom-08-cohesion.md) / [Connascence](chapter2/axiom-09-connascence.md) at module grain.
+**Verdict:** splits by altitude. The **counterweight** half — don't over-split functions into shallow one-line helpers — stays folded at function grain in [Axiom 8](chapter2/axiom-08-cohesion.md)'s *When NOT to* (shred-locality) and [Axiom 11](chapter2/axiom-11-higher-order-functions.md)'s *Trade-offs* (deep chains of wrappers). The **positive** half — functionality ÷ interface cost — is the Chapter 5 Play, paired there with [Information Hiding](#information-hiding-parnas) as its other face and read through [Cohesion](chapter2/axiom-08-cohesion.md) / [Connascence](chapter2/axiom-09-connascence.md) at module grain.
 
 **Source:** Ousterhout, *A Philosophy of Software Design* (2018).
 
@@ -612,7 +612,7 @@ Echoes the [SOLID critique](#solid-critique)'s note that the **O**/**L** letters
 
 ## Information Hiding (Parnas)
 
-🔍 **Open** — its code-shaping end is a **Chapter 4 Play**, [*Information hiding*](chapter4/03-information-hiding.md) (drafted; the database is not treated as a secret), paired with [Deep vs. shallow modules](#deep-vs-shallow-modules-ousterhout).
+🔍 **Open** — its code-shaping end is a **Chapter 5 Play**, [*Information hiding*](chapter5/03-information-hiding.md) (drafted; the database is not treated as a secret), paired with [Deep vs. shallow modules](#deep-vs-shallow-modules-ousterhout).
 
 A module hides a *secret* — a design decision likely to change. The root of encapsulation and of Ousterhout's deep modules; the same idea read from the secret's side rather than the interface's.
 
@@ -620,7 +620,7 @@ The *strategic* half — decomposition at architectural altitude — stays out o
 
 - [Axiom 1 — Explicit over implicit](chapter2/axiom-01-explicit-over-implicit.md#encapsulation-read-precisely) — secrets are the one thing worth hiding; intent never is.
 - [Axiom 27 — Stateful Shell](chapter2/axiom-27-stateful-shell.md) — the shell holds the stateful secret.
-- [*Information hiding*](chapter4/03-information-hiding.md) — the Play: name the secret, give it a small surface in domain words, keep the core explicit.
+- [*Information hiding*](chapter5/03-information-hiding.md) — the Play: name the secret, give it a small surface in domain words, keep the core explicit.
 
 **Source:** D.L. Parnas, "On the Criteria To Be Used in Decomposing Systems into Modules" (CACM, 1972).
 
@@ -628,7 +628,7 @@ The *strategic* half — decomposition at architectural altitude — stays out o
 
 ## Anatomy of a component
 
-🔍 **Open** — a **Chapter 4 Play**, [*Anatomy of a component*](chapter4/04-anatomy-of-a-component.md) (work in progress: the layout by visibility is drafted, the rest is to do).
+🔍 **Open** — a **Chapter 5 Play**, [*Anatomy of a component*](chapter5/04-anatomy-of-a-component.md) (work in progress: the layout by visibility is drafted, the rest is to do).
 
 **What:** how the code inside one component is laid out: the public API at the root, everything else in `Internal/`.
 
@@ -638,7 +638,7 @@ The *strategic* half — decomposition at architectural altitude — stays out o
 - [Axiom 10](chapter2/axiom-10-first-class-functions.md) — the API offers delegates, declared in one `Api.cs`.
 - [Axiom 13](chapter2/axiom-13-impureim.md#definitions) — `ServiceCollectionExtensions` is the entry point the framework shapes; visibility and purity are separate splits.
 - [Axiom 19](chapter2/axiom-19-value-objects.md) — value objects in the API's signatures are public.
-- [*Information hiding*](chapter4/03-information-hiding.md) and [*Vertical slices*](chapter4/02-vertical-slices.md) — the secret's home, and slices inside `Internal/`.
+- [*Information hiding*](chapter5/03-information-hiding.md) and [*Vertical slices*](chapter5/02-vertical-slices.md) — the secret's home, and slices inside `Internal/`.
 
 **Sources:** Go's `internal` directories (Go 1.4); Eclipse's `internal` packages; ASP.NET Core's "pubternal" types (.NET Core 3.0).
 
@@ -651,8 +651,8 @@ The *strategic* half — decomposition at architectural altitude — stays out o
 **Verdict:** folded as a tool, not a layer. The shell lives in the entry point by default; a use case is extracted only when entry points repeat the same unit of work. No interface, no port, never calling another use case.
 
 - [Axiom 13](chapter2/axiom-13-impureim.md#definitions) — the shell lives in the entry point; a use case is a tool for repeated units of work; one round is the goal, more is a smell.
-- [*Anatomy of a component*](chapter4/04-anatomy-of-a-component.md) — who calls whom, inside a component and across.
-- [Chapter 5](chapter5/README.md) — row 4: a use case when it is needed, without the port.
+- [*Anatomy of a component*](chapter5/04-anatomy-of-a-component.md) — who calls whom, inside a component and across.
+- [Chapter 6](chapter6/README.md) — row 4: a use case when it is needed, without the port.
 
 **Source:** Ivar Jacobson, *Object-Oriented Software Engineering* (1992); Mark Seemann, *What's a sandwich?* (2023); Jimmy Bogard, *Dealing with Duplication in MediatR Handlers* (2016).
 
@@ -660,7 +660,7 @@ The *strategic* half — decomposition at architectural altitude — stays out o
 
 ## Hexagonal architecture, Onion, Clean Architecture, mediator
 
-🔍 **Open** — compared with this book in [Chapter 5](chapter5/README.md) (draft; two rows wait for Plays not yet written).
+🔍 **Open** — compared with this book in [Chapter 6](chapter6/README.md) (draft; two rows wait for Plays not yet written).
 
 **What:** the industry's usual structure for business software: ports and adapters, inward-pointing layers, DDD's tactical patterns inside, often a mediator in front.
 
@@ -668,8 +668,8 @@ The *strategic* half — decomposition at architectural altitude — stays out o
 
 - [Axiom 6](chapter2/axiom-06-pure-functions.md) and [Axiom 13](chapter2/axiom-13-impureim.md) — the domain depends on nothing, by purity instead of by dependency inversion.
 - [Chapter 3](chapter3/README.md) — rules tested as functions; the boundary tested whole, not through mocked ports.
-- [*Information hiding*](chapter4/03-information-hiding.md) — ports only for systems owned by others; the database is not hidden.
-- [Chapter 5](chapter5/README.md) — the objective-by-objective comparison, and when to use hex DDD instead.
+- [*Information hiding*](chapter5/03-information-hiding.md) — ports only for systems owned by others; the database is not hidden.
+- [Chapter 6](chapter6/README.md) — the objective-by-objective comparison, and when to use hex DDD instead.
 
 **Sources:** Cockburn, *Hexagonal architecture* (2005); Palermo, *The Onion Architecture* (2008); Martin, *The Clean Architecture* (2012); Evans, *Domain-Driven Design* (2003).
 
@@ -677,9 +677,9 @@ The *strategic* half — decomposition at architectural altitude — stays out o
 
 ## Leaky abstraction — [🔁 FOLDED]
 
-An abstraction whose underlying detail shows through — the caller must know what it claims to hide (Spolsky: "all non-trivial abstractions are, to some degree, leaky"). The *failure mode* of the two open Chapter 4 module Plays, with a function-grain echo.
+An abstraction whose underlying detail shows through — the caller must know what it claims to hide (Spolsky: "all non-trivial abstractions are, to some degree, leaky"). The *failure mode* of the two open Chapter 5 module Plays, with a function-grain echo.
 
-- Chapter 4 *Deep modules, small interfaces* & *Information hiding* Plays — a leak is the secret escaping: a shallow module, or a small interface that doesn't truly cover its implementation. The named anti-pattern those Plays design against (scoped in the [Chapter 4 README](chapter4/README.md)).
+- Chapter 5 *Deep modules, small interfaces* & *Information hiding* Plays — a leak is the secret escaping: a shallow module, or a small interface that doesn't truly cover its implementation. The named anti-pattern those Plays design against (scoped in the [Chapter 5 README](chapter5/README.md)).
 - [Axiom 7 — Honest, total signatures](chapter2/axiom-07-honest-total-signatures.md) — at function grain a leaky signature is a *dishonest* one: it hides a failure or precondition the caller still has to know.
 
 **Source:** Joel Spolsky, *The Law of Leaky Abstractions* (2002).
@@ -714,7 +714,7 @@ Code that stays correct while several threads run it at once. No axiom of its ow
 - [Axiom 26 — Session context](chapter2/axiom-26-session-context.md) — per-run state is a passed object, never a static or thread-local, so concurrent runs don't mix.
 - [Axiom 27 — Stateful shell](chapter2/axiom-27-stateful-shell.md) — a long-running loop owns its state and stops on cancellation.
 
-**Open:** in-process state that several threads must update (an atomic reference updated by a pure function, or a single writer), fan-out from the shell (see *Structured concurrency and scopes*), and concurrent writes to one record (optimistic concurrency, in Chapter 4's persistence Play).
+**Open:** in-process state that several threads must update (an atomic reference updated by a pure function, or a single writer), fan-out from the shell (see *Structured concurrency and scopes*), and concurrent writes to one record (optimistic concurrency, in Chapter 5's persistence Play).
 
 ---
 

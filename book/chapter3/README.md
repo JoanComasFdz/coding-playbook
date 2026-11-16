@@ -122,4 +122,4 @@ More to come: how a test is designed at each level.
 
 ---
 
-← Previous: [Chapter 2](../chapter2/README.md) · Next: [Chapter 4 — Plays](../chapter4/README.md) →
+← Previous: [Chapter 2](../chapter2/README.md) · Next: [Chapter 4 — Concurrency](../chapter4/README.md) →
