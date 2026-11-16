@@ -37,7 +37,7 @@ The classic teaching names "low coupling" and "high cohesion" as two separate go
 The dynamic forms are invisible in the source, show up only at runtime, and are stronger still. Weakest first:
 
 - **Connascence of Execution (CoE).** Units must agree on the *order in which operations run*: authenticate before fetching the profile, open before reading. Nothing in the types forbids the wrong order. The contract is about time, and it is enforced, if at all, by a runtime check.
-- **Connascence of Timing (CoTiming).** Units must agree on the *timing* of operations: a deadline, a time window, how two threads interleave. This is about runtime scheduling more than the structure of a module, so it is out of scope for this book. It is named here only to keep the order complete; it sits between Execution and Value.
+- **Connascence of Timing (CoTiming).** Units must agree on the *timing* of operations: a deadline, a time window, how two threads interleave. This is about runtime scheduling more than the structure of a module, so this chapter leaves it out; [Chapter 4](../chapter4/README.md) is about it. It is named here only to keep the order complete; it sits between Execution and Value.
 - **Connascence of Value (CoV).** Several values must *change together* to keep a rule that binds them. `Total` must equal `Subtotal + Tax`; a period's `Start` must not pass its `End`; the same constant copied into two files must match. No single type carries the rule, so the agreement lives among the values themselves, kept by whoever remembers to update all of them.
 - **Connascence of Identity (CoI).** Two or more units must refer to *the very same instance*, not just equal values: two views onto one cart, two handles on one connection, two readers of one cache. The compiler sees two references of the same type and can't tell whether they point to one object or two, so the agreement is invisible until the two silently drift apart at runtime. It is the **strongest** form.
 
@@ -62,7 +62,7 @@ Weakening has the most leverage, because turning a runtime agreement into a comp
 
 ## Examples
 
-One minimal example of each form (except Timing, which is out of scope), from weakest to strongest. Each shows the *agreement itself*, what is bound to what, and where the compiler stands: holding both sides to the agreement, or blind to it. None of them shows the cure; that is the job of the rest of the chapter.
+One minimal example of each form (except Timing, which belongs to [Chapter 4](../chapter4/README.md)), from weakest to strongest. Each shows the *agreement itself*, what is bound to what, and where the compiler stands: holding both sides to the agreement, or blind to it. None of them shows the cure; that is the job of the rest of the chapter.
 
 ### Connascence of Name (CoN)
 

@@ -101,7 +101,7 @@ A simulator is only as good as its likeness. **Contract tests** keep it honest: 
 - **Some states are slow to reach through the API.** An order that is a year old, or in a rare state, takes several calls to build. That is the price of tests that don't depend on the schema.
 - **Isolation is a discipline.** Every test creates its own data and its own simulator setup. One shared fixture or leftover row brings back order-dependent failures, and with them the serial runs.
 - **Contract tests need the real thing.** They need access to the real system or its sandbox, and someone has to run them when the provider changes.
-- **Timing and concurrency.** A component test can show that something goes wrong under load or interleaving without showing where. Those failures need their own investigation.
+- **Timing and concurrency.** A component test can show that something goes wrong under load or interleaving without showing where, and a passing one can't show that nothing will. [Chapter 4](../chapter4/README.md#testing) says what each concurrency model adds to these tests.
 - **Frameworks and libraries.** Infrastructure written once for many applications is a component of its own, with its own reason to change. It is shared, and covered by its own component tests.
 
 ## Scope

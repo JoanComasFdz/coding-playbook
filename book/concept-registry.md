@@ -714,7 +714,7 @@ Code that stays correct while several threads run it at once. No axiom of its ow
 - [Axiom 26 — Session context](chapter2/axiom-26-session-context.md) — per-run state is a passed object, never a static or thread-local, so concurrent runs don't mix.
 - [Axiom 27 — Stateful shell](chapter2/axiom-27-stateful-shell.md) — a long-running loop owns its state and stops on cancellation.
 
-**Open:** in-process state that several threads must update (an atomic reference updated by a pure function, or a single writer), fan-out from the shell (see *Structured concurrency and scopes*), and concurrent writes to one record (optimistic concurrency, in Chapter 5's persistence Play).
+- [Chapter 4 — Concurrency](chapter4/README.md) — what happens when code like this runs on several timelines at once (see *Concurrency models*).
 
 ---
 
@@ -726,19 +726,33 @@ If ever revisited: explore the FP take plus the correctness of the decorator pat
 
 ---
 
-## Structured concurrency and scopes — [❌ DISCARDED]
+## Concurrency models — [🔍 OPEN]
+
+Ways to write code that runs on several timelines at once, ordered by how much observable nondeterminism (a race) they allow. Use the lowest that does the job.
+
+🔍 **Open** — [Chapter 4](chapter4/README.md), drafted.
+
+- [Model 0 — Sequential](chapter4/01-sequential.md) — one timeline; gather once, decide for all, act once.
+- [Model 1 — Deterministic concurrency](chapter4/02-deterministic-concurrency.md) — fork–join of children that share nothing: parallel map, concurrent gather, independent units.
+- [Model 2 — One owner](chapter4/03-one-owner.md) — one loop owns the state; others send messages; a pure transition applies them.
+- [Model 3 — Shared state](chapter4/04-shared-state.md) — one reference swapped by a pure function in memory; version-checked writes in the database.
+- [Who starts it](chapter4/README.md#who-starts-it) — the host can force Model 3 through concurrent requests, or push a service down to Model 0 through its deployment.
+
+**Source:** Peter Van Roy, *Programming Paradigms for Dummies* (2009); Edward A. Lee, *The Problem with Threads* (2006); Rob Pike, *Concurrency is not Parallelism* (2012).
+
+---
+
+## Structured concurrency and scopes — [🔁 FOLDED]
 
 **What:** concurrent work belongs to the scope that starts it. The scope ends only when every child has finished, one failure cancels the siblings, and cancellation reaches every child.
 
-**Verdict:** too niche to be an axiom. Business code rarely fans out, and the parts that matter already live in the axioms below.
+**Verdict:** no entry of its own; it is the discipline that keeps Model 1 deterministic.
 
-- [Axiom 4 — Side effects](chapter2/axiom-04-side-effects.md) — starting a thread or a task is a side effect ("Starting threads and tasks" row), so it belongs in the shell.
-- [Axiom 13 — Impureim](chapter2/axiom-13-impureim.md) — a fan-out is part of the gather step. The core receives the gathered values and never sees the tasks.
-- [Axiom 27 — Stateful shell](chapter2/axiom-27-stateful-shell.md) — the long-running case: one loop owns its work and stops on a cancellation signal that its long-running effects also receive.
-- [Axiom 26 — Session context](chapter2/axiom-26-session-context.md) — ambient scoped context (`AsyncLocal`, `ThreadLocal`, and Java's `ScopedValue` by the same rule) is not how context reaches shell functions: it is passed as a parameter.
-- [Axiom 3 — Immutability](chapter2/axiom-03-immutability.md#why) — "concurrency without coordination": immutable values cross threads without locks.
-- Low-level concurrency (locks, atomics, lock-free structures, pool sizing, JVM tuning) is outside the book's scope ([README](../README.md)).
+- [Model 1 — Deterministic concurrency](chapter4/02-deterministic-concurrency.md#definitions) — the four scope rules: join every child, don't lose a failure, pass cancellation and deadlines on, bound the children.
+- [Axiom 4 — Side effects](chapter2/axiom-04-side-effects.md) — starting a thread or a task is a side effect, so it belongs in the shell.
+- [Axiom 13 — Impureim](chapter2/axiom-13-impureim.md) — a concurrent gather is still the gather step; the core receives values and never sees the tasks.
+- [Axiom 27 — Stateful shell](chapter2/axiom-27-stateful-shell.md) — the long-running case: one loop owns its work and stops on cancellation.
+- [Axiom 26 — Session context](chapter2/axiom-26-session-context.md) — context reaches children as a parameter, never through `AsyncLocal`, `ThreadLocal` or `ScopedValue`.
+- How .NET and Java spell it (`Task.WhenAll` with a linked `CancellationTokenSource`, `Parallel.ForEachAsync`, `StructuredTaskScope`) is a choice for a Play or an ADR.
 
-**Revisit if** fan-out in the shell becomes common enough to need a rule. Java has the construct (`StructuredTaskScope`, final in JDK 28 through JEP 543). C# has only the parts: `Task.WhenAll` with a linked `CancellationTokenSource`, or `Parallel.ForEachAsync` when every item is the same kind of work.
-
-**Source:** Martin Sústrik, *Structured Concurrency* (2016); Nathaniel J. Smith, *Notes on structured concurrency, or: Go statement considered harmful* (2018); JEP 543, *Structured Concurrency*; Brian Goetz et al., *Java Concurrency in Practice* (2006).
+**Source:** Martin Sústrik, *Structured Concurrency* (2016); Nathaniel J. Smith, *Notes on structured concurrency, or: Go statement considered harmful* (2018); Brian Goetz et al., *Java Concurrency in Practice* (2006).
