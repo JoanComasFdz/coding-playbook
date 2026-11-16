@@ -33,7 +33,7 @@ The shell is the sandwich of [Axiom 13](axiom-13-impureim.md), in four steps:
 3. Call `Transition`.
 4. Match on the event and carry out its effect: save the new state, respond.
 
-Its form varies (an HTTP handler, a message handler, a long-running loop), but those steps don't. In Normand's terms, `Transition` is a calculation and the shell's response is the action [6].
+Its form varies (behind an HTTP endpoint, behind a message consumer, a long-running loop), but those steps don't. In Normand's terms, `Transition` is a calculation and the shell's response is the action [6].
 
 Jérémie Chassaing describes a closely related shape, the *Decider*, as two functions: `decide`, from a command and a state to a list of events, and `evolve`, from a state and an event to the next state [2]. Here the next state rides inside the event, so one function does both jobs.
 

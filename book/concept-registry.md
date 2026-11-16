@@ -632,7 +632,7 @@ The *strategic* half — decomposition at architectural altitude — stays out o
 
 **What:** how the code inside one component is laid out: the public API at the root, everything else in `Internal/`.
 
-**Verdict:** a Play, not a principle: information hiding applied to the folder layout. Still to develop into the full anatomy (API, handlers, core modules, adapters, service vs. library).
+**Verdict:** a Play, not a principle: information hiding applied to the folder layout. Still to develop into the full anatomy (API, entry points and use cases, core modules, adapters, service vs. library).
 
 - [Axiom 1](chapter2/axiom-01-explicit-over-implicit.md#encapsulation-read-precisely) — the root shows what a caller needs; `Internal/` holds the secret.
 - [Axiom 10](chapter2/axiom-10-first-class-functions.md) — the API offers delegates, declared in one `Api.cs`.
@@ -641,6 +641,20 @@ The *strategic* half — decomposition at architectural altitude — stays out o
 - [*Information hiding*](chapter4/03-information-hiding.md) and [*Vertical slices*](chapter4/02-vertical-slices.md) — the secret's home, and slices inside `Internal/`.
 
 **Sources:** Go's `internal` directories (Go 1.4); Eclipse's `internal` packages; ASP.NET Core's "pubternal" types (.NET Core 3.0).
+
+---
+
+## Use case / application service — [🔁 FOLDED]
+
+**What:** the class that runs one unit of work: loads, calls the domain, saves. Hexagonal and DDD call it a use case or application service.
+
+**Verdict:** folded as a tool, not a layer. The shell lives in the entry point by default; a use case is extracted only when entry points repeat the same unit of work. No interface, no port, never calling another use case.
+
+- [Axiom 13](chapter2/axiom-13-impureim.md#definitions) — the shell lives in the entry point; a use case is a tool for repeated units of work; one round is the goal, more is a smell.
+- [*Anatomy of a component*](chapter4/04-anatomy-of-a-component.md) — who calls whom, inside a component and across.
+- [Chapter 5](chapter5/README.md) — row 4: a use case when it is needed, without the port.
+
+**Source:** Ivar Jacobson, *Object-Oriented Software Engineering* (1992); Mark Seemann, *What's a sandwich?* (2023); Jimmy Bogard, *Dealing with Duplication in MediatR Handlers* (2016).
 
 ---
 
