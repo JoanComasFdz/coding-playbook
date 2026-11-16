@@ -704,6 +704,20 @@ Note (from research): CQRS is system topology = **out of scope** (it's a *consum
 
 ---
 
+## Thread safety — [🔁 FOLDED]
+
+Code that stays correct while several threads run it at once. No axiom of its own: in the pure core it follows from purity and immutability, and in the shell it is a property of the effects.
+
+- [Axiom 3 — Immutability](chapter2/axiom-03-immutability.md#why) — a race needs data that is shared, mutable and written; immutability removes "mutable", but only all the way down, and a reassigned reference is still shared and mutable.
+- [Axiom 4 — Side effects](chapter2/axiom-04-side-effects.md#the-categories) — static fields, threads, locks and atomics are effects, so they belong in the shell.
+- [Axiom 6 — Pure functions](chapter2/axiom-06-pure-functions.md#static-is-not-shared-state) — `static` is not shared state: a pure static function reaches no field; a singleton instance shares its fields with every request thread.
+- [Axiom 26 — Session context](chapter2/axiom-26-session-context.md) — per-run state is a passed object, never a static or thread-local, so concurrent runs don't mix.
+- [Axiom 27 — Stateful shell](chapter2/axiom-27-stateful-shell.md) — a long-running loop owns its state and stops on cancellation.
+
+**Open:** in-process state that several threads must update (an atomic reference updated by a pure function, or a single writer), fan-out from the shell (see *Structured concurrency and scopes*), and concurrent writes to one record (optimistic concurrency, in Chapter 4's persistence Play).
+
+---
+
 ## Caches — [❌ DISCARDED]
 
 Memoising results behind a stateful store. Too niche to be an axiom.
