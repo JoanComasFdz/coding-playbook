@@ -41,7 +41,7 @@ The first five sections can be checked by reading the code. The last one can't, 
 
 - **A unit of work is one sandwich: gather, decide, act.** Impure reads, then pure calls, then impure writes, with no effect between the pure calls. ([Axiom 13][A13])
 - **The framework shapes the shell's entry points; these rules shape what runs inside them.** The shell is ordinary object-oriented code: classes, constructor injection, and state where state is needed. ([Axiom 13][A13])
-- **The shell lives in the entry point.** A controller or a subscription gathers, calls the core and acts, with no class around it. Share the pure decision, not the shell. Extract a use case only when entry points repeat the same unit of work; a use case never calls another. ([Axiom 13][A13])
+- **The shell lives in the entry point.** A controller or a subscription gathers, calls the core and acts, with no class around it. Share the pure decision, not the shell. Extract a use case only when entry points repeat the same unit of work: by default a static method that takes the dependencies and the request's values as parameters, never the framework's own types. A use case never calls another. ([Axiom 13][A13])
 - **A decision about what should happen returns an action union;** the shell carries it out. ([Axiom 24][A24])
 - **A lifecycle with more than two states is a finite state machine:** a pure `transition(state, command)` returning the event. A repeated command returns `NoChange`, not an error. ([Axiom 25][A25])
 - **A long-running process is a loop around `transition`:** read the state, carry out its effect, wait for the event, transition, repeat. ([Axiom 27][A27])
