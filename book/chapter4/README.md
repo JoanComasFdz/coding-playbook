@@ -97,6 +97,15 @@ Out of scope:
 - **Below the models:** memory models and safe publication, lock-free data structures, thread-pool sizing, schedulers.
 - **Above them:** distributed locks, sagas, the outbox, consensus. These are system topology, out of scope for the whole book.
 
+### Where the ladder stops
+
+Every rung assumes one place that holds the truth: one process, one owner, one row. Some programs keep several copies of the same data instead, each changed on its own and merged later: a collaborative editor, an offline-first mobile app, a database that accepts writes in several regions. There is no single place to compare-and-swap against. Two families of techniques handle that case:
+
+- **[Conflict-free replicated data types](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)** (CRDTs): data types whose copies always merge to the same result. A state-based CRDT merges with a function that is commutative, associative and idempotent; an operation-based one requires its operations to commute [5]. Shapiro et al. say their model, Strong Eventual Consistency, "avoids the complexity of conflict resolution and of roll-back" [5].
+- **[Operational transformation](https://en.wikipedia.org/wiki/Operational_transformation)** (OT): each operation is adjusted against the concurrent ones before it is applied, so every copy ends in the same state [6]. It is the classic technique behind collaborative text editors.
+
+Replication is system topology, so this book stops here. Both techniques are usually reached through a library or a database feature, which is a choice for an ADR. What carries over is their central idea, and the ladder already uses it: an update whose order can't show. An associative combine in [Model 1](02-deterministic-concurrency.md#parallel-map), commutative messages in [Model 2](03-one-owner.md#example), idempotent transitions in [Model 3](04-shared-state.md#in-the-database-version-checked-writes). A CRDT is that idea applied across machines.
+
 ---
 
 ## Open questions
@@ -126,6 +135,11 @@ Out of scope:
 
 [4] **Eric Normand**, *Grokking Simplicity*, Manning Publications, 2021. Also cited in [Axiom 5](../chapter2/axiom-05-impure-functions.md) and [Axiom 6](../chapter2/axiom-06-pure-functions.md). Chapters 15 to 17 draw actions on timelines, and work through isolating them, sharing resources between them and coordinating them.
 <https://www.manning.com/books/grokking-simplicity>
+
+[5] **Marc Shapiro, Nuno Preguiça, Carlos Baquero and Marek Zawirski**, *Conflict-free Replicated Data Types*, SSS 2011, LNCS 6976, pp. 386–400; extended as INRIA research report RR-7687, 2011. Strong Eventual Consistency, and the two sufficient conditions for it: a merge that is a least upper bound in a semilattice (commutative, idempotent, associative), or operations that commute.
+<https://doi.org/10.1007/978-3-642-24550-3_29>
+
+[6] **Clarence A. Ellis and Simon J. Gibbs**, *Concurrency Control in Groupware Systems*, SIGMOD 1989, pp. 399–407. The origin of operational transformation: each operation runs at once where it was made, and is transformed against concurrent ones where it arrives. Only read through its abstract.
 
 ---
 

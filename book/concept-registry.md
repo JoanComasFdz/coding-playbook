@@ -756,3 +756,18 @@ Ways to write code that runs on several timelines at once, ordered by how much o
 - How .NET and Java spell it (`Task.WhenAll` with a linked `CancellationTokenSource`, `Parallel.ForEachAsync`, `StructuredTaskScope`) is a choice for a Play or an ADR.
 
 **Source:** Martin Sústrik, *Structured Concurrency* (2016); Nathaniel J. Smith, *Notes on structured concurrency, or: Go statement considered harmful* (2018); Brian Goetz et al., *Java Concurrency in Practice* (2006).
+
+---
+
+## CRDTs and operational transformation — [❌ DISCARDED]
+
+**What:** ways to keep several copies of the same data, each changed on its own, converging to one state: conflict-free replicated data types merge copies with an order-independent function; operational transformation adjusts each operation against the concurrent ones.
+
+**Verdict:** out of scope. They solve replication across machines, which is system topology, and are reached through a library or a database feature (an ADR). Their central idea, an update whose order can't show, already lives in the ladder.
+
+- [Chapter 4 — Where the ladder stops](chapter4/README.md#where-the-ladder-stops) — what they are for, and where this book stops.
+- [Model 1 — Deterministic concurrency](chapter4/02-deterministic-concurrency.md#parallel-map) — an associative combine lets a reduction run in any grouping.
+- [Model 2 — One owner](chapter4/03-one-owner.md#example) — commutative messages make arrival order invisible.
+- [Model 3 — Shared state](chapter4/04-shared-state.md#in-the-database-version-checked-writes) — idempotent transitions make a repeated event change nothing twice.
+
+**Source:** Marc Shapiro et al., *Conflict-free Replicated Data Types* (SSS 2011); Clarence A. Ellis and Simon J. Gibbs, *Concurrency Control in Groupware Systems* (SIGMOD 1989).
