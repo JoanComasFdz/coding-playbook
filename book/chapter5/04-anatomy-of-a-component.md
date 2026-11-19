@@ -74,7 +74,7 @@ Java has no assembly boundary. Package-private access stops at the package, and 
 
 ## Still to write
 
-From the scope in the [Chapter 4 README](README.md):
+From the scope in the [Chapter 5 README](README.md):
 
 - **The API, API-first,** as [Chapter 3](../chapter3/README.md) requires of component tests.
 - **The entry points** (and use cases, where one is needed) as ordinary classes, and **the core's static modules.**

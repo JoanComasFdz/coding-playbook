@@ -556,7 +556,12 @@ One of the most expensive kinds of bug in OO code is one piece of code changing 
 Every reference is, in effect, a defensive copy you didn't have to write.
 
 **3. Concurrency without coordination.**
-Locks exist because state is both *shared* and *mutable*. Remove the mutability and the lock is no longer needed. Any number of threads can read a value, in any order, with no synchronization, and no thread ever sees an inconsistent view. It is one of the cheapest concurrency wins available, and a large part of what makes distributed systems manageable [2].
+A data race needs three things at once: data **shared** between threads, data that is **mutable**, and at least one thread **writing** it. Locks exist to keep those writes from overlapping. Immutability removes the second condition, so there is nothing left to coordinate. Any number of threads can read a value, in any order, with no synchronization, and no thread ever sees an inconsistent view. It is one of the cheapest concurrency wins available, and a large part of what makes distributed systems manageable [2].
+
+Two limits:
+
+- **It holds only all the way down.** A record with a `List` field is safe to share only until some thread adds to the list (see *Is this immutable? (2/5): depth*).
+- **It covers values, not places.** A variable or field that is reassigned to point at a new value is still shared and mutable. The values it points at need no lock; the reference itself still needs care.
 
 **4. Easier to reason about and to test.**
 When the inputs cannot change, a test only has to set them up and check the result. There is no state to reset between cases and nothing can change the inputs halfway through. The same property lets you read a call site once and trust it. As a small bonus, short-lived values are cheap for the garbage collector to reclaim.

@@ -33,6 +33,21 @@ The return type itself can still be vague about *which* outcomes are possible. T
 
 C# and Java can't express purity in a signature. They can express one part of it: **`static`**. A static method has no `this`, so it can't read a field its signature doesn't show. That is why the pure functions in this book are `static`, grouped in the static classes of [Axiom 2](axiom-02-data-is-not-behavior.md). The one exception is a method on an immutable value, a record whose fields can't change: there `this` is just one more immutable input, read like a parameter. What a pure function never is: an instance method on a class with mutable fields or injected services, where `this` brings in exactly the hidden input this axiom rules out (the "stateless service" above).
 
+### `static` is not shared state
+
+A common worry points the other way: *static means shared, shared means thread bugs, and instances keep each thread to itself.* Both halves mix up code with data.
+
+- **Code is never shared state.** A method's code exists once, static or not: two instances of a class already run the same instructions, and no thread can change them.
+- **Parameters and locals belong to the call.** Each call gets its own stack frame, so two threads in the same function at the same moment each hold their own copies and can't see each other's. A local captured by a lambda is the exception: it moves to the heap, where another thread can reach it. That is one more reason captures must be values (see above).
+- **Fields are what threads share.** A field lives on the heap. Every thread holding a reference to its object reads and writes the same field; for a static field, every thread does.
+
+An instance is isolated only while no other thread holds it, and that is rarely true of the objects that matter. A service registered as a singleton (ASP.NET Core's `AddSingleton`, a Spring bean by default) is one instance serving every request thread at once, so a mutable field on it is a race. Isolation comes from not sharing, not from `new`.
+
+A pure static function reaches no field at all, so concurrent calls have nothing to collide on. It shares *less* than an instance method, whose `this` is a pointer into the heap. It is unsafe in only two cases, and this book already rules out both:
+
+- **It reads or writes a static field:** a lazily filled cache, a counter, a `static Random`, a formatter that isn't thread-safe such as Java's `SimpleDateFormat`. That is a side effect ([Axiom 4](axiom-04-side-effects.md#the-categories)), so the function was never pure.
+- **An argument is mutable, and another thread changes it during the call.** The function is pure, but its input isn't a value. Inputs immutable all the way down close this case ([Axiom 3](axiom-03-immutability.md#is-this-immutable-25-depth)).
+
 The rest of recognizing purity is a *reading* skill, applied to the whole body and everything it calls: the same skill as in [Axiom 5](axiom-05-impure-functions.md), used to spot the opposite kind.
 
 ---
@@ -145,7 +160,7 @@ Purity means paying that cost in one place, at the edges of the program, and get
 Because every input is a parameter and every output is the return value (see *Definitions*), the signature shows every channel the function uses. That is what makes the rest of this book possible: a richer type can only describe *all* of a function's inputs and outcomes when the function has no other inputs or outcomes. Purity comes first; better types come after.
 
 **2. The call and its value are interchangeable.**
-Caching, running in parallel, retrying and replaying all rely on referential transparency (see *Definitions*). None of these are tricks you add to pure functions. They simply work on pure functions, and can break on impure ones. The label isn't an optimization; it is what makes those optimizations safe. Hughes' classic case for functional programming, that small functions can be glued together freely, rests on the same property [1].
+Caching, running in parallel (see *`static` is not shared state*), retrying and replaying all rely on referential transparency (see *Definitions*). None of these are tricks you add to pure functions. They simply work on pure functions, and can break on impure ones. The label isn't an optimization; it is what makes those optimizations safe. Hughes' classic case for functional programming, that small functions can be glued together freely, rests on the same property [1].
 
 **3. Tests become a table.**
 Testing a pure function is as simple as tests get: pick inputs, state the expected output, run, compare. No setup, no clock to freeze, no database to seed, no mock to verify, no cleanup. The same property that makes pure functions easy to think about makes them easy to test, to specify and to keep correct over time. Normand's book is a long worked example of how separating calculations from actions changes the cost of testing and reasoning [2].
