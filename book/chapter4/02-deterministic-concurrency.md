@@ -18,7 +18,7 @@
   3. **Cancellation and deadlines reach every child.** When the parent is cancelled or runs out of time, so do they.
   4. **The number of children is bounded.** A thousand items don't become a thousand threads.
 
-  The first two rules are Smith's: "the nursery block doesn't exit until all the tasks inside it have exited", and "when an unhandled exception occurs in a child, Trio immediately cancels all the other tasks in the same nursery" [2]. A *nursery* is his library's name for the scope.
+  The first two rules are Smith's: "the nursery block doesn't exit until all the tasks inside it have exited", and "when an unhandled exception occurs in a child, Trio immediately cancels all the other tasks in the same nursery" [2]. A *nursery* is his library's name for the scope. Sústrik, whose post Smith links, put rule 1 as lifetimes that nest like blocks: "structured concurrency prevents lifetime of green thread B launched by green thread A to exceed lifetime of A" [5].
 
 The three shapes split the work in the two ways parallel programming knows, which Mattson, Sanders and Massingill name the *Task Decomposition* and *Data Decomposition* patterns [3]: by **data** (the same function over many items) and by **task** (different pieces of work):
 
@@ -181,6 +181,9 @@ Don't use this model:
 
 [4] **Simon Marlow**, *Parallel and Concurrent Programming in Haskell*, O'Reilly, 2013, chapter 1. Also cited in the [chapter introduction](README.md#references). For parallel programming, deterministic models "if at all possible", because "concurrency sacrifices determinism".
 <https://www.oreilly.com/library/view/parallel-and-concurrent/9781449335939/ch01.html>
+
+[5] **Martin Sústrik**, *Structured Concurrency*, 250bpm. First published on his old blog, which Smith's 2018 post links; now on Substack, dated 29 June 2024. Lifetimes of concurrent tasks nest the way blocks do in structured programming: "The call stack morphs into a call tree".
+<https://www.250bpm.com/p/structured-concurrency>
 
 ---
 

@@ -755,7 +755,7 @@ Ways to write code that runs on several timelines at once, ordered by how much o
 - [Axiom 26 — Session context](chapter2/axiom-26-session-context.md) — context reaches children as a parameter, never through `AsyncLocal`, `ThreadLocal` or `ScopedValue`.
 - How .NET and Java spell it (`Task.WhenAll` with a linked `CancellationTokenSource`, `Parallel.ForEachAsync`, `StructuredTaskScope`) is a choice for a Play or an ADR.
 
-**Source:** Martin Sústrik, *Structured Concurrency* (2016); Nathaniel J. Smith, *Notes on structured concurrency, or: Go statement considered harmful* (2018); Brian Goetz et al., *Java Concurrency in Practice* (2006).
+**Source:** Martin Sústrik, *Structured Concurrency* ([250bpm](https://www.250bpm.com/p/structured-concurrency)); Nathaniel J. Smith, *Notes on structured concurrency, or: Go statement considered harmful* (2018); Brian Goetz et al., *Java Concurrency in Practice* (2006).
 
 ---
 
