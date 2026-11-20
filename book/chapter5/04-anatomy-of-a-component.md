@@ -30,7 +30,8 @@ Inside a component:
 
 - **An entry point is the shell.** It gathers, calls the core, and acts, through its own data access and adapters ([Axiom 13](../chapter2/axiom-13-impureim.md#definitions)). Where several entry points repeat the same unit of work, they call one use case instead, which does the same. Neither ever calls another.
 - **The core calls only the core.**
-- **A slice writes only its own data.** It reads another slice's data through that slice's API, which is read-only to other slices. This is a rule a friend uses, and I adopt it: once a request is inside a slice, its effects stay in that slice. A write that needs two slices is a sign that the boundary is in the wrong place, or that the data belongs together, which is the question an aggregate answers ([*DDD tactical patterns*](01-DDD-tactical-patterns.md#aggregate)).
+- **Effects go down, never sideways.** Slices can nest: `Sampling/` may hold `Cpu/` and `Memory/`. A slice may cause effects in itself and in the slices nested inside it. It reads a sister slice only through that slice's read-only API, and never writes to it. This is a rule Jeremy Meyer uses, and I adopt it. A write that needs two sister slices is a sign that the boundary is in the wrong place, or that the data belongs together, which is the question an aggregate answers ([*DDD tactical patterns*](01-DDD-tactical-patterns.md#aggregate)).
+- **A feature that spans slices lives in the closest slice that contains them all,** as one sandwich. It gathers through each nested slice's reads, composes their pure decisions, and acts through their writes, in one transaction where they share a database. The logic stays in the nested slices; only the calls move up. It doesn't call their shells: shells don't compose ([Axiom 13](../chapter2/axiom-13-impureim.md#why)).
 
 To other components:
 
@@ -71,6 +72,7 @@ Java has no assembly boundary. Package-private access stops at the package, and 
 - The Java choice: same package, or a JPMS module.
 - Whether the same layout works for a deployable service, which adds a composition root and its own dependencies.
 - Whether a slice reads another slice through its API, or through a read model of its own, once the reads get heavy.
+- How deep slices should nest before the nesting itself becomes the thing a reader has to learn.
 
 ## Still to write
 
