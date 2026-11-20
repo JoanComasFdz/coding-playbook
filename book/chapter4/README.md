@@ -44,7 +44,14 @@ Parallelism is an execution choice, made for speed. Concurrency is where the bug
 
 Nondeterminism alone is harmless. Two independent timelines can run in any order and still give one answer. It turns into a bug when the order *shows*. Van Roy calls this **observable nondeterminism**, and gives it its everyday name: "Observable nondeterminism is sometimes called a race condition" [3].
 
-A race needs three things at once, as [Axiom 3](../chapter2/axiom-03-immutability.md#why) says: data **shared** between timelines, data that is **mutable**, and at least one timeline **writing** it. Every model in this chapter is a way to remove one of the three, or to confine it to one small, visible place.
+A race needs three things at once, as [Axiom 3](../chapter2/axiom-03-immutability.md#why) says: data **shared** between timelines, data that is **mutable**, and at least one timeline **writing** it. Goetz states the same rule for Java: "Whenever more than one thread accesses a given state variable, and one of them might write to it, they all must coordinate their access to it using synchronization" [9]. And he gives the three ways out:
+
+> "If multiple threads access the same mutable state variable without appropriate synchronization, your program is broken. There are three ways to fix it:
+> - Don't share the state variable across threads;
+> - Make the state variable immutable; or
+> - Use synchronization whenever accessing the state variable." [9]
+
+Every model in this chapter is one of those fixes, placed where it costs least. [Models 0](01-sequential.md) to [2](03-one-owner.md) don't share mutable state; [Axiom 3](../chapter2/axiom-03-immutability.md) makes it immutable; [Model 3](04-shared-state.md) confines the synchronization to one small, visible place.
 
 ---
 
@@ -88,7 +95,7 @@ Testing here sits on [Chapter 3](../chapter3/README.md). The levels don't change
 
 - **The lower the rung, the more of the code is tested without time.** At rungs 0 and 1, every decision is a pure function with function tests ([Chapter 3](../chapter3/README.md#what-i-do-today)). Their results can't depend on scheduling, so they can't flake.
 - **What time adds is tested at component level.** The behavior of a scope (a failure cancels the siblings), the conflict between two writers, an owner's response to a burst of messages: these run through the component's API, with its real dependencies.
-- **A passing test can show a race, never its absence.** The interleaving that breaks the code may not happen in a thousand runs. That is the strongest reason to design down the ladder instead of testing up: at rungs 0 and 1 there is nothing to catch.
+- **A passing test can show a race, never its absence.** The interleaving that breaks the code may not happen in a thousand runs. Goetz: "A program that omits needed synchronization might appear to work, passing its tests and performing well for years, but it is still broken and may fail at any moment" [9]. That is the strongest reason to design down the ladder instead of testing up: at rungs 0 and 1 there is nothing to catch.
 
 Each model has its own *Testing* section with what that rung adds.
 
@@ -119,7 +126,6 @@ Replication is system topology, so this book stops here. Both techniques are usu
 
 - **Testing beyond component tests.** Deterministic schedulers, stress tests and model checkers try to find races that component tests miss. To research: what they cost, and whether any belongs in this book.
 - **Sources to verify before citing:**
-  - Brian Goetz et al., *Java Concurrency in Practice*, Addison-Wesley, 2006, chapter 2: the three fixes for shared mutable state (don't share it, make it immutable, or synchronize every access). Only read through third-party notes; the publisher's free sample is chapter 6.
   - Martin Kleppmann, *Designing Data-Intensive Applications*, O'Reilly, 2017, chapter 7: lost updates and how databases prevent them. Only read through third-party notes; the table of contents is behind a paywall.
 
 ---
@@ -148,6 +154,9 @@ Replication is system topology, so this book stops here. Both techniques are usu
 
 [8] **Simon Marlow**, *Parallel and Concurrent Programming in Haskell*, O'Reilly, 2013, chapter 1, *Terminology: Parallelism and Concurrency*. Parallelism is concerned only with efficiency; concurrency is a way to structure a program with several threads of control, and is necessarily nondeterministic.
 <https://www.oreilly.com/library/view/parallel-and-concurrent/9781449335939/ch01.html>
+
+[9] **Brian Goetz, Tim Peierls, Joshua Bloch, Joseph Bowbeer, David Holmes and Doug Lea**, *Java Concurrency in Practice*, Addison-Wesley, 2006, chapter 2, *Thread Safety*. Writing thread-safe code is "about managing access to state, and in particular to shared, mutable state"; the three fixes.
+<https://www.oreilly.com/library/view/java-concurrency-in/0321349601/>
 
 ---
 
