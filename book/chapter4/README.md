@@ -118,7 +118,7 @@ Every rung assumes one place that holds the truth: one process, one owner, one r
 - **[Conflict-free replicated data types](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)** (CRDTs): data types whose copies always merge to the same result. A state-based CRDT merges with a function that is commutative, associative and idempotent; an operation-based one requires its operations to commute [5]. Shapiro et al. say their model, Strong Eventual Consistency, "avoids the complexity of conflict resolution and of roll-back" [5].
 - **[Operational transformation](https://en.wikipedia.org/wiki/Operational_transformation)** (OT): each operation is adjusted against the concurrent ones before it is applied, so every copy ends in the same state [6]. It is the classic technique behind collaborative text editors.
 
-Kleppmann makes the same cut: with copies on several nodes, "techniques based on locks or conditional writes do not apply in this context", and merging copies "can prevent lost updates if the updates are commutative" [10].
+Kleppmann and Riccomini make the same cut: with copies on several nodes, "techniques based on locks or conditional writes do not apply in this context", and merging copies "can prevent lost updates if the updates are commutative" [10].
 
 Replication is system topology, so this book stops here. Both techniques are usually reached through a library or a database feature, which is a choice for an ADR. What carries over is their central idea, and the ladder already uses it: an update whose order can't show. An associative combine in [Model 1](02-deterministic-concurrency.md#parallel-map), commutative messages in [Model 2](03-one-owner.md#example), idempotent transitions in [Model 3](04-shared-state.md#in-the-database-version-checked-writes). A CRDT is that idea applied across machines.
 
@@ -158,7 +158,7 @@ Replication is system topology, so this book stops here. Both techniques are usu
 [9] **Brian Goetz, Tim Peierls, Joshua Bloch, Joseph Bowbeer, David Holmes and Doug Lea**, *Java Concurrency in Practice*, Addison-Wesley, 2006, chapter 2, *Thread Safety*. Writing thread-safe code is "about managing access to state, and in particular to shared, mutable state"; the three fixes.
 <https://www.oreilly.com/library/view/java-concurrency-in/0321349601/>
 
-[10] **Martin Kleppmann**, *Designing Data-Intensive Applications*, 2nd edition, O'Reilly, chapter 8, *Transactions*, section *Preventing Lost Updates*, subsection *Conflict resolution and replication*.
+[10] **Martin Kleppmann and Chris Riccomini**, *Designing Data-Intensive Applications*, 2nd edition, O'Reilly, 2026, chapter 8, *Transactions*, section *Preventing Lost Updates*, subsection *Conflict resolution and replication*.
 <https://dataintensive.net/>
 
 ---

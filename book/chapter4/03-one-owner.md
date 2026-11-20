@@ -4,7 +4,7 @@
 
 - It is Van Roy's *message-passing concurrency*, which he calls "the correct default for general-purpose concurrent programming instead of shared-state concurrency" [1].
 - In code it is a [Stateful Shell](../chapter2/axiom-27-stateful-shell.md) whose events come from a mailbox: the loop is the owner, and its pure transition is the only thing that changes the state.
-- Some databases are built the same way. Kleppmann describes systems that "execute only one transaction at a time, in serial order, on a single thread", which removes the concurrency instead of controlling it [4].
+- Some databases are built the same way. Kleppmann and Riccomini describe systems that "execute only one transaction at a time, in serial order, on a single thread", which removes the concurrency instead of controlling it [4].
 - Use it for in-memory state that many timelines update: a live board, a running total, a cache that a background job refreshes.
 
 ---
@@ -205,7 +205,7 @@ Don't use this model:
 
 [3] **Joe Armstrong**, *Making reliable distributed systems in the presence of software errors*, PhD thesis, Royal Institute of Technology, Stockholm, 2003. Erlang's design: isolated processes that share nothing and own their state.
 
-[4] **Martin Kleppmann**, *Designing Data-Intensive Applications*, 2nd edition, O'Reilly, chapter 8, *Transactions*, section *Actual Serial Execution*. VoltDB, Redis and Datomic run transactions one at a time on a single thread.
+[4] **Martin Kleppmann and Chris Riccomini**, *Designing Data-Intensive Applications*, 2nd edition, O'Reilly, 2026, chapter 8, *Transactions*, section *Actual Serial Execution*. VoltDB, Redis and Datomic run transactions one at a time on a single thread.
 <https://dataintensive.net/>
 
 ---

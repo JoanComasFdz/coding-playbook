@@ -10,7 +10,7 @@
 ## Definitions
 
 - **Shared place:** a field, a static or a row that more than one timeline can write.
-- **Lost update:** two timelines read the same value, each decides from it, and each writes. In Kleppmann's words, "one of the modifications can be lost, because the second write does not include the first modification" [5]. It is the race of [Axiom 2](../chapter2/axiom-02-data-is-not-behavior.md#tell-dont-ask-the-road-not-taken)'s "gap between the read and the write".
+- **Lost update:** two timelines read the same value, each decides from it, and each writes. In Kleppmann and Riccomini's words, "one of the modifications can be lost, because the second write does not include the first modification" [5]. It is the race of [Axiom 2](../chapter2/axiom-02-data-is-not-behavior.md#tell-dont-ask-the-road-not-taken)'s "gap between the read and the write".
 - **[Compare-and-swap](https://en.wikipedia.org/wiki/Compare-and-swap):** write a new value only if the place still holds the value you read; otherwise report that it changed. Run in a loop, it never loses an update: on a change, read again and recompute.
 - **[Optimistic concurrency](https://en.wikipedia.org/wiki/Optimistic_concurrency_control):** compare-and-swap for rows. Each row carries a version. The write succeeds only if the version is still the one read, and moves it on.
 - **Conflict:** the answer when the place changed between the read and the write. It is an expected outcome, not a bug, so it is returned as a value ([Axiom 17](../chapter2/axiom-17-result.md)).
@@ -22,10 +22,10 @@
 
 Everything that touches the shared place. The ways it goes wrong:
 
-- **Read, decide, write as three separate steps.** Read a field, compute, assign; or load a row, change it, save it without a version check. This is the lost update, and Kleppmann warns that "ORM frameworks make it easy to accidentally write code that performs unsafe read-modify-write cycles" [5].
+- **Read, decide, write as three separate steps.** Read a field, compute, assign; or load a row, change it, save it without a version check. This is the lost update, and Kleppmann and Riccomini warn that "ORM frameworks make it easy to accidentally write code that performs unsafe read-modify-write cycles" [5].
 - **An update function with an effect.** A compare-and-swap loop may run the function more than once. If it logs, sends or writes, that happens more than once too.
 - **State split across two places.** Two references, or two rows, can't be swapped together with one compare-and-swap. A rule that spans both can be broken by two timelines that each change one of them. In memory, put both in one value. In the database, this is the hard case (see *When to step up, and when NOT to*).
-- **A check that isn't the write.** "No tracker exists, so insert one" run by two timelines inserts two. Kleppmann calls the cause a *phantom*: a write in one transaction changes the result of a search in another [5]. The check must be the write itself: for a rule like this one, "a uniqueness constraint is a simple solution" [5].
+- **A check that isn't the write.** "No tracker exists, so insert one" run by two timelines inserts two. Kleppmann and Riccomini call the cause a *phantom*: a write in one transaction changes the result of a search in another [5]. The check must be the write itself: for a rule like this one, "a uniqueness constraint is a simple solution" [5].
 
 ---
 
@@ -95,7 +95,7 @@ WHERE  id = @id
 AND    version = @readVersion;   -- 0 rows: another timeline wrote first
 ```
 
-Kleppmann calls this a conditional write: "you could also use a version number column that you increment on every update and apply the update only if the current version number hasn’t changed. This approach is sometimes called optimistic locking" [5]. He also warns that such a write "may or may not be safe, depending on the database implementation" [5]: under [multiversion concurrency control](https://en.wikipedia.org/wiki/Multiversion_concurrency_control), the `WHERE` clause must see the other transaction's committed write, which many implementations allow as an exception to their visibility rules. Check that your database does.
+Kleppmann and Riccomini call this a conditional write: "you could also use a version number column that you increment on every update and apply the update only if the current version number hasn’t changed. This approach is sometimes called optimistic locking" [5]. They also warn that such a write "may or may not be safe, depending on the database implementation" [5]: under [multiversion concurrency control](https://en.wikipedia.org/wiki/Multiversion_concurrency_control), the `WHERE` clause must see the other transaction's committed write, which many implementations allow as an exception to their visibility rules. Check that your database does.
 
 The shell turns "0 rows" into a `Conflict` value. On a conflict it runs the **whole sandwich again**: a fresh gather reads the new row and version, the pure `Decide` runs on it, and the act tries once more, up to a small limit. That retry is only safe because the decision is pure and the act is the only effect: nothing was done the first time that must be undone.
 
@@ -104,9 +104,9 @@ Two companions close the other gaps:
 - **A unique constraint** on `(plan_id, box_id)`. Two timelines that both find no tracker and both insert: the database refuses the second, and that is a `Conflict` too.
 - **An idempotent `Decide`.** The tracker records the last event it applied. The same event again gives `NoChange` ([Axiom 25](../chapter2/axiom-25-state-machines.md)), so a retry or a redelivered message changes nothing twice.
 
-The version check is one of the four ways Kleppmann lists [5]:
+The version check is one of the four ways Kleppmann and Riccomini list [5]:
 
-- **An atomic write**, when the change fits in one statement (`SET count = count + 1`). He calls these "usually the best choice" where they can be used. A decision made by a pure function in application code rarely fits.
+- **An atomic write**, when the change fits in one statement (`SET count = count + 1`). They call these "usually the best choice" where they can be used. A decision made by a pure function in application code rarely fits.
 - **An explicit lock**: read the row with `SELECT … FOR UPDATE`, so the second timeline waits instead of retrying.
 - **Automatic detection**: some isolation levels detect the lost update themselves and abort one transaction, which the application then retries. The retry is the same whole-sandwich retry as above.
 - **A conditional write**: the version check shown here.
@@ -135,7 +135,7 @@ There is no rung above this one, and it is the hardest to reason about [3]. The 
 
 Where this model reaches its limits:
 
-- **Rules that span several rows.** A version on one row can't protect a rule over many: two timelines can each read the same rows, each change a different one, and together break the rule. Kleppmann calls this *write skew*, and notes that "Automatically preventing write skew requires true serializable isolation" [5]. Serializable isolation, or a lock on a row that represents the whole group, can protect it. Until the aggregate Play exists, this book has no worked answer ([Chapter 6](../chapter6/README.md#when-to-use-hex-ddd-instead) lists it).
+- **Rules that span several rows.** A version on one row can't protect a rule over many: two timelines can each read the same rows, each change a different one, and together break the rule. Kleppmann and Riccomini call this *write skew*, and note that "Automatically preventing write skew requires true serializable isolation" [5]. Serializable isolation, or a lock on a row that represents the whole group, can protect it. Until the aggregate Play exists, this book has no worked answer ([Chapter 6](../chapter6/README.md#when-to-use-hex-ddd-instead) lists it).
 - **The write and the message.** Saving a row and publishing an event are two effects; a crash between them loses one. The usual answer, the outbox, is system topology and out of scope for this book.
 
 ---
@@ -154,7 +154,7 @@ Where this model reaches its limits:
 [4] **Rich Hickey**, *Values and Change: Clojure's approach to Identity and State*, clojure.org. The written form of his keynote *Are We There Yet?*, JVM Languages Summit, 2009: an identity is a series of values over time, and each state is an immutable value.
 <https://clojure.org/about/state> · <https://www.infoq.com/presentations/Are-We-There-Yet-Rich-Hickey/>
 
-[5] **Martin Kleppmann**, *Designing Data-Intensive Applications*, 2nd edition, O'Reilly, chapter 8, *Transactions*: the sections *Preventing Lost Updates* and *Write Skew and Phantoms*. Four ways to prevent a lost update (atomic writes, explicit locks, automatic detection, conditional writes), and the races a single-row check can't catch.
+[5] **Martin Kleppmann and Chris Riccomini**, *Designing Data-Intensive Applications*, 2nd edition, O'Reilly, 2026, chapter 8, *Transactions*: the sections *Preventing Lost Updates* and *Write Skew and Phantoms*. Four ways to prevent a lost update (atomic writes, explicit locks, automatic detection, conditional writes), and the races a single-row check can't catch.
 <https://dataintensive.net/>
 
 ---
