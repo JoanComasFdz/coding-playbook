@@ -18,7 +18,9 @@
   3. **Cancellation and deadlines reach every child.** When the parent is cancelled or runs out of time, so do they.
   4. **The number of children is bounded.** A thousand items don't become a thousand threads.
 
-The three shapes split the work in the two ways parallel programming knows: by **data** (the same function over many items) and by **task** (different pieces of work):
+  The first two rules are Smith's: "the nursery block doesn't exit until all the tasks inside it have exited", and "when an unhandled exception occurs in a child, Trio immediately cancels all the other tasks in the same nursery" [2]. A *nursery* is his library's name for the scope. Sústrik, whose post Smith links, put rule 1 as lifetimes that nest like blocks: "structured concurrency prevents lifetime of green thread B launched by green thread A to exceed lifetime of A" [5].
+
+The three shapes split the work in the two ways parallel programming knows, which Mattson, Sanders and Massingill name the *Task Decomposition* and *Data Decomposition* patterns [3]: by **data** (the same function over many items) and by **task** (different pieces of work):
 
 | Shape | Split by | Children do | Combine |
 |---|---|---|---|
@@ -144,6 +146,8 @@ Each child is a whole sandwich: it gathers, decides and acts on data no other ch
 
 ## Testing
 
+Marlow names what this model buys for testing: "Deterministic parallel programming is the best of both worlds: Testing, debugging, and reasoning can be performed on the sequential program, but the program runs faster with the addition of more processors" [4].
+
 Built on [Chapter 3](../chapter3/README.md#what-i-do-today):
 
 - **Parallel map.** The function gets function tests, as always. A combining function gets one more: combining `a` with `b` and then `c` gives the same as `a` with the combination of `b` and `c`. That is the property the runtime relies on.
@@ -168,6 +172,18 @@ Don't use this model:
 
 [1] **Peter Van Roy**, *Programming Paradigms for Dummies: What Every Programmer Should Know*, 2009. Also cited in the [chapter introduction](README.md#references). Deterministic concurrency "is as easy as functional programming and it cannot have race conditions".
 <https://webperso.info.ucl.ac.be/~pvr/VanRoyChapter.pdf>
+
+[2] **Nathaniel J. Smith**, *Notes on structured concurrency, or: Go statement considered harmful*, njs blog, 25 April 2018. A scope (his *nursery*) that can't exit before its children, and an unstructured spawn as "a form of goto statement".
+<https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/>
+
+[3] **Timothy G. Mattson, Beverly A. Sanders and Berna L. Massingill**, *Patterns for Parallel Programming*, Addison-Wesley Software Patterns Series, 2004. The Finding Concurrency design space, whose first patterns decompose a problem by task and by data. Only read through the authors' companion site and its table of contents.
+<https://www.cise.ufl.edu/research/ParallelPatterns/contents.htm>
+
+[4] **Simon Marlow**, *Parallel and Concurrent Programming in Haskell*, O'Reilly, 2013, chapter 1. Also cited in the [chapter introduction](README.md#references). For parallel programming, deterministic models "if at all possible", because "concurrency sacrifices determinism".
+<https://www.oreilly.com/library/view/parallel-and-concurrent/9781449335939/ch01.html>
+
+[5] **Martin Sústrik**, *Structured Concurrency*, 250bpm. First published on his old blog, which Smith's 2018 post links; now on Substack, dated 29 June 2024. Lifetimes of concurrent tasks nest the way blocks do in structured programming: "The call stack morphs into a call tree".
+<https://www.250bpm.com/p/structured-concurrency>
 
 ---
 

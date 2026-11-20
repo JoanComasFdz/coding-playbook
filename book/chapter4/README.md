@@ -29,6 +29,13 @@ Two words get mixed up here, and the difference matters:
 - **[Parallelism](https://en.wikipedia.org/wiki/Parallel_computing)** is about *running*: more cores, the same answer, sooner. It is a property of execution. A program that is only parallel means the same thing as its sequential version.
 - **[Concurrency](https://en.wikipedia.org/wiki/Concurrency_(computer_science))** is about *structure*: several timelines of control whose steps can interleave. It is a property of the program, and it brings [nondeterminism](https://en.wikipedia.org/wiki/Nondeterministic_algorithm): the specification no longer says which step comes first.
 
+Marlow states both halves [8]:
+
+- "A parallel program is one that uses a multiplicity of computational hardware (e.g., several processor cores) to perform a computation more quickly."
+- "Concurrent programming models are necessarily nondeterministic because they must interact with external agents that cause events at unpredictable times."
+
+Harper draws the same line: "Concurrency is concerned with *nondeterministic composition* of programs (or their components)", while "Parallelism is concerned with *asymptotic efficiency* of programs with *deterministic* behavior" (emphasis in the original) [7].
+
 Parallelism is an execution choice, made for speed. Concurrency is where the bugs come from. This chapter is mostly about the second.
 
 ---
@@ -37,7 +44,14 @@ Parallelism is an execution choice, made for speed. Concurrency is where the bug
 
 Nondeterminism alone is harmless. Two independent timelines can run in any order and still give one answer. It turns into a bug when the order *shows*. Van Roy calls this **observable nondeterminism**, and gives it its everyday name: "Observable nondeterminism is sometimes called a race condition" [3].
 
-A race needs three things at once, as [Axiom 3](../chapter2/axiom-03-immutability.md#why) says: data **shared** between timelines, data that is **mutable**, and at least one timeline **writing** it. Every model in this chapter is a way to remove one of the three, or to confine it to one small, visible place.
+A race needs three things at once, as [Axiom 3](../chapter2/axiom-03-immutability.md#why) says: data **shared** between timelines, data that is **mutable**, and at least one timeline **writing** it. Goetz states the same rule for Java: "Whenever more than one thread accesses a given state variable, and one of them might write to it, they all must coordinate their access to it using synchronization" [9]. And he gives the three ways out:
+
+> "If multiple threads access the same mutable state variable without appropriate synchronization, your program is broken. There are three ways to fix it:
+> - Don't share the state variable across threads;
+> - Make the state variable immutable; or
+> - Use synchronization whenever accessing the state variable." [9]
+
+Every model in this chapter is one of those fixes, placed where it costs least. [Models 0](01-sequential.md) to [2](03-one-owner.md) don't share mutable state; [Axiom 3](../chapter2/axiom-03-immutability.md) makes it immutable; [Model 3](04-shared-state.md) confines the synchronization to one small, visible place.
 
 ---
 
@@ -81,7 +95,7 @@ Testing here sits on [Chapter 3](../chapter3/README.md). The levels don't change
 
 - **The lower the rung, the more of the code is tested without time.** At rungs 0 and 1, every decision is a pure function with function tests ([Chapter 3](../chapter3/README.md#what-i-do-today)). Their results can't depend on scheduling, so they can't flake.
 - **What time adds is tested at component level.** The behavior of a scope (a failure cancels the siblings), the conflict between two writers, an owner's response to a burst of messages: these run through the component's API, with its real dependencies.
-- **A passing test can show a race, never its absence.** The interleaving that breaks the code may not happen in a thousand runs. That is the strongest reason to design down the ladder instead of testing up: at rungs 0 and 1 there is nothing to catch.
+- **A passing test can show a race, never its absence.** The interleaving that breaks the code may not happen in a thousand runs. Goetz: "A program that omits needed synchronization might appear to work, passing its tests and performing well for years, but it is still broken and may fail at any moment" [9]. That is the strongest reason to design down the ladder instead of testing up: at rungs 0 and 1 there is nothing to catch.
 
 Each model has its own *Testing* section with what that rung adds.
 
@@ -104,6 +118,8 @@ Every rung assumes one place that holds the truth: one process, one owner, one r
 - **[Conflict-free replicated data types](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)** (CRDTs): data types whose copies always merge to the same result. A state-based CRDT merges with a function that is commutative, associative and idempotent; an operation-based one requires its operations to commute [5]. Shapiro et al. say their model, Strong Eventual Consistency, "avoids the complexity of conflict resolution and of roll-back" [5].
 - **[Operational transformation](https://en.wikipedia.org/wiki/Operational_transformation)** (OT): each operation is adjusted against the concurrent ones before it is applied, so every copy ends in the same state [6]. It is the classic technique behind collaborative text editors.
 
+Kleppmann and Riccomini make the same cut: with copies on several nodes, "techniques based on locks or conditional writes do not apply in this context", and merging copies "can prevent lost updates if the updates are commutative" [10].
+
 Replication is system topology, so this book stops here. Both techniques are usually reached through a library or a database feature, which is a choice for an ADR. What carries over is their central idea, and the ladder already uses it: an update whose order can't show. An associative combine in [Model 1](02-deterministic-concurrency.md#parallel-map), commutative messages in [Model 2](03-one-owner.md#example), idempotent transitions in [Model 3](04-shared-state.md#in-the-database-version-checked-writes). A CRDT is that idea applied across machines.
 
 ---
@@ -111,14 +127,6 @@ Replication is system topology, so this book stops here. Both techniques are usu
 ## Open questions
 
 - **Testing beyond component tests.** Deterministic schedulers, stress tests and model checkers try to find races that component tests miss. To research: what they cost, and whether any belongs in this book.
-- **Sources to verify before citing:**
-  - Robert Harper, *Parallelism is not concurrency*, Existential Type blog, 17 March 2011: parallelism is about efficiency, not about what a program means. Only read through a quote in a forum.
-  - Simon Marlow, *Parallel and Concurrent Programming in Haskell*, O'Reilly, 2013, chapter 1: parallelism is a matter of hardware and speed; concurrency is a matter of program structure and is necessarily nondeterministic.
-  - Brian Goetz et al., *Java Concurrency in Practice*, Addison-Wesley, 2006, chapter 2: the three fixes for shared mutable state (don't share it, make it immutable, or synchronize every access).
-  - Mattson, Sanders and Massingill, *Patterns for Parallel Programming*, Addison-Wesley, 2004: decomposing a problem by data or by task, the two shapes in [Deterministic concurrency](02-deterministic-concurrency.md). Only read through the authors' earlier pattern-language papers.
-  - Nathaniel J. Smith, *Notes on structured concurrency, or: Go statement considered harmful*, 2018.
-  - Rich Hickey, *Are We There Yet?*, JVM Language Summit, 2009: identity as a series of values over time.
-  - Martin Kleppmann, *Designing Data-Intensive Applications*, O'Reilly, 2017, chapter 7: lost updates and how databases prevent them.
 
 ---
 
@@ -140,6 +148,18 @@ Replication is system topology, so this book stops here. Both techniques are usu
 <https://doi.org/10.1007/978-3-642-24550-3_29>
 
 [6] **Clarence A. Ellis and Simon J. Gibbs**, *Concurrency Control in Groupware Systems*, SIGMOD 1989, pp. 399–407. The origin of operational transformation: each operation runs at once where it was made, and is transformed against concurrent ones where it arrives. Only read through its abstract.
+
+[7] **Robert Harper**, *Parallelism Is Not Concurrency*, Existential Type blog, 17 March 2011. Concurrency is nondeterministic composition; parallelism is the efficiency of deterministic programs, and "has nothing to do with concurrency".
+<https://existentialtype.wordpress.com/2011/03/17/parallelism-is-not-concurrency/>
+
+[8] **Simon Marlow**, *Parallel and Concurrent Programming in Haskell*, O'Reilly, 2013, chapter 1, *Terminology: Parallelism and Concurrency*. Parallelism is concerned only with efficiency; concurrency is a way to structure a program with several threads of control, and is necessarily nondeterministic.
+<https://www.oreilly.com/library/view/parallel-and-concurrent/9781449335939/ch01.html>
+
+[9] **Brian Goetz, Tim Peierls, Joshua Bloch, Joseph Bowbeer, David Holmes and Doug Lea**, *Java Concurrency in Practice*, Addison-Wesley, 2006, chapter 2, *Thread Safety*. Writing thread-safe code is "about managing access to state, and in particular to shared, mutable state"; the three fixes.
+<https://www.oreilly.com/library/view/java-concurrency-in/0321349601/>
+
+[10] **Martin Kleppmann and Chris Riccomini**, *Designing Data-Intensive Applications*, 2nd edition, O'Reilly, 2026, chapter 8, *Transactions*, section *Preventing Lost Updates*, subsection *Conflict resolution and replication*.
+<https://dataintensive.net/>
 
 ---
 
