@@ -146,6 +146,8 @@ Each child is a whole sandwich: it gathers, decides and acts on data no other ch
 
 ## Testing
 
+Marlow names what this model buys for testing: "Deterministic parallel programming is the best of both worlds: Testing, debugging, and reasoning can be performed on the sequential program, but the program runs faster with the addition of more processors" [4].
+
 Built on [Chapter 3](../chapter3/README.md#what-i-do-today):
 
 - **Parallel map.** The function gets function tests, as always. A combining function gets one more: combining `a` with `b` and then `c` gives the same as `a` with the combination of `b` and `c`. That is the property the runtime relies on.
@@ -176,6 +178,9 @@ Don't use this model:
 
 [3] **Timothy G. Mattson, Beverly A. Sanders and Berna L. Massingill**, *Patterns for Parallel Programming*, Addison-Wesley Software Patterns Series, 2004. The Finding Concurrency design space, whose first patterns decompose a problem by task and by data. Only read through the authors' companion site and its table of contents.
 <https://www.cise.ufl.edu/research/ParallelPatterns/contents.htm>
+
+[4] **Simon Marlow**, *Parallel and Concurrent Programming in Haskell*, O'Reilly, 2013, chapter 1. Also cited in the [chapter introduction](README.md#references). For parallel programming, deterministic models "if at all possible", because "concurrency sacrifices determinism".
+<https://www.oreilly.com/library/view/parallel-and-concurrent/9781449335939/ch01.html>
 
 ---
 
