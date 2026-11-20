@@ -82,6 +82,8 @@ Both runtimes say the same thing about the update function. Java's documentation
 
 A reader gets a `PlanSet` that can't change under it. A handler that reads the plans once at the start of its sandwich works with one consistent set, even if an admin changes them halfway through.
 
+This is Hickey's model of identity. `current` is the identity, "a stable logical entity associated with a series of different values over time" (emphasis removed), and each `PlanSet` is one of those values: "a value is something that doesn’t change" [4].
+
 ### In the database: version-checked writes
 
 A box tracker row carries a version. Every write checks it:
@@ -139,6 +141,9 @@ Where this model reaches its limits:
 
 [3] **Peter Van Roy**, *Programming Paradigms for Dummies: What Every Programmer Should Know*, 2009. Also cited in the [chapter introduction](README.md#references). Named state together with concurrency is what lets a program express observable nondeterminism; message passing, not shared state, should be the default.
 <https://webperso.info.ucl.ac.be/~pvr/VanRoyChapter.pdf>
+
+[4] **Rich Hickey**, *Values and Change: Clojure's approach to Identity and State*, clojure.org. The written form of his keynote *Are We There Yet?*, JVM Languages Summit, 2009: an identity is a series of values over time, and each state is an immutable value.
+<https://clojure.org/about/state> · <https://www.infoq.com/presentations/Are-We-There-Yet-Rich-Hickey/>
 
 ---
 

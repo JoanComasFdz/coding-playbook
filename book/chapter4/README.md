@@ -29,6 +29,8 @@ Two words get mixed up here, and the difference matters:
 - **[Parallelism](https://en.wikipedia.org/wiki/Parallel_computing)** is about *running*: more cores, the same answer, sooner. It is a property of execution. A program that is only parallel means the same thing as its sequential version.
 - **[Concurrency](https://en.wikipedia.org/wiki/Concurrency_(computer_science))** is about *structure*: several timelines of control whose steps can interleave. It is a property of the program, and it brings [nondeterminism](https://en.wikipedia.org/wiki/Nondeterministic_algorithm): the specification no longer says which step comes first.
 
+Harper draws the same line: "Concurrency is concerned with *nondeterministic composition* of programs (or their components)", while "Parallelism is concerned with *asymptotic efficiency* of programs with *deterministic* behavior" (emphasis in the original) [7].
+
 Parallelism is an execution choice, made for speed. Concurrency is where the bugs come from. This chapter is mostly about the second.
 
 ---
@@ -112,13 +114,9 @@ Replication is system topology, so this book stops here. Both techniques are usu
 
 - **Testing beyond component tests.** Deterministic schedulers, stress tests and model checkers try to find races that component tests miss. To research: what they cost, and whether any belongs in this book.
 - **Sources to verify before citing:**
-  - Robert Harper, *Parallelism is not concurrency*, Existential Type blog, 17 March 2011: parallelism is about efficiency, not about what a program means. Only read through a quote in a forum.
-  - Simon Marlow, *Parallel and Concurrent Programming in Haskell*, O'Reilly, 2013, chapter 1: parallelism is a matter of hardware and speed; concurrency is a matter of program structure and is necessarily nondeterministic.
-  - Brian Goetz et al., *Java Concurrency in Practice*, Addison-Wesley, 2006, chapter 2: the three fixes for shared mutable state (don't share it, make it immutable, or synchronize every access).
-  - Mattson, Sanders and Massingill, *Patterns for Parallel Programming*, Addison-Wesley, 2004: decomposing a problem by data or by task, the two shapes in [Deterministic concurrency](02-deterministic-concurrency.md). Only read through the authors' earlier pattern-language papers.
-  - Nathaniel J. Smith, *Notes on structured concurrency, or: Go statement considered harmful*, 2018.
-  - Rich Hickey, *Are We There Yet?*, JVM Language Summit, 2009: identity as a series of values over time.
-  - Martin Kleppmann, *Designing Data-Intensive Applications*, O'Reilly, 2017, chapter 7: lost updates and how databases prevent them.
+  - Simon Marlow, *Parallel and Concurrent Programming in Haskell*, O'Reilly, 2013, chapter 1: parallelism is a matter of hardware and speed; concurrency is a matter of program structure and is necessarily nondeterministic. The book is behind a paywall and its free online edition is gone.
+  - Brian Goetz et al., *Java Concurrency in Practice*, Addison-Wesley, 2006, chapter 2: the three fixes for shared mutable state (don't share it, make it immutable, or synchronize every access). Only read through third-party notes; the publisher's free sample is chapter 6.
+  - Martin Kleppmann, *Designing Data-Intensive Applications*, O'Reilly, 2017, chapter 7: lost updates and how databases prevent them. Only read through third-party notes; the table of contents is behind a paywall.
 
 ---
 
@@ -140,6 +138,9 @@ Replication is system topology, so this book stops here. Both techniques are usu
 <https://doi.org/10.1007/978-3-642-24550-3_29>
 
 [6] **Clarence A. Ellis and Simon J. Gibbs**, *Concurrency Control in Groupware Systems*, SIGMOD 1989, pp. 399–407. The origin of operational transformation: each operation runs at once where it was made, and is transformed against concurrent ones where it arrives. Only read through its abstract.
+
+[7] **Robert Harper**, *Parallelism Is Not Concurrency*, Existential Type blog, 17 March 2011. Concurrency is nondeterministic composition; parallelism is the efficiency of deterministic programs, and "has nothing to do with concurrency".
+<https://existentialtype.wordpress.com/2011/03/17/parallelism-is-not-concurrency/>
 
 ---
 

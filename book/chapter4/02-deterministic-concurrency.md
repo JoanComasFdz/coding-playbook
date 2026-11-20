@@ -18,7 +18,9 @@
   3. **Cancellation and deadlines reach every child.** When the parent is cancelled or runs out of time, so do they.
   4. **The number of children is bounded.** A thousand items don't become a thousand threads.
 
-The three shapes split the work in the two ways parallel programming knows: by **data** (the same function over many items) and by **task** (different pieces of work):
+  The first two rules are Smith's: "the nursery block doesn't exit until all the tasks inside it have exited", and "when an unhandled exception occurs in a child, Trio immediately cancels all the other tasks in the same nursery" [2]. A *nursery* is his library's name for the scope.
+
+The three shapes split the work in the two ways parallel programming knows, which Mattson, Sanders and Massingill name the *Task Decomposition* and *Data Decomposition* patterns [3]: by **data** (the same function over many items) and by **task** (different pieces of work):
 
 | Shape | Split by | Children do | Combine |
 |---|---|---|---|
@@ -168,6 +170,12 @@ Don't use this model:
 
 [1] **Peter Van Roy**, *Programming Paradigms for Dummies: What Every Programmer Should Know*, 2009. Also cited in the [chapter introduction](README.md#references). Deterministic concurrency "is as easy as functional programming and it cannot have race conditions".
 <https://webperso.info.ucl.ac.be/~pvr/VanRoyChapter.pdf>
+
+[2] **Nathaniel J. Smith**, *Notes on structured concurrency, or: Go statement considered harmful*, njs blog, 25 April 2018. A scope (his *nursery*) that can't exit before its children, and an unstructured spawn as "a form of goto statement".
+<https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/>
+
+[3] **Timothy G. Mattson, Beverly A. Sanders and Berna L. Massingill**, *Patterns for Parallel Programming*, Addison-Wesley Software Patterns Series, 2004. The Finding Concurrency design space, whose first patterns decompose a problem by task and by data. Only read through the authors' companion site and its table of contents.
+<https://www.cise.ufl.edu/research/ParallelPatterns/contents.htm>
 
 ---
 
